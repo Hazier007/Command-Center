@@ -15,7 +15,7 @@ function Pill({ children }: { children: React.ReactNode }) {
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 via-background to-background dark:from-orange-950/25 dark:via-background dark:to-background">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 md:px-6">
         <header className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center justify-between gap-3">
