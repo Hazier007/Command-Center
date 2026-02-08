@@ -633,6 +633,48 @@ export function seedData() {
     notes: '🏷️ Drone services/reviews — affiliate drones, diensten directory (fotografie, inspectie)',
   });
 
+  // === DEEL 3 DOMEINEN ===
+  sitesStorage.create({ domain: 'advancedradiology.org', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Radiologie niche — medisch, hoge AdSense RPM, Engelstalig' });
+  sitesStorage.create({ domain: 'audiosysteem.be', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Audio/HiFi reviews & vergelijker — affiliate (€20-80 commissie)' });
+  sitesStorage.create({ domain: 'besef.be', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Creatief domein — bewustwording, blog, of mental health platform' });
+  sitesStorage.create({ domain: 'bodytattoodesign.com', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Tattoo designs gallery — AdSense + affiliate (tattoo supplies), hoog visueel traffic' });
+  sitesStorage.create({ domain: 'bow-hunt.com', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Bowhunting niche — gear reviews, tutorials, affiliate (hoge commissies)' });
+  sitesStorage.create({ domain: 'cakedecorationshop.com', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Taartdecoratie affiliate shop — tutorials + Amazon/Bol affiliate' });
+  sitesStorage.create({ domain: 'campingpremium.com', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Premium camping/glamping directory — Europees, affiliate boekingen' });
+  sitesStorage.create({ domain: 'cartonrecycle.com', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Karton recycling info — B2B leadgen voor recyclingbedrijven' });
+  sitesStorage.create({ domain: 'coinplace.nl', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Crypto platform NL — exchange vergelijker, affiliate, hoge commissies' });
+  sitesStorage.create({ domain: 'deblock.asia', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Persoonlijk/family domein — portfolio of travel blog' });
+  sitesStorage.create({ domain: 'doba.org', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Kort domein — dropshipping, business directory, of tool' });
+  sitesStorage.create({ domain: 'domaining.company', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Domeinhandel platform — tips, tools, marketplace voor domeinkopers' });
+  sitesStorage.create({ domain: 'domeinnaamdeals.be', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Belgische domein marketplace — koop/verkoop domeinen' });
+  sitesStorage.create({ domain: 'fabuloo.com', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Fashion/lifestyle brand — affiliate, catchy naam' });
+  sitesStorage.create({ domain: 'farmfunds.eu', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Agri-investment platform — crowdfunding/investeren in landbouw, finance niche' });
+  sitesStorage.create({ domain: 'gaarp.com', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Kort 5-letter domein — SaaS, tool, of brand' });
+  sitesStorage.create({ domain: 'gliz.nl', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Kort NL domein — cleaning, beauty, of tech brand' });
+  sitesStorage.create({ domain: 'goon.be', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Kort BE domein — gaming, streetwear, of community' });
+  sitesStorage.create({ domain: 'hondenvlooien.be', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Hondenvlooien info + producten — affiliate dierenapotheek, hoog zoekvolume' });
+  sitesStorage.create({ domain: 'juwelendoosje.be', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Juwelendoos affiliate — Bol/Amazon, cadeau-niche' });
+  sitesStorage.create({ domain: 'kaarts.com', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Kaarten platform — wenskaarten, uitnodigingen, print-on-demand' });
+  sitesStorage.create({ domain: 'krekelberg.be', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Lokaal/familienaam domein — portfolio of lokaal bedrijf' });
+  sitesStorage.create({ domain: 'landrada.be', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Uniek domein — vastgoed, B&B, of historisch project' });
+  sitesStorage.create({ domain: 'locallead.info', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Lokale leadgen tool/platform — meta: leadgen voor leadgen!' });
+  sitesStorage.create({ domain: 'nycafes.com', status: 'planned', techStack: ['Next.js'], notes: '🏷️ New York cafés directory — hoog traffic potentieel, AdSense + affiliate' });
+  sitesStorage.create({ domain: 'opblaasbareboot.be', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Opblaasbare boten affiliate — seizoensgebonden, Bol/Amazon' });
+  sitesStorage.create({ domain: 'pizzeriabellaitalia.be', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Pizzeria website — rank & rent voor Italiaans restaurant' });
+  sitesStorage.create({ domain: 'preppedia.com', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Prepper encyclopedie — survival guides, affiliate gear, AdSense' });
+  sitesStorage.create({ domain: 'proc.es', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Proces/workflow tool — SaaS potentieel, premium kort domein' });
+  sitesStorage.create({ domain: 'propertiestokyo.com', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Tokyo vastgoed niche — expats, investeerders, hoge waarde markt' });
+  sitesStorage.create({ domain: 'rubberdresses.com', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Rubber/latex fashion niche — affiliate, specifiek publiek' });
+  sitesStorage.create({ domain: 'running-sneakers.com', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Hardloopschoenen reviews — affiliate (€5-15/sale), groot zoekvolume' });
+  sitesStorage.create({ domain: 'spaarinteresten.be', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Spaarrente vergelijker — finance niche, hoge RPM, affiliate banken' });
+  sitesStorage.create({ domain: 'sportfood.org', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Sportvoeding reviews — affiliate (hoge marges), fitness niche' });
+  sitesStorage.create({ domain: 'takenlijst.be', status: 'planned', techStack: ['Next.js'], notes: '🏷️ To-do/taken tool — freemium SaaS, of productiviteit blog' });
+  sitesStorage.create({ domain: 'technocity.org', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Tech nieuws/reviews — AdSense + affiliate tech producten' });
+  sitesStorage.create({ domain: 'testsites.be', status: 'planned', techStack: ['Next.js'], notes: '🛠️ Test/staging omgeving voor klanten' });
+  sitesStorage.create({ domain: 'toodd.com', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Kort domein — brand, tool, of persoonlijk project' });
+  sitesStorage.create({ domain: 'travelsecrets.be', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Reistips België/Europa — affiliate boekingen, AdSense' });
+  sitesStorage.create({ domain: 'voorzichtig.be', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Veiligheid/preventie — verzekeringen vergelijker, leadgen' });
+
   // Create NOW Items (max 3)
   nowItemsStorage.create({
     title: 'Kinderopvang live deployment',
