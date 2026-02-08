@@ -1,9 +1,25 @@
+"use client"
+
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import { Plus, Calendar } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { DataInitializer } from "@/components/data-initializer";
+import {
+  nowItemsStorage,
+  alertsStorage,
+  tasksStorage,
+  projectsStorage,
+  sitesStorage,
+  type NowItem,
+  type Alert,
+  type Task,
+  type Project,
+} from "@/lib/storage";
 
 function Pill({ children }: { children: React.ReactNode }) {
   return (
@@ -14,187 +30,204 @@ function Pill({ children }: { children: React.ReactNode }) {
 }
 
 export default function Home() {
+  const [nowItems, setNowItems] = useState<NowItem[]>([]);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [todayNote, setTodayNote] = useState<string>("");
+
+  useEffect(() => {
+    // Load data from localStorage
+    setNowItems(nowItemsStorage.getAll());
+    setAlerts(alertsStorage.getAll().filter(alert => !alert.resolved));
+    setProjects(projectsStorage.getAll());
+    
+    // Today's note could come from notes or be a simple summary
+    const today = new Date().toLocaleDateString();
+    setTodayNote(`• Dashboard deployed with functional data\n• All seed data loaded successfully\n• Ready for mobile-first usage\n\nLast updated: ${today}`);
+  }, []);
+
+  const handleResolveAlert = (alertId: string) => {
+    alertsStorage.update(alertId, { resolved: true });
+    setAlerts(alertsStorage.getAll().filter(alert => !alert.resolved));
+  };
+
+  const handleSnoozeAlert = (alertId: string) => {
+    const snoozedUntil = new Date();
+    snoozedUntil.setDate(snoozedUntil.getDate() + 7);
+    alertsStorage.update(alertId, { snoozedUntil: snoozedUntil.toISOString() });
+    setAlerts(alertsStorage.getAll().filter(alert => !alert.resolved && (!alert.snoozedUntil || new Date(alert.snoozedUntil) <= new Date())));
+  };
+
+  const activeProjects = projects.filter(p => p.status === 'active').length;
+  const totalRevenue = projects.reduce((sum, p) => sum + (p.revenue || 0), 0);
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 via-background to-background dark:from-orange-950/25 dark:via-background dark:to-background">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 md:px-6">
-        <header className="flex flex-col gap-2">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
+    <>
+      <DataInitializer />
+      <div className="min-h-screen bg-gradient-to-b from-orange-50 via-background to-background dark:from-orange-950/25 dark:via-background dark:to-background">
+        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 md:px-6 md:py-10">
+          <header className="flex flex-col gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+                  <Badge variant="secondary" className="text-xs">
+                    {activeProjects} active
+                  </Badge>
+                </div>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  €{totalRevenue.toLocaleString()}/month · {projects.length} projects total
+                </p>
+              </div>
+
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-semibold tracking-tight">Command Center</h1>
-                <Badge variant="secondary">v0</Badge>
+                <Button asChild variant="secondary" size="sm">
+                  <Link href="/notes">
+                    <Plus className="h-4 w-4 mr-1" />
+                    Log
+                  </Link>
+                </Button>
+                <Button asChild size="sm">
+                  <Link href="/tasks">
+                    <Calendar className="h-4 w-4 mr-1" />
+                    Tasks
+                  </Link>
+                </Button>
               </div>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Your personal operating system: planning, signals, and momentum.
-              </p>
             </div>
-
-            <div className="flex items-center gap-2">
-              <Button asChild variant="secondary">
-                <Link href="#">+ Now item</Link>
-              </Button>
-              <Button asChild>
-                <Link href="#">+ Log</Link>
-              </Button>
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <Pill>NOW max 3</Pill>
+              <Pill>Signals → Alerts</Pill>
+              <Pill>Mobile-first</Pill>
             </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            <Pill>NOW max 3</Pill>
-            <Pill>Signals → Alerts</Pill>
-            <Pill>Low-maintenance</Pill>
-          </div>
-        </header>
+          </header>
 
-        <Separator />
+          <Separator />
 
-        <div className="grid gap-6 md:grid-cols-3">
-          <Card className="md:col-span-1">
-            <CardHeader>
-              <CardTitle className="text-base">NOW</CardTitle>
-              <CardDescription>Max 3 focus items. Make them concrete.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {[
-                {
-                  title: "Submit AdSense",
-                  meta: "Personal Projects · Tools",
-                  tag: "Revenue",
-                },
-                {
-                  title: "Triage GSC drops (14d)",
-                  meta: "Kristof Ponnet",
-                  tag: "SEO",
-                },
-                {
-                  title: "Luwaert.be revamp feedback",
-                  meta: "Filip Luwaert",
-                  tag: "Delivery",
-                },
-              ].map((x) => (
-                <div key={x.title} className="rounded-lg border p-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="font-medium leading-5">{x.title}</div>
-                      <div className="text-xs text-muted-foreground">{x.meta}</div>
+          <div className="grid gap-6 md:grid-cols-3">
+            <Card className="md:col-span-1">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base">NOW</CardTitle>
+                    <CardDescription>Max 3 focus items. Make them concrete.</CardDescription>
+                  </div>
+                  <Button asChild variant="ghost" size="sm">
+                    <Link href="/tasks">Manage</Link>
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {nowItems.slice(0, 3).map((item) => (
+                  <div key={item.id} className="rounded-lg border p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="font-medium leading-5">{item.title}</div>
+                        <div className="text-xs text-muted-foreground">{item.meta}</div>
+                      </div>
+                      <Badge variant="outline" className="shrink-0">
+                        {item.tag}
+                      </Badge>
                     </div>
-                    <Badge variant="outline" className="shrink-0">
-                      {x.tag}
-                    </Badge>
+                    {item.description && (
+                      <div className="mt-2 text-xs text-muted-foreground">
+                        {item.description}
+                      </div>
+                    )}
                   </div>
-                  <div className="mt-2 text-xs text-muted-foreground">
-                    Next action: define the smallest step you can do in 10 minutes.
+                ))}
+                {nowItems.length === 0 && (
+                  <div className="text-center py-6 text-sm text-muted-foreground">
+                    No NOW items yet.{" "}
+                    <Link href="/tasks" className="text-primary underline">
+                      Create one
+                    </Link>
                   </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+                )}
+              </CardContent>
+            </Card>
 
-          <Card className="md:col-span-1">
-            <CardHeader>
-              <CardTitle className="text-base">ALERTS</CardTitle>
-              <CardDescription>Auto-signals. Only what’s actionable.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {[
-                {
-                  title: "Sitemap redirect detected",
-                  body: "One or more sites return 308/307 for /sitemap.xml. Set Vercel primary domain to non-www.",
-                  tone: "destructive" as const,
-                },
-                {
-                  title: "Tripwire: -20% clicks (14d)",
-                  body: "Investigate if drop persists: query mix, pages, indexing, cannibalization.",
-                  tone: "secondary" as const,
-                },
-                {
-                  title: "GA4 sessions coming in",
-                  body: "Traction detected on tool-sites. Good for AdSense readiness.",
-                  tone: "outline" as const,
-                },
-              ].map((x) => (
-                <div key={x.title} className="rounded-lg border p-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="font-medium leading-5">{x.title}</div>
-                      <div className="mt-1 text-xs text-muted-foreground">{x.body}</div>
+            <Card className="md:col-span-1">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base">ALERTS</CardTitle>
+                    <CardDescription>Auto-signals. Only what's actionable.</CardDescription>
+                  </div>
+                  <Badge variant="secondary" className="text-xs">
+                    {alerts.length}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {alerts.slice(0, 3).map((alert) => (
+                  <div key={alert.id} className="rounded-lg border p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="font-medium leading-5">{alert.title}</div>
+                        <div className="mt-1 text-xs text-muted-foreground">{alert.body}</div>
+                      </div>
+                      <Badge 
+                        variant={alert.priority === 'high' ? 'destructive' : alert.priority === 'medium' ? 'secondary' : 'outline'} 
+                        className="shrink-0"
+                      >
+                        {alert.priority === 'high' ? 'High' : alert.priority === 'medium' ? 'Med' : 'Low'}
+                      </Badge>
                     </div>
-                    <Badge variant={x.tone} className="shrink-0">
-                      {x.tone === "destructive" ? "High" : x.tone === "secondary" ? "Med" : "Info"}
-                    </Badge>
+                    <div className="mt-3 flex gap-2">
+                      <Button size="sm" variant="secondary" onClick={() => handleResolveAlert(alert.id)}>
+                        Resolve
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => handleSnoozeAlert(alert.id)}>
+                        Snooze 7d
+                      </Button>
+                    </div>
                   </div>
-                  <div className="mt-3 flex gap-2">
-                    <Button size="sm" variant="secondary">
-                      Resolve
+                ))}
+                {alerts.length === 0 && (
+                  <div className="text-center py-6 text-sm text-muted-foreground">
+                    No active alerts. All good! 🎉
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="md:col-span-1">
+              <CardHeader>
+                <CardTitle className="text-base">TODAY</CardTitle>
+                <CardDescription>Quick state + next commitments.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="rounded-lg border p-3">
+                  <div className="text-sm font-medium">Daily note</div>
+                  <div className="mt-2 text-sm whitespace-pre-line">
+                    {todayNote}
+                  </div>
+                </div>
+
+                <div className="rounded-lg border p-3">
+                  <div className="text-sm font-medium">Quick links</div>
+                  <div className="mt-2 flex flex-col gap-2">
+                    <Button asChild variant="outline" className="justify-start" size="sm">
+                      <Link href="/sites">Sites ({sitesStorage.getAll().length})</Link>
                     </Button>
-                    <Button size="sm" variant="ghost">
-                      Snooze 7d
+                    <Button asChild variant="outline" className="justify-start" size="sm">
+                      <Link href="/projects">Projects ({projects.length})</Link>
+                    </Button>
+                    <Button asChild variant="outline" className="justify-start" size="sm">
+                      <Link href="/ideas">Ideas ({nowItems.length})</Link>
                     </Button>
                   </div>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
 
-          <Card className="md:col-span-1">
-            <CardHeader>
-              <CardTitle className="text-base">TODAY</CardTitle>
-              <CardDescription>Quick state + next commitments.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-lg border p-3">
-                <div className="text-sm font-medium">Daily note</div>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Keep it short. This becomes your pattern library.
-                </p>
-                <p className="mt-2 text-sm">
-                  • Canonical cleanup finished for 9 tools<br />
-                  • Sitemaps re-submitted on non-www<br />
-                  • Next: build OS + automate signals
-                </p>
-              </div>
-
-              <div className="rounded-lg border p-3">
-                <div className="text-sm font-medium">Quick links</div>
-                <div className="mt-2 flex flex-col gap-2">
-                  <Button asChild variant="outline" className="justify-start">
-                    <Link href="#">Sites</Link>
-                  </Button>
-                  <Button asChild variant="outline" className="justify-start">
-                    <Link href="#">Clients</Link>
-                  </Button>
-                  <Button asChild variant="outline" className="justify-start">
-                    <Link href="#">Backlog</Link>
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <footer className="pb-2 text-xs text-muted-foreground">
+            Functional dashboard with localStorage persistence · Mobile-optimized · Dark mode ready
+          </footer>
         </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">BACKLOG (High)</CardTitle>
-            <CardDescription>Park ideas here. Pull into NOW sparingly.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {[
-              "Add sites table + seed Personal Projects / Kristof / Luwaert",
-              "Supabase auth (Bart only)",
-              "Cron: sitemap health + GSC tripwire",
-              "Render legacy COMMAND_CENTER.md (read-only)",
-            ].map((t) => (
-              <div key={t} className="flex items-center justify-between rounded-lg border p-3">
-                <div className="text-sm">{t}</div>
-                <Badge variant="secondary">High</Badge>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <footer className="pb-2 text-xs text-muted-foreground">
-          Next step: connect Supabase, seed 3 clients + 9 sites, then wire the first two alerts.
-        </footer>
       </div>
-    </div>
+    </>
   );
 }

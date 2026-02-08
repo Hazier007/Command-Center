@@ -1,0 +1,390 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { Plus, Edit, Trash2, Lightbulb, Star } from "lucide-react"
+
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { ideasStorage, type Idea } from "@/lib/storage"
+
+export default function IdeasPage() {
+  const [ideas, setIdeas] = useState<Idea[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState<string>("all")
+  const [selectedPriority, setSelectedPriority] = useState<string>("all")
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [editingIdea, setEditingIdea] = useState<Idea | null>(null)
+
+  // Form state
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    category: "tool" as Idea['category'],
+    priority: "medium" as Idea['priority'],
+  })
+
+  useEffect(() => {
+    setIdeas(ideasStorage.getAll().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
+  }, [])
+
+  const filteredIdeas = ideas.filter(idea => {
+    const matchesSearch = idea.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         idea.description.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesCategory = selectedCategory === "all" || idea.category === selectedCategory
+    const matchesPriority = selectedPriority === "all" || idea.priority === selectedPriority
+    return matchesSearch && matchesCategory && matchesPriority
+  })
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (editingIdea) {
+      ideasStorage.update(editingIdea.id, {
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        priority: formData.priority,
+      })
+    } else {
+      ideasStorage.create({
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        priority: formData.priority,
+      })
+    }
+
+    setIdeas(ideasStorage.getAll().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
+    setIsDialogOpen(false)
+    setEditingIdea(null)
+    resetForm()
+  }
+
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      description: "",
+      category: "tool",
+      priority: "medium",
+    })
+  }
+
+  const handleEdit = (idea: Idea) => {
+    setEditingIdea(idea)
+    setFormData({
+      title: idea.title,
+      description: idea.description,
+      category: idea.category,
+      priority: idea.priority,
+    })
+    setIsDialogOpen(true)
+  }
+
+  const handleDelete = (ideaId: string) => {
+    if (confirm("Are you sure you want to delete this idea?")) {
+      ideasStorage.delete(ideaId)
+      setIdeas(ideasStorage.getAll().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
+    }
+  }
+
+  const getPriorityColor = (priority: Idea['priority']) => {
+    switch (priority) {
+      case 'high': return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200'
+      case 'medium': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-200'
+      case 'low': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200'
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200'
+    }
+  }
+
+  const getCategoryIcon = (category: Idea['category']) => {
+    switch (category) {
+      case 'directory': return '📁'
+      case 'leadgen': return '🎯'
+      case 'tool': return '🔧'
+      case 'client': return '👥'
+      case 'business': return '🏢'
+      case 'feature': return '✨'
+      default: return '💡'
+    }
+  }
+
+  const getPriorityStars = (priority: Idea['priority']) => {
+    const count = priority === 'high' ? 3 : priority === 'medium' ? 2 : 1
+    return Array(count).fill(0).map((_, i) => (
+      <Star key={i} className="h-3 w-3 fill-current text-yellow-500" />
+    ))
+  }
+
+  const highPriorityIdeas = ideas.filter(i => i.priority === 'high')
+  const recentIdeas = ideas.slice(0, 5)
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 via-background to-background dark:from-orange-950/25 dark:via-background dark:to-background">
+      <div className="mx-auto max-w-6xl px-4 py-6 md:px-6">
+        <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Ideas</h1>
+            <p className="text-muted-foreground">
+              {ideas.length} total ideas · {highPriorityIdeas.length} high priority
+            </p>
+          </div>
+
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => {
+                setEditingIdea(null)
+                resetForm()
+              }}>
+                <Plus className="mr-2 h-4 w-4" />
+                Capture Idea
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{editingIdea ? 'Edit Idea' : 'Capture New Idea'}</DialogTitle>
+                <DialogDescription>
+                  {editingIdea ? 'Update idea details' : 'Quickly capture your idea for later development'}
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor="title" className="text-sm font-medium">Title</label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder="Idea title"
+                    required
+                    autoFocus
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="description" className="text-sm font-medium">Description</label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="Describe your idea in more detail..."
+                    className="min-h-[100px]"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="category" className="text-sm font-medium">Category</label>
+                    <select
+                      id="category"
+                      value={formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value as Idea['category'] })}
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    >
+                      <option value="directory">Directory</option>
+                      <option value="leadgen">Lead Generation</option>
+                      <option value="tool">Tool</option>
+                      <option value="client">Client</option>
+                      <option value="business">Business</option>
+                      <option value="feature">Feature</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="priority" className="text-sm font-medium">Priority</label>
+                    <select
+                      id="priority"
+                      value={formData.priority}
+                      onChange={(e) => setFormData({ ...formData, priority: e.target.value as Idea['priority'] })}
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <Button type="submit" className="flex-1">
+                    {editingIdea ? 'Update' : 'Capture'} Idea
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </header>
+
+        <div className="mt-6 space-y-4">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center">
+            <Input
+              placeholder="Search ideas..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="md:max-w-sm"
+            />
+            <div className="flex gap-2">
+              <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
+                <TabsList className="grid w-full grid-cols-3 md:w-auto md:grid-cols-7">
+                  <TabsTrigger value="all">All</TabsTrigger>
+                  <TabsTrigger value="directory">Directory</TabsTrigger>
+                  <TabsTrigger value="leadgen">Leadgen</TabsTrigger>
+                  <TabsTrigger value="tool">Tool</TabsTrigger>
+                  <TabsTrigger value="client">Client</TabsTrigger>
+                  <TabsTrigger value="business">Business</TabsTrigger>
+                  <TabsTrigger value="feature">Feature</TabsTrigger>
+                </TabsList>
+              </Tabs>
+              <Tabs value={selectedPriority} onValueChange={setSelectedPriority}>
+                <TabsList>
+                  <TabsTrigger value="all">All</TabsTrigger>
+                  <TabsTrigger value="high">High</TabsTrigger>
+                  <TabsTrigger value="medium">Medium</TabsTrigger>
+                  <TabsTrigger value="low">Low</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          </div>
+
+          {/* Quick stats */}
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950/20 dark:to-red-900/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Star className="h-5 w-5 text-red-600" />
+                  High Priority
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{highPriorityIdeas.length}</div>
+                <p className="text-sm text-muted-foreground">Ideas needing attention</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/20 dark:to-orange-900/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Lightbulb className="h-5 w-5 text-orange-600" />
+                  Recent Ideas
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{recentIdeas.length}</div>
+                <p className="text-sm text-muted-foreground">Added this week</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Plus className="h-5 w-5 text-blue-600" />
+                  Quick Capture
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => {
+                    setEditingIdea(null)
+                    resetForm()
+                    setIsDialogOpen(true)
+                  }}
+                >
+                  New Idea
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {filteredIdeas.map((idea) => (
+              <Card key={idea.id} className="hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      <span className="text-xl flex-shrink-0 mt-1">{getCategoryIcon(idea.category)}</span>
+                      <div className="min-w-0 flex-1">
+                        <CardTitle className="text-base leading-tight">{idea.title}</CardTitle>
+                        <div className="flex items-center gap-2 mt-1">
+                          <CardDescription className="capitalize">
+                            {idea.category}
+                          </CardDescription>
+                          <div className="flex items-center gap-1">
+                            {getPriorityStars(idea.priority)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-1 flex-shrink-0">
+                      <Button variant="ghost" size="sm" onClick={() => handleEdit(idea)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDelete(idea.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-3">
+                    <Badge className={getPriorityColor(idea.priority)}>
+                      {idea.priority} priority
+                    </Badge>
+                    
+                    <p className="text-sm text-muted-foreground line-clamp-3">
+                      {idea.description}
+                    </p>
+                    
+                    <div className="text-xs text-muted-foreground">
+                      {new Date(idea.createdAt).toLocaleDateString()} · {new Date(idea.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {filteredIdeas.length === 0 && (
+            <div className="text-center py-12">
+              <Lightbulb className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium text-muted-foreground">No ideas found</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                {searchTerm || selectedCategory !== "all" || selectedPriority !== "all"
+                  ? "Try adjusting your search or filters"
+                  : "Capture your first idea to get started"
+                }
+              </p>
+              {!searchTerm && selectedCategory === "all" && selectedPriority === "all" && (
+                <Button 
+                  className="mt-4" 
+                  onClick={() => {
+                    setEditingIdea(null)
+                    resetForm()
+                    setIsDialogOpen(true)
+                  }}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Capture Your First Idea
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
