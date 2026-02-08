@@ -612,6 +612,27 @@ export function seedData() {
     notes: '🛠️ WordPress test/staging omgeving',
   });
 
+  sitesStorage.create({
+    domain: 'dbuild4tech.be',
+    status: 'planned',
+    techStack: ['Next.js'],
+    notes: '🏷️ Tech/development agency — IT diensten leadgen',
+  });
+
+  sitesStorage.create({
+    domain: 'sleu.tel',
+    status: 'planned',
+    techStack: ['Next.js'],
+    notes: '🏷️ Slotenmaker domein (sleu.tel = sleutel!) — rank & rent, hoge CPC emergency niche',
+  });
+
+  sitesStorage.create({
+    domain: 'thedrone.be',
+    status: 'planned',
+    techStack: ['Next.js'],
+    notes: '🏷️ Drone services/reviews — affiliate drones, diensten directory (fotografie, inspectie)',
+  });
+
   // Create NOW Items (max 3)
   nowItemsStorage.create({
     title: 'Kinderopvang live deployment',
