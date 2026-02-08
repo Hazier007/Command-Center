@@ -675,6 +675,11 @@ export function seedData() {
   sitesStorage.create({ domain: 'travelsecrets.be', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Reistips België/Europa — affiliate boekingen, AdSense' });
   sitesStorage.create({ domain: 'voorzichtig.be', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Veiligheid/preventie — verzekeringen vergelijker, leadgen' });
 
+  // === DEEL 4 ===
+  sitesStorage.create({ domain: 'proformas.eu', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Proforma factuur generator tool — finance niche, hoge RPM, SaaS potentieel' });
+  sitesStorage.create({ domain: 'provenzano.ae', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Premium UAE domein — vastgoed/luxury brand in Dubai markt' });
+  sitesStorage.create({ domain: 'openluchtzwembaden.be', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Openluchtzwembaden directory België — seizoensverkeer, AdSense, locatie-paginas per stad' });
+
   // Create NOW Items (max 3)
   nowItemsStorage.create({
     title: 'Kinderopvang live deployment',
