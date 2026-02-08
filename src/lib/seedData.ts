@@ -680,91 +680,231 @@ export function seedData() {
   sitesStorage.create({ domain: 'provenzano.ae', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Premium UAE domein — vastgoed/luxury brand in Dubai markt' });
   sitesStorage.create({ domain: 'openluchtzwembaden.be', status: 'planned', techStack: ['Next.js'], notes: '🏷️ Openluchtzwembaden directory België — seizoensverkeer, AdSense, locatie-paginas per stad' });
 
+  // ============================================================
+  // 🎯 ROADMAP NAAR €6K/MAAND PASSIEF INKOMEN
+  // ============================================================
+  // Fase 1 (Feb-Mrt): Quick wins — sites die al (bijna) klaar zijn
+  // Fase 2 (Apr-Jun): High-value builds — finance & leadgen
+  // Fase 3 (Jul-Sep): Scale & optimize — meer sites, AdSense, affiliate
+  // Fase 4 (Okt-Dec): Harvest — optimaliseren, nieuwe inkomstenbronnen
+  // Target: €6.000/maand passief inkomen binnen 18 maanden
+  // ============================================================
+
   // Create NOW Items (max 3)
   nowItemsStorage.create({
-    title: 'Kinderopvang live deployment',
-    meta: 'kinderopvangvlaanderen.be',
-    tag: 'Deploy',
-    description: 'Complete final deployment and DNS setup',
-    projectId: kinderopvang.id,
+    title: '🔥 Fase 1: Loonberekening.be bouwen',
+    meta: 'loonberekening.be — hoogste ROI potentieel',
+    tag: 'BUILD',
+    description: 'Netto loon calculator + 10 content paginas. Finance niche = €20+ RPM. Potentieel: €500-1500/mnd',
   });
 
   nowItemsStorage.create({
-    title: 'Poxy.be Vercel deploy',
-    meta: 'poxy.be',
-    tag: 'Migration',
-    description: 'Migrate from current hosting to Vercel',
-    projectId: poxy.id,
+    title: '🔥 Poxy.be + Busstop.be deployen & indexeren',
+    meta: 'Beide live, Omega Indexer actief',
+    tag: 'LAUNCH',
+    description: 'GSC sitemaps ingediend, Omega Indexer draait. Wachten op indexatie + eerste traffic.',
   });
 
   nowItemsStorage.create({
-    title: 'Mosk.be CSV import',
-    meta: 'mosk.be',
-    tag: 'Data',
-    description: 'Import mosque data from CSV files',
-    projectId: mosk.id,
+    title: '🔥 AdSense aanvragen voor tool-sites',
+    meta: 'huurrendement, zwangerschap, btw, iban',
+    tag: 'MONETIZE',
+    description: 'Content uitgebreid, klaar voor AdSense review. Per site aanvragen.',
   });
 
-  // Create Sample Alerts
+  // Create Alerts
   alertsStorage.create({
-    title: 'Sitemap redirect detected',
-    body: 'One or more sites return 308/307 for /sitemap.xml. Set Vercel primary domain to non-www.',
+    title: '💰 Revenue target: €6.000/mnd',
+    body: 'Roadmap: 10 sites actief, mix van AdSense (€2K), leadgen (€2K), rank&rent (€1K), affiliate (€1K). Tijdlijn: 12-18 maanden.',
     priority: 'high',
     resolved: false,
   });
 
   alertsStorage.create({
-    title: 'Tripwire: -20% clicks (14d)',
-    body: 'Investigate if drop persists: query mix, pages, indexing, cannibalization.',
+    title: '📊 Busstop.be: 587 paginas in GSC',
+    body: 'Sitemap succesvol ingediend. GA4: G-CWQ88Y9BG0. Omega Indexer: 29 URLs in drip feed. Monitor indexatie over 1-2 weken.',
     priority: 'medium',
     resolved: false,
   });
 
   alertsStorage.create({
-    title: 'GA4 sessions coming in',
-    body: 'Traction detected on tool-sites. Good for AdSense readiness.',
+    title: '🏗️ Huurrendement: 13 paginas klaar',
+    body: 'Van 3 → 13 paginas met Kennisbank. Klaar voor AdSense hernieuwde aanvraag.',
     priority: 'low',
     resolved: false,
   });
 
-  alertsStorage.create({
-    title: 'SSL certificate expiry warning',
-    body: 'luwaert.be SSL certificate expires in 7 days. Renew immediately.',
-    priority: 'high',
-    resolved: false,
-  });
+  // ============================================================
+  // FASE 1 — QUICK WINS (Feb-Mrt 2026)
+  // Sites die al klaar of bijna klaar zijn → live krijgen + monetiseren
+  // ============================================================
 
-  // Create Sample Tasks
   tasksStorage.create({
-    title: 'Complete mosk.be wireframes',
-    description: 'Design the main listing and detail pages',
+    title: '🟢 F1: Loonberekening.be bouwen',
+    description: 'HOOGSTE PRIORITEIT. Netto loon calculator voor België. Programmatic SEO: berekening per sector, regio, statuut. Finance AdSense RPM €20+. Target: €500-1500/mnd. Stack: Next.js + TypeScript.',
     status: 'todo',
-    projectId: mosk.id,
     priority: 'high',
+    dueDate: '2026-02-28',
   });
 
   tasksStorage.create({
-    title: 'Set up Poxy.be analytics',
-    description: 'Configure GA4 and GSC for the new deployment',
+    title: '🟢 F1: Poxy.be Vercel deploy + domein',
+    description: '1094 paginas gebouwd. Deploy naar Vercel, domein koppelen, GSC + GA4 instellen, Omega Indexer.',
     status: 'todo',
     projectId: poxy.id,
-    priority: 'medium',
-  });
-
-  tasksStorage.create({
-    title: 'Write content for Elektrik.Ink',
-    description: 'Create artist profiles and event information',
-    status: 'in-progress',
-    projectId: elektrik.id,
     priority: 'high',
+    dueDate: '2026-02-15',
   });
 
   tasksStorage.create({
-    title: 'AdSense application for calculator',
-    description: 'Submit zwangerschapscalculator.be for AdSense approval',
+    title: '🟢 F1: AdSense aanvragen — huurrendementcalculator.be',
+    description: '13 paginas klaar met Kennisbank. Opnieuw indienen bij AdSense.',
     status: 'todo',
-    projectId: zwangerschapscalculator.id,
+    priority: 'high',
+    dueDate: '2026-02-10',
+  });
+
+  tasksStorage.create({
+    title: '🟢 F1: AdSense aanvragen — zwangerschapscalculator.be',
+    description: '8 content paginas + uitgebreide FAQ. PR mergen, dan AdSense aanvragen.',
+    status: 'todo',
+    priority: 'high',
+    dueDate: '2026-02-10',
+  });
+
+  tasksStorage.create({
+    title: '🟢 F1: Spaarinteresten.be bouwen',
+    description: 'Spaarrente vergelijker + calculator. Combineer met interesten.be. Finance niche, affiliate banken. Target: €400-1000/mnd.',
+    status: 'todo',
+    priority: 'high',
+    dueDate: '2026-03-15',
+  });
+
+  tasksStorage.create({
+    title: '🟢 F1: Tankkosten.be bouwen',
+    description: 'Brandstof calculator + goedkoopste tankstations. Hoog zoekvolume, AdSense. Target: €200-500/mnd.',
+    status: 'todo',
     priority: 'medium',
+    dueDate: '2026-03-15',
+  });
+
+  tasksStorage.create({
+    title: '🟢 F1: Busstop.be viraal maken',
+    description: 'Reddit/Facebook posts, journalisten contacteren (HLN, VRT), "slechtste haltes" content pushen. Gratis PR = gratis backlinks.',
+    status: 'in-progress',
+    priority: 'high',
+    dueDate: '2026-02-28',
+  });
+
+  // ============================================================
+  // FASE 2 — HIGH-VALUE BUILDS (Apr-Jun 2026)
+  // Finance tools & leadgen = hoogste €/site
+  // ============================================================
+
+  tasksStorage.create({
+    title: '🟡 F2: Vloerverwarmingoffertes.be bouwen',
+    description: 'Leadgen site voor vloerverwarming installateurs. Offerte-formulier, programmatic SEO (type × locatie). Hoge CPC €5-8. Target: €500-1500/mnd.',
+    status: 'todo',
+    priority: 'high',
+    dueDate: '2026-04-15',
+  });
+
+  tasksStorage.create({
+    title: '🟡 F2: Sleu.tel bouwen',
+    description: 'Slotenmaker rank & rent. Emergency niche = hoge CPC €5-10. Programmatic: dienst × locatie. Ervaring via Kristof. Target: €300-800/mnd.',
+    status: 'todo',
+    priority: 'high',
+    dueDate: '2026-04-30',
+  });
+
+  tasksStorage.create({
+    title: '🟡 F2: Zolderramen.be bouwen',
+    description: 'Rank & rent dakramen/zolderramen. Programmatic SEO. Hoge CPC €3-5. Target: €200-600/mnd.',
+    status: 'todo',
+    priority: 'medium',
+    dueDate: '2026-05-15',
+  });
+
+  tasksStorage.create({
+    title: '🟡 F2: Kinderopvangvlaanderen.be live',
+    description: 'Domein koppelen, purple border fixen, AdSense aanvragen. 312 listings klaar. Target: €100-400/mnd.',
+    status: 'todo',
+    priority: 'medium',
+    dueDate: '2026-04-15',
+  });
+
+  tasksStorage.create({
+    title: '🟡 F2: Mosk.be bouwen',
+    description: 'Moskeeën directory België. CSV data klaar, zelfde Directorist setup als kinderopvang. Target: €100-300/mnd.',
+    status: 'todo',
+    priority: 'medium',
+    dueDate: '2026-05-30',
+  });
+
+  // ============================================================
+  // FASE 3 — SCALE & OPTIMIZE (Jul-Sep 2026)
+  // Meer sites + bestaande optimaliseren
+  // ============================================================
+
+  tasksStorage.create({
+    title: '🔵 F3: Interesten.be finance suite',
+    description: 'Samengestelde interest, leningrente, spaarrente calculators. Combineer met spaarinteresten.be ecosystem. Target: €300-800/mnd.',
+    status: 'todo',
+    priority: 'medium',
+    dueDate: '2026-07-15',
+  });
+
+  tasksStorage.create({
+    title: '🔵 F3: Factuurfinanciering.be',
+    description: 'Factoring vergelijker + leadgen. Finance niche, dure leads (€50-100/lead). Target: €500-1500/mnd.',
+    status: 'todo',
+    priority: 'medium',
+    dueDate: '2026-08-15',
+  });
+
+  tasksStorage.create({
+    title: '🔵 F3: Bestaande tool-sites optimaliseren',
+    description: 'Content uitbreiden op btw-calculator, datumberekenen, kleurcodes, kmvergoeding, ibanvalidator. Meer paginas = meer AdSense inkomsten.',
+    status: 'todo',
+    priority: 'medium',
+    dueDate: '2026-09-30',
+  });
+
+  tasksStorage.create({
+    title: '🔵 F3: Proformas.eu bouwen',
+    description: 'Proforma factuur generator tool. Finance niche, SaaS potentieel. Freemium model. Target: €200-500/mnd.',
+    status: 'todo',
+    priority: 'low',
+    dueDate: '2026-09-15',
+  });
+
+  // ============================================================
+  // FASE 4 — HARVEST (Okt-Dec 2026)
+  // Optimaliseren, affiliate deals, schaal
+  // ============================================================
+
+  tasksStorage.create({
+    title: '🟣 F4: Affiliate partnerships sluiten',
+    description: 'Directe deals met: energieleveranciers (goedkoopstroom), banken (spaarinteresten), verzekeraars (veilig.info). Hogere commissies dan netwerken.',
+    status: 'todo',
+    priority: 'medium',
+    dueDate: '2026-10-31',
+  });
+
+  tasksStorage.create({
+    title: '🟣 F4: Rank & rent verhuren',
+    description: 'Poxy.be, sleu.tel, zolderramen.be, vloerverwarmingoffertes.be — lokale bedrijven benaderen voor maandelijkse huur van leads/paginas.',
+    status: 'todo',
+    priority: 'high',
+    dueDate: '2026-11-30',
+  });
+
+  tasksStorage.create({
+    title: '🟣 F4: Revenue review & next year planning',
+    description: 'Evalueer alle sites: welke presteren, welke niet. Slecht presterende sites pivoteren of verkopen. Planning 2027 met target €10K/mnd.',
+    status: 'todo',
+    priority: 'medium',
+    dueDate: '2026-12-15',
   });
 
   tasksStorage.create({
@@ -775,100 +915,148 @@ export function seedData() {
     priority: 'high',
   });
 
-  // Create Sample Ideas
+  // Create Ideas — future projects
   ideasStorage.create({
-    title: 'Tattoo aftercare app',
-    description: 'Mobile app for tattoo aftercare instructions and reminders',
-    category: 'tool',
+    title: '🏊 Openluchtzwembaden.be',
+    description: 'Directory van openluchtzwembaden in België. Seizoensverkeer (mei-sep). Reviews, openingsuren, prijzen per zwembad. Zelfde setup als busstop.be.',
+    category: 'directory',
     priority: 'medium',
   });
 
   ideasStorage.create({
-    title: 'Belgian restaurants directory',
-    description: 'Comprehensive directory of restaurants across Belgium',
+    title: '🐕 Hondenpups.be',
+    description: 'Puppies/fokkers directory. Emotioneel traffic (mensen zoeken puppies!). Affiliate dierenvoeding. Hoog engagement.',
+    category: 'directory',
+    priority: 'medium',
+  });
+
+  ideasStorage.create({
+    title: '🏕️ Campingpremium.com',
+    description: 'Glamping/premium camping directory Europa. Affiliate boekingen (€10-30/boeking). Seizoensgebonden maar hoog volume.',
     category: 'directory',
     priority: 'low',
   });
 
   ideasStorage.create({
-    title: 'Automated SEO auditing tool',
-    description: 'Tool that automatically audits website SEO and provides recommendations',
-    category: 'tool',
-    priority: 'high',
-  });
-
-  ideasStorage.create({
-    title: 'Local business lead generation',
-    description: 'Expand lead generation to more Belgian cities',
-    category: 'leadgen',
-    priority: 'medium',
-  });
-
-  ideasStorage.create({
-    title: 'Client portal for Hazier',
-    description: 'Dashboard where clients can track project progress',
+    title: '🎯 Hazier Client Portal',
+    description: 'React dashboard voor Hazier klanten: project status, facturen, rapportages, WordPress koppelingen. Productiseert het bureau.',
     category: 'feature',
     priority: 'high',
   });
 
-  // Create Sample Notes
+  ideasStorage.create({
+    title: '🪙 Coinplace.nl — Crypto vergelijker',
+    description: 'Exchange vergelijker voor NL/BE markt. Affiliate commissies €50-200/signup. Past bij HODL strategie.',
+    category: 'tool',
+    priority: 'medium',
+  });
+
+  ideasStorage.create({
+    title: '🏃 Running-sneakers.com',
+    description: 'Hardloopschoenen reviews & vergelijker. Internationaal (Engels). Amazon/Bol affiliate. Groot zoekvolume.',
+    category: 'leadgen',
+    priority: 'low',
+  });
+
+  ideasStorage.create({
+    title: '📋 Takenlijst.be als SaaS',
+    description: 'Simpele to-do app. Freemium model: gratis basis, €3/mnd pro. Kan viral gaan in Vlaanderen. Recurring revenue.',
+    category: 'tool',
+    priority: 'low',
+  });
+
+  // Create Notes — roadmap & strategie
   notesStorage.create({
-    title: 'Project Review - Q1 2026',
-    content: `## Revenue Overview
-- CollectPro: €2,500/month (stable)
-- Hazier: €3,200/month (growing)
-- Directories: €300/month combined
-- Lead generation: €625/month combined
+    title: '🎯 Roadmap naar €6K/mnd — Lisa\'s Plan',
+    content: `## Revenue Target Breakdown
 
-## Key Insights
-- Tool sites are gaining traction
-- Need to focus on AdSense applications
-- Client work is steady but time-intensive
+### Best Case (12-18 maanden, ~10 sites)
+| Site | Type | Target/mnd |
+|------|------|-----------|
+| loonberekening.be | Tool/AdSense | €500-1500 |
+| spaarinteresten.be | Finance/Affiliate | €400-1000 |
+| vloerverwarmingoffertes.be | Leadgen | €500-1500 |
+| poxy.be | Rank & Rent | €300-800 |
+| sleu.tel | Rank & Rent | €300-800 |
+| busstop.be | AdSense/Traffic | €200-600 |
+| huurrendementcalculator.be | Tool/AdSense | €200-500 |
+| zolderramen.be | Rank & Rent | €200-600 |
+| tankkosten.be | Tool/AdSense | €200-500 |
+| kinderopvangvlaanderen.be | Directory | €100-400 |
+| **TOTAAL** | | **€2.900-8.200** |
 
-## Next Quarter Goals
-- Launch mosk.be directory
-- Get 2 tool sites approved for AdSense
-- Expand lead generation to new verticals`,
-    tags: ['review', 'revenue', 'planning'],
+### Worst Case (24+ maanden, ~15-20 sites)
+- Gemiddeld €300-400/site
+- 20% van sites floppt
+- Meer spreiding nodig
+
+### Strategie
+1. **Finance eerst** — hoogste RPM (€20-50)
+2. **Leadgen/rank&rent** — recurring, verhuurbaar
+3. **Tool sites** — AdSense, set-and-forget
+4. **Directories** — langzamer maar steady
+5. **Affiliate** — bonus inkomsten
+
+### Key Metrics om te tracken
+- Organisch traffic per site (GSC)
+- AdSense RPM per niche
+- Leads per maand (leadgen sites)
+- Indexatie snelheid (GSC)`,
+    tags: ['roadmap', 'revenue', 'strategie'],
   });
 
   notesStorage.create({
-    title: 'SEO Strategy Notes',
-    content: `## Current Focus Areas
-1. Technical SEO cleanup across all sites
-2. Content optimization for local keywords
-3. Building topic clusters for directories
+    title: '📊 Portfolio Status — 8 Feb 2026',
+    content: `## Vandaag gebouwd/gelanceerd
+- ✅ Busstop.be LIVE — 600 paginas, GSC 587 URLs, GA4 actief
+- ✅ Poxy.be — 1094 paginas gebouwd, GitHub klaar, Vercel TODO
+- ✅ Huurrendementcalculator.be — 13 paginas (was 3), klaar voor AdSense
+- ✅ Command Center — live op Vercel met 88+ domeinen
 
-## Tools Used
-- GSC for performance monitoring
-- Screaming Frog for crawl analysis
-- Ahrefs for keyword research
+## Actieve sites met traffic
+- btw-calculator.be ✅
+- buitendrogen.be ✅
+- datumberekenen.be ✅
+- kleurcodes.be ✅
+- kmvergoeding.be ✅
+- ibanvalidator.be ✅
+- huurrendementcalculator.be ✅
+- zwangerschapscalculator.be ✅
+- goedkoopstroom.be ✅
+- collectpro.be ✅
 
-## Recent Wins
-- Fixed sitemap issues on 3 sites
-- Improved page speed scores
-- Added structured data to directories`,
-    tags: ['seo', 'strategy', 'technical'],
+## Domeinportfolio
+88+ domeinen in bezit. Top 10 prioriteit geselecteerd voor uitbouw.
+Focus: finance tools + leadgen/rank&rent = snelste weg naar €6K/mnd.`,
+    tags: ['status', 'portfolio', 'februari'],
   });
 
   notesStorage.create({
-    title: 'Client Meeting - Filip Luwaert',
-    content: `## Meeting Notes - Feb 7, 2026
+    title: '🔑 Build Volgorde — Prioriteit',
+    content: `## Volgorde van bouwen (ROI-gerankt)
 
-**Discussed:**
-- Website redesign feedback
-- Mobile responsiveness issues
-- Contact form optimization
-- Local SEO improvements
+### 🔥 NU (Feb 2026)
+1. Loonberekening.be — #1 prioriteit, hoogste potentieel
+2. Spaarinteresten.be — finance combo met interesten.be
+3. Tankkosten.be — quick win, hoog zoekvolume
 
-**Action Items:**
-- Update color scheme per brand guidelines
-- Fix mobile menu navigation
-- Add Google Business Profile integration
-- Implement schema markup for local business
+### ⚡ DAARNA (Mrt-Apr 2026)
+4. Vloerverwarmingoffertes.be — leadgen, hoge CPC
+5. Sleu.tel — rank & rent, emergency niche
+6. Zolderramen.be — rank & rent, weinig concurrentie
 
-**Next Meeting:** Feb 14, 2026`,
-    tags: ['client', 'meeting', 'luwaert'],
+### 📦 Q2-Q3 2026
+7. Interesten.be — finance calculator suite
+8. Factuurfinanciering.be — dure leads
+9. Mosk.be — directory (CSV klaar)
+10. Kinderopvangvlaanderen.be — live deployment
+
+### Regels
+- Max 2-3 sites tegelijk bouwen
+- Elke site: GSC + GA4 + Omega Indexer dag 1
+- AdSense aanvragen zodra 10+ paginas
+- Content > design (ranken eerst, stylen later)`,
+    tags: ['planning', 'volgorde', 'prioriteit'],
   });
 
   console.log('✅ Seed data created successfully!');
