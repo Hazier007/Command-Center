@@ -328,9 +328,10 @@ export function seedData() {
   sitesStorage.create({
     domain: 'busstop.be',
     projectId: busstop.id,
-    status: 'planned',
+    status: 'live',
     techStack: ['Next.js', 'TypeScript'],
-    notes: '💡 Bushalte-finder tool — real-time data, hoog traffic potentieel',
+    pages: 593,
+    notes: '🚏 Bushalte review platform — 593 paginas, 549 haltes, 34 steden',
   });
 
   sitesStorage.create({
@@ -379,6 +380,236 @@ export function seedData() {
     status: 'planned',
     techStack: ['Next.js', 'TypeScript'],
     notes: '💡 Health niche — extreem hoge AdSense RPM, evergreen',
+  });
+
+  // === BART'S VOLLEDIGE DOMEINPORTFOLIO ===
+  // Domeinen die nog niet hierboven staan
+
+  sitesStorage.create({
+    domain: 'ai-automatisering.be',
+    status: 'planned',
+    techStack: ['Next.js'],
+    notes: '🏷️ AI/automation niche — leadgen voor AI-consultants, hoge waarde markt',
+  });
+
+  sitesStorage.create({
+    domain: 'belgiangolf.com',
+    status: 'planned',
+    techStack: ['Next.js'],
+    notes: '🏷️ Golf directory/community België — club listings, affiliate golf gear',
+  });
+
+  sitesStorage.create({
+    domain: 'betover.org',
+    status: 'planned',
+    techStack: ['Next.js'],
+    notes: '🏷️ Creatief domein — events, goochelaars directory, of storytelling platform',
+  });
+
+  sitesStorage.create({
+    domain: 'btw-calculator.be',
+    status: 'live',
+    techStack: ['Next.js', 'TypeScript'],
+    notes: '🔧 BTW calculator tool — hoge zoekvolume, AdSense monetisatie',
+  });
+
+  sitesStorage.create({
+    domain: 'budprofiles.com',
+    status: 'planned',
+    techStack: ['Next.js'],
+    notes: '🏷️ Cannabis/CBD profielen — internationaal, affiliate potentieel',
+  });
+
+  sitesStorage.create({
+    domain: 'buitendrogen.be',
+    status: 'live',
+    techStack: ['Next.js', 'TypeScript'],
+    notes: '🔧 Weer/droog tool — seizoensgebonden traffic, AdSense',
+  });
+
+  sitesStorage.create({
+    domain: 'collectpro.be',
+    projectId: collectPro.id,
+    status: 'live',
+    techStack: ['Next.js'],
+    notes: '🏢 CollectPro hoofdsite — B2B incasso platform',
+  });
+
+  sitesStorage.create({
+    domain: 'datumberekenen.be',
+    status: 'live',
+    techStack: ['Next.js', 'TypeScript'],
+    notes: '🔧 Datum calculator tool — evergreen, AdSense',
+  });
+
+  sitesStorage.create({
+    domain: 'elektrik.ink',
+    projectId: elektrik.id,
+    status: 'live',
+    techStack: ['Next.js'],
+    notes: '🎪 Tattoo convention website — mei 2025 event',
+  });
+
+  sitesStorage.create({
+    domain: 'factuurfinanciering.be',
+    status: 'planned',
+    techStack: ['Next.js'],
+    notes: '🏷️ Factoring/invoice financing — hoge CPC finance niche, leadgen voor factoring bedrijven',
+  });
+
+  sitesStorage.create({
+    domain: 'festival-finder.com',
+    status: 'planned',
+    techStack: ['Next.js'],
+    notes: '🏷️ Festival directory internationaal — affiliate tickets, AdSense, seizoenspieken',
+  });
+
+  sitesStorage.create({
+    domain: 'goedkoopstroom.be',
+    projectId: goedkoopStroom.id,
+    status: 'live',
+    techStack: ['Next.js', 'TypeScript'],
+    notes: '🔧 Energievergelijker — hoge affiliate commissies (€30-80/lead)',
+  });
+
+  sitesStorage.create({
+    domain: 'hondenpups.be',
+    status: 'planned',
+    techStack: ['Next.js'],
+    notes: '🏷️ Puppies/honden directory — fokkers, adoptiepunten. Affiliate dierenvoeding, hoog emotioneel traffic',
+  });
+
+  sitesStorage.create({
+    domain: 'huurrendementcalculator.be',
+    status: 'live',
+    techStack: ['Next.js', 'TypeScript'],
+    notes: '🔧 Vastgoed calculator — AdSense finance RPM, evergreen',
+  });
+
+  sitesStorage.create({
+    domain: 'ibanvalidator.be',
+    status: 'live',
+    techStack: ['Next.js', 'TypeScript'],
+    notes: '🔧 IBAN validatie tool — steady traffic, AdSense',
+  });
+
+  sitesStorage.create({
+    domain: 'infinite-events.be',
+    status: 'planned',
+    techStack: ['Next.js'],
+    notes: '🏷️ Event planning/directory — leadgen voor eventlocaties en -planners',
+  });
+
+  sitesStorage.create({
+    domain: 'kleurcodes.be',
+    status: 'live',
+    techStack: ['Next.js', 'TypeScript'],
+    notes: '🔧 Kleurcode tool — designer traffic, AdSense',
+  });
+
+  sitesStorage.create({
+    domain: 'kmvergoeding.be',
+    status: 'live',
+    techStack: ['Next.js', 'TypeScript'],
+    notes: '🔧 KM vergoeding calculator — jaarlijkse updates, AdSense',
+  });
+
+  sitesStorage.create({
+    domain: 'loonberekening.be',
+    status: 'planned',
+    techStack: ['Next.js', 'TypeScript'],
+    notes: '🏷️ Netto loon calculator — EXTREEM hoog zoekvolume, finance AdSense RPM €20+',
+  });
+
+  sitesStorage.create({
+    domain: 'miner.company',
+    status: 'planned',
+    techStack: ['Next.js'],
+    notes: '🏷️ Crypto mining niche — calculator, hardware reviews, affiliate',
+  });
+
+  sitesStorage.create({
+    domain: 'prep-shop.be',
+    status: 'planned',
+    techStack: ['Next.js'],
+    notes: '🏷️ Prepper/survival shop affiliate — niche e-commerce, groeiende markt',
+  });
+
+  sitesStorage.create({
+    domain: 'schijnwerper.be',
+    status: 'planned',
+    techStack: ['Next.js'],
+    notes: '🏷️ Evenementenverlichting/spotlight — leadgen voor licht-verhuur',
+  });
+
+  sitesStorage.create({
+    domain: 'schuifzeilen.be',
+    status: 'planned',
+    techStack: ['Next.js'],
+    notes: '🏷️ Schuifzeilen/zonwering — rank & rent, lokale installateurs. Niche met weinig concurrentie',
+  });
+
+  sitesStorage.create({
+    domain: 'tankkosten.be',
+    status: 'planned',
+    techStack: ['Next.js', 'TypeScript'],
+    notes: '🏷️ Brandstof calculator + goedkoopste tanken — hoog zoekvolume, AdSense + affiliate tankkaarten',
+  });
+
+  sitesStorage.create({
+    domain: 'timmerwerkvlaanderen.be',
+    status: 'planned',
+    techStack: ['Next.js'],
+    notes: '🏷️ Rank & rent timmerwerk — programmatic SEO type × locatie, leadgen voor schrijnwerkers',
+  });
+
+  sitesStorage.create({
+    domain: 'veganisch.be',
+    status: 'planned',
+    techStack: ['Next.js'],
+    notes: '🏷️ Vegan directory/recepten — restaurants, winkels, recepten. Groeiende niche, AdSense + affiliate',
+  });
+
+  sitesStorage.create({
+    domain: 'virtualrealityguides.com',
+    status: 'planned',
+    techStack: ['Next.js'],
+    notes: '🏷️ VR reviews & guides internationaal — affiliate headsets (€20-50 commissie), tech AdSense RPM',
+  });
+
+  sitesStorage.create({
+    domain: 'vloerverwarmingoffertes.be',
+    status: 'planned',
+    techStack: ['Next.js'],
+    notes: '🏷️ Vloerverwarming leadgen — hoge CPC (€5-8), offerte-aanvragen voor installateurs',
+  });
+
+  sitesStorage.create({
+    domain: 'vrouwenpeloton.be',
+    status: 'planned',
+    techStack: ['Next.js'],
+    notes: '🏷️ Vrouwenwielrennen community — groeiende niche, affiliate fietskleding/gear',
+  });
+
+  sitesStorage.create({
+    domain: 'wietwar.nl',
+    status: 'planned',
+    techStack: ['Next.js'],
+    notes: '🏷️ Cannabis info/nieuws NL — hoog traffic potentieel, AdSense + CBD affiliate',
+  });
+
+  sitesStorage.create({
+    domain: 'wimmel.be',
+    status: 'planned',
+    techStack: ['Next.js'],
+    notes: '🏷️ Creatief domein — kinderactiviteiten, zoekboeken, of lokale events voor kids',
+  });
+
+  sitesStorage.create({
+    domain: 'wptest.be',
+    status: 'dev',
+    techStack: ['WordPress'],
+    notes: '🛠️ WordPress test/staging omgeving',
   });
 
   // Create NOW Items (max 3)
