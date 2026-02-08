@@ -166,7 +166,7 @@ export default function TasksPage() {
           
           <div className="flex flex-wrap gap-1">
             {task.priority && (
-              <Badge className={getPriorityColor(task.priority)} size="sm">
+              <Badge className={getPriorityColor(task.priority)}>
                 <Flag className="h-2 w-2 mr-1" />
                 {task.priority}
               </Badge>
