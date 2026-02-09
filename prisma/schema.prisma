@@ -1,0 +1,116 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  status      String   // 'active' | 'planned' | 'paused'
+  category    String   // 'directory' | 'leadgen' | 'tool' | 'client' | 'business' | 'event'
+  description String?
+  revenue     Float?   // monthly estimate
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  sites    Site[]
+  tasks    Task[]
+  nowItems NowItem[]
+
+  @@map("projects")
+}
+
+model Site {
+  id        String   @id @default(cuid())
+  domain    String
+  projectId String?
+  status    String   // 'live' | 'dev' | 'planned'
+  techStack String[] // Array of tech stack items
+  revenue   Float?   // monthly estimate
+  listings  Int?     // for directories
+  pages     Int?     // for content sites
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@map("sites")
+}
+
+model Idea {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  category    String   // 'directory' | 'leadgen' | 'tool' | 'client' | 'business' | 'feature'
+  priority    String   // 'low' | 'medium' | 'high'
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("ideas")
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  status      String    // 'todo' | 'in-progress' | 'done'
+  projectId   String?
+  priority    String?   // 'low' | 'medium' | 'high'
+  dueDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@map("tasks")
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  tags      String[] // Array of tags
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("notes")
+}
+
+model NowItem {
+  id          String   @id @default(cuid())
+  title       String
+  meta        String
+  tag         String
+  description String?
+  projectId   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@map("now_items")
+}
+
+model Alert {
+  id           String    @id @default(cuid())
+  title        String
+  body         String
+  priority     String    // 'low' | 'medium' | 'high'
+  resolved     Boolean   @default(false)
+  snoozedUntil DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("alerts")
+}

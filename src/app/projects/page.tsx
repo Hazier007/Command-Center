@@ -20,10 +20,12 @@ import { projectsStorage, type Project } from "@/lib/storage"
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -34,9 +36,22 @@ export default function ProjectsPage() {
     revenue: "",
   })
 
+  // Load projects on mount
   useEffect(() => {
-    setProjects(projectsStorage.getAll())
+    loadProjects()
   }, [])
+
+  const loadProjects = async () => {
+    try {
+      setLoading(true)
+      const data = await projectsStorage.getAll()
+      setProjects(data)
+    } catch (error) {
+      console.error('Failed to load projects:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filteredProjects = projects.filter(project => {
     const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -45,31 +60,42 @@ export default function ProjectsPage() {
     return matchesSearch && matchesCategory
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (editingProject) {
-      projectsStorage.update(editingProject.id, {
-        name: formData.name,
-        status: formData.status,
-        category: formData.category,
-        description: formData.description || undefined,
-        revenue: formData.revenue ? parseFloat(formData.revenue) : undefined,
-      })
-    } else {
-      projectsStorage.create({
-        name: formData.name,
-        status: formData.status,
-        category: formData.category,
-        description: formData.description || undefined,
-        revenue: formData.revenue ? parseFloat(formData.revenue) : undefined,
-      })
-    }
+    try {
+      setSubmitting(true)
+      
+      if (editingProject) {
+        await projectsStorage.update(editingProject.id, {
+          name: formData.name,
+          status: formData.status,
+          category: formData.category,
+          description: formData.description || undefined,
+          revenue: formData.revenue ? parseFloat(formData.revenue) : undefined,
+        })
+      } else {
+        await projectsStorage.create({
+          name: formData.name,
+          status: formData.status,
+          category: formData.category,
+          description: formData.description || undefined,
+          revenue: formData.revenue ? parseFloat(formData.revenue) : undefined,
+        })
+      }
 
-    setProjects(projectsStorage.getAll())
-    setIsDialogOpen(false)
-    setEditingProject(null)
-    setFormData({ name: "", status: "planned", category: "tool", description: "", revenue: "" })
+      // Reload projects
+      await loadProjects()
+      
+      // Reset form
+      setIsDialogOpen(false)
+      setEditingProject(null)
+      setFormData({ name: "", status: "planned", category: "tool", description: "", revenue: "" })
+    } catch (error) {
+      console.error('Failed to save project:', error)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const handleEdit = (project: Project) => {
@@ -84,10 +110,14 @@ export default function ProjectsPage() {
     setIsDialogOpen(true)
   }
 
-  const handleDelete = (projectId: string) => {
+  const handleDelete = async (projectId: string) => {
     if (confirm("Are you sure you want to delete this project?")) {
-      projectsStorage.delete(projectId)
-      setProjects(projectsStorage.getAll())
+      try {
+        await projectsStorage.delete(projectId)
+        await loadProjects()
+      } catch (error) {
+        console.error('Failed to delete project:', error)
+      }
     }
   }
 
@@ -114,6 +144,18 @@ export default function ProjectsPage() {
 
   const totalRevenue = projects.reduce((sum, p) => sum + (p.revenue || 0), 0)
   const activeProjects = projects.filter(p => p.status === 'active')
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-orange-50 via-background to-background dark:from-orange-950/25 dark:via-background dark:to-background">
+        <div className="mx-auto max-w-6xl px-4 py-6 md:px-6">
+          <div className="flex justify-center items-center h-64">
+            <div className="text-lg">Loading projects...</div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 via-background to-background dark:from-orange-950/25 dark:via-background dark:to-background">
@@ -207,8 +249,8 @@ export default function ProjectsPage() {
                   />
                 </div>
                 <div className="flex gap-2 pt-4">
-                  <Button type="submit" className="flex-1">
-                    {editingProject ? 'Update' : 'Create'} Project
+                  <Button type="submit" className="flex-1" disabled={submitting}>
+                    {submitting ? 'Saving...' : (editingProject ? 'Update' : 'Create')} Project
                   </Button>
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                     Cancel
@@ -292,7 +334,7 @@ export default function ProjectsPage() {
             ))}
           </div>
 
-          {filteredProjects.length === 0 && (
+          {filteredProjects.length === 0 && !loading && (
             <div className="text-center py-12">
               <h3 className="text-lg font-medium text-muted-foreground">No projects found</h3>
               <p className="text-sm text-muted-foreground mt-1">
