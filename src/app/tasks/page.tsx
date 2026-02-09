@@ -54,6 +54,7 @@ export default function TasksPage() {
 
   const todoTasks = filteredTasks.filter(t => t.status === 'todo')
   const inProgressTasks = filteredTasks.filter(t => t.status === 'in-progress')
+  const reviewTasks = filteredTasks.filter(t => t.status === 'review')
   const doneTasks = filteredTasks.filter(t => t.status === 'done')
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -214,6 +215,16 @@ export default function TasksPage() {
                 In Progress
               </Button>
             )}
+            {status !== 'review' && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs h-6 border-amber-500/50 text-amber-500 hover:bg-amber-500/10"
+                onClick={() => handleStatusChange(task.id, 'review')}
+              >
+                Review
+              </Button>
+            )}
             {status !== 'done' && (
               <Button
                 variant="outline"
@@ -241,7 +252,7 @@ export default function TasksPage() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
             <p className="text-muted-foreground">
-              {todoTasks.length} to do · {inProgressTasks.length} in progress · {doneTasks.length} done
+              {todoTasks.length} to do · {inProgressTasks.length} in progress · {reviewTasks.length} review · {doneTasks.length} done
             </p>
           </div>
 
@@ -298,6 +309,7 @@ export default function TasksPage() {
                       >
                         <option value="todo">To Do</option>
                         <option value="in-progress">In Progress</option>
+                        <option value="review">Ready for Review</option>
                         <option value="done">Done</option>
                       </select>
                     </div>
@@ -365,7 +377,7 @@ export default function TasksPage() {
           />
 
           {/* Kanban Board */}
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-4">
             {/* To Do Column */}
             <div className="space-y-3">
               <div className="flex items-center justify-between p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20">
@@ -405,6 +417,28 @@ export default function TasksPage() {
                 {inProgressTasks.length === 0 && (
                   <div className="text-center py-8 text-sm text-muted-foreground">
                     No tasks in progress
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Review Column */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 rounded-lg bg-amber-50 dark:bg-amber-950/20">
+                <h2 className="text-lg font-semibold text-amber-900 dark:text-amber-200">
+                  🔍 Review
+                </h2>
+                <Badge variant="secondary">
+                  {reviewTasks.length}
+                </Badge>
+              </div>
+              <div className="min-h-[400px]">
+                {reviewTasks.map((task) => (
+                  <TaskCard key={task.id} task={task} status="review" />
+                ))}
+                {reviewTasks.length === 0 && (
+                  <div className="text-center py-8 text-sm text-muted-foreground">
+                    Nothing to review
                   </div>
                 )}
               </div>
