@@ -1,8 +1,9 @@
 /**
- * localStorage utilities for Command Center data persistence
+ * API-based storage utilities for Command Center data persistence
+ * Replaces localStorage with database API calls
  */
 
-// Data Types
+// Data Types (keep same interfaces for compatibility)
 export interface Project {
   id: string;
   name: string;
@@ -81,345 +82,279 @@ export interface Alert {
   updatedAt: string;
 }
 
-// Storage Keys
-const STORAGE_KEYS = {
-  PROJECTS: 'command-center-projects',
-  SITES: 'command-center-sites',
-  IDEAS: 'command-center-ideas',
-  TASKS: 'command-center-tasks',
-  NOTES: 'command-center-notes',
-  NOW_ITEMS: 'command-center-now-items',
-  ALERTS: 'command-center-alerts',
-} as const;
+// Generic API functions
+async function apiCall(endpoint: string, options: RequestInit = {}) {
+  const response = await fetch(endpoint, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    ...options,
+  })
 
-// Generic localStorage functions
-function getFromStorage<T>(key: string, defaultValue: T[] = []): T[] {
-  if (typeof window === 'undefined') return defaultValue;
-  
-  try {
-    const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : defaultValue;
-  } catch (error) {
-    console.error(`Error reading ${key} from localStorage:`, error);
-    return defaultValue;
+  if (!response.ok) {
+    throw new Error(`API call failed: ${response.statusText}`)
   }
-}
 
-function saveToStorage<T>(key: string, data: T[]): void {
-  if (typeof window === 'undefined') return;
-  
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-  } catch (error) {
-    console.error(`Error saving ${key} to localStorage:`, error);
-  }
+  return response.json()
 }
 
 // CRUD operations for each data type
 export const projectsStorage = {
-  getAll: (): Project[] => getFromStorage<Project>(STORAGE_KEYS.PROJECTS),
-  
-  create: (project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>): Project => {
-    const newProject: Project = {
-      ...project,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    const projects = projectsStorage.getAll();
-    projects.push(newProject);
-    saveToStorage(STORAGE_KEYS.PROJECTS, projects);
-    return newProject;
+  getAll: async (): Promise<Project[]> => {
+    return apiCall('/api/projects')
   },
   
-  update: (id: string, updates: Partial<Omit<Project, 'id' | 'createdAt'>>): Project | null => {
-    const projects = projectsStorage.getAll();
-    const index = projects.findIndex(p => p.id === id);
-    
-    if (index === -1) return null;
-    
-    projects[index] = {
-      ...projects[index],
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
-    
-    saveToStorage(STORAGE_KEYS.PROJECTS, projects);
-    return projects[index];
+  create: async (project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>): Promise<Project> => {
+    return apiCall('/api/projects', {
+      method: 'POST',
+      body: JSON.stringify(project),
+    })
   },
   
-  delete: (id: string): boolean => {
-    const projects = projectsStorage.getAll();
-    const filteredProjects = projects.filter(p => p.id !== id);
-    
-    if (filteredProjects.length === projects.length) return false;
-    
-    saveToStorage(STORAGE_KEYS.PROJECTS, filteredProjects);
-    return true;
+  update: async (id: string, updates: Partial<Omit<Project, 'id' | 'createdAt'>>): Promise<Project | null> => {
+    try {
+      return await apiCall(`/api/projects/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(updates),
+      })
+    } catch (error) {
+      console.error('Error updating project:', error)
+      return null
+    }
+  },
+  
+  delete: async (id: string): Promise<boolean> => {
+    try {
+      await apiCall(`/api/projects/${id}`, {
+        method: 'DELETE',
+      })
+      return true
+    } catch (error) {
+      console.error('Error deleting project:', error)
+      return false
+    }
   },
 };
 
 export const sitesStorage = {
-  getAll: (): Site[] => getFromStorage<Site>(STORAGE_KEYS.SITES),
-  
-  create: (site: Omit<Site, 'id' | 'createdAt' | 'updatedAt'>): Site => {
-    const newSite: Site = {
-      ...site,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    const sites = sitesStorage.getAll();
-    sites.push(newSite);
-    saveToStorage(STORAGE_KEYS.SITES, sites);
-    return newSite;
+  getAll: async (): Promise<Site[]> => {
+    return apiCall('/api/sites')
   },
   
-  update: (id: string, updates: Partial<Omit<Site, 'id' | 'createdAt'>>): Site | null => {
-    const sites = sitesStorage.getAll();
-    const index = sites.findIndex(s => s.id === id);
-    
-    if (index === -1) return null;
-    
-    sites[index] = {
-      ...sites[index],
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
-    
-    saveToStorage(STORAGE_KEYS.SITES, sites);
-    return sites[index];
+  create: async (site: Omit<Site, 'id' | 'createdAt' | 'updatedAt'>): Promise<Site> => {
+    return apiCall('/api/sites', {
+      method: 'POST',
+      body: JSON.stringify(site),
+    })
   },
   
-  delete: (id: string): boolean => {
-    const sites = sitesStorage.getAll();
-    const filteredSites = sites.filter(s => s.id !== id);
-    
-    if (filteredSites.length === sites.length) return false;
-    
-    saveToStorage(STORAGE_KEYS.SITES, filteredSites);
-    return true;
+  update: async (id: string, updates: Partial<Omit<Site, 'id' | 'createdAt'>>): Promise<Site | null> => {
+    try {
+      return await apiCall(`/api/sites/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(updates),
+      })
+    } catch (error) {
+      console.error('Error updating site:', error)
+      return null
+    }
+  },
+  
+  delete: async (id: string): Promise<boolean> => {
+    try {
+      await apiCall(`/api/sites/${id}`, {
+        method: 'DELETE',
+      })
+      return true
+    } catch (error) {
+      console.error('Error deleting site:', error)
+      return false
+    }
   },
 };
 
 export const ideasStorage = {
-  getAll: (): Idea[] => getFromStorage<Idea>(STORAGE_KEYS.IDEAS),
-  
-  create: (idea: Omit<Idea, 'id' | 'createdAt' | 'updatedAt'>): Idea => {
-    const newIdea: Idea = {
-      ...idea,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    const ideas = ideasStorage.getAll();
-    ideas.push(newIdea);
-    saveToStorage(STORAGE_KEYS.IDEAS, ideas);
-    return newIdea;
+  getAll: async (): Promise<Idea[]> => {
+    return apiCall('/api/ideas')
   },
   
-  update: (id: string, updates: Partial<Omit<Idea, 'id' | 'createdAt'>>): Idea | null => {
-    const ideas = ideasStorage.getAll();
-    const index = ideas.findIndex(i => i.id === id);
-    
-    if (index === -1) return null;
-    
-    ideas[index] = {
-      ...ideas[index],
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
-    
-    saveToStorage(STORAGE_KEYS.IDEAS, ideas);
-    return ideas[index];
+  create: async (idea: Omit<Idea, 'id' | 'createdAt' | 'updatedAt'>): Promise<Idea> => {
+    return apiCall('/api/ideas', {
+      method: 'POST',
+      body: JSON.stringify(idea),
+    })
   },
   
-  delete: (id: string): boolean => {
-    const ideas = ideasStorage.getAll();
-    const filteredIdeas = ideas.filter(i => i.id !== id);
-    
-    if (filteredIdeas.length === ideas.length) return false;
-    
-    saveToStorage(STORAGE_KEYS.IDEAS, filteredIdeas);
-    return true;
+  update: async (id: string, updates: Partial<Omit<Idea, 'id' | 'createdAt'>>): Promise<Idea | null> => {
+    try {
+      return await apiCall(`/api/ideas/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(updates),
+      })
+    } catch (error) {
+      console.error('Error updating idea:', error)
+      return null
+    }
+  },
+  
+  delete: async (id: string): Promise<boolean> => {
+    try {
+      await apiCall(`/api/ideas/${id}`, {
+        method: 'DELETE',
+      })
+      return true
+    } catch (error) {
+      console.error('Error deleting idea:', error)
+      return false
+    }
   },
 };
 
 export const tasksStorage = {
-  getAll: (): Task[] => getFromStorage<Task>(STORAGE_KEYS.TASKS),
-  
-  create: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>): Task => {
-    const newTask: Task = {
-      ...task,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    const tasks = tasksStorage.getAll();
-    tasks.push(newTask);
-    saveToStorage(STORAGE_KEYS.TASKS, tasks);
-    return newTask;
+  getAll: async (): Promise<Task[]> => {
+    return apiCall('/api/tasks')
   },
   
-  update: (id: string, updates: Partial<Omit<Task, 'id' | 'createdAt'>>): Task | null => {
-    const tasks = tasksStorage.getAll();
-    const index = tasks.findIndex(t => t.id === id);
-    
-    if (index === -1) return null;
-    
-    tasks[index] = {
-      ...tasks[index],
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
-    
-    saveToStorage(STORAGE_KEYS.TASKS, tasks);
-    return tasks[index];
+  create: async (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>): Promise<Task> => {
+    return apiCall('/api/tasks', {
+      method: 'POST',
+      body: JSON.stringify(task),
+    })
   },
   
-  delete: (id: string): boolean => {
-    const tasks = tasksStorage.getAll();
-    const filteredTasks = tasks.filter(t => t.id !== id);
-    
-    if (filteredTasks.length === tasks.length) return false;
-    
-    saveToStorage(STORAGE_KEYS.TASKS, filteredTasks);
-    return true;
+  update: async (id: string, updates: Partial<Omit<Task, 'id' | 'createdAt'>>): Promise<Task | null> => {
+    try {
+      return await apiCall(`/api/tasks/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(updates),
+      })
+    } catch (error) {
+      console.error('Error updating task:', error)
+      return null
+    }
+  },
+  
+  delete: async (id: string): Promise<boolean> => {
+    try {
+      await apiCall(`/api/tasks/${id}`, {
+        method: 'DELETE',
+      })
+      return true
+    } catch (error) {
+      console.error('Error deleting task:', error)
+      return false
+    }
   },
 };
 
 export const notesStorage = {
-  getAll: (): Note[] => getFromStorage<Note>(STORAGE_KEYS.NOTES),
-  
-  create: (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>): Note => {
-    const newNote: Note = {
-      ...note,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    const notes = notesStorage.getAll();
-    notes.push(newNote);
-    saveToStorage(STORAGE_KEYS.NOTES, notes);
-    return newNote;
+  getAll: async (): Promise<Note[]> => {
+    return apiCall('/api/notes')
   },
   
-  update: (id: string, updates: Partial<Omit<Note, 'id' | 'createdAt'>>): Note | null => {
-    const notes = notesStorage.getAll();
-    const index = notes.findIndex(n => n.id === id);
-    
-    if (index === -1) return null;
-    
-    notes[index] = {
-      ...notes[index],
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
-    
-    saveToStorage(STORAGE_KEYS.NOTES, notes);
-    return notes[index];
+  create: async (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>): Promise<Note> => {
+    return apiCall('/api/notes', {
+      method: 'POST',
+      body: JSON.stringify(note),
+    })
   },
   
-  delete: (id: string): boolean => {
-    const notes = notesStorage.getAll();
-    const filteredNotes = notes.filter(n => n.id !== id);
-    
-    if (filteredNotes.length === notes.length) return false;
-    
-    saveToStorage(STORAGE_KEYS.NOTES, filteredNotes);
-    return true;
+  update: async (id: string, updates: Partial<Omit<Note, 'id' | 'createdAt'>>): Promise<Note | null> => {
+    try {
+      return await apiCall(`/api/notes/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(updates),
+      })
+    } catch (error) {
+      console.error('Error updating note:', error)
+      return null
+    }
+  },
+  
+  delete: async (id: string): Promise<boolean> => {
+    try {
+      await apiCall(`/api/notes/${id}`, {
+        method: 'DELETE',
+      })
+      return true
+    } catch (error) {
+      console.error('Error deleting note:', error)
+      return false
+    }
   },
 };
 
 export const nowItemsStorage = {
-  getAll: (): NowItem[] => getFromStorage<NowItem>(STORAGE_KEYS.NOW_ITEMS),
-  
-  create: (item: Omit<NowItem, 'id' | 'createdAt' | 'updatedAt'>): NowItem => {
-    const newItem: NowItem = {
-      ...item,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    const items = nowItemsStorage.getAll();
-    items.push(newItem);
-    saveToStorage(STORAGE_KEYS.NOW_ITEMS, items);
-    return newItem;
+  getAll: async (): Promise<NowItem[]> => {
+    return apiCall('/api/now-items')
   },
   
-  update: (id: string, updates: Partial<Omit<NowItem, 'id' | 'createdAt'>>): NowItem | null => {
-    const items = nowItemsStorage.getAll();
-    const index = items.findIndex(i => i.id === id);
-    
-    if (index === -1) return null;
-    
-    items[index] = {
-      ...items[index],
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
-    
-    saveToStorage(STORAGE_KEYS.NOW_ITEMS, items);
-    return items[index];
+  create: async (item: Omit<NowItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<NowItem> => {
+    return apiCall('/api/now-items', {
+      method: 'POST',
+      body: JSON.stringify(item),
+    })
   },
   
-  delete: (id: string): boolean => {
-    const items = nowItemsStorage.getAll();
-    const filteredItems = items.filter(i => i.id !== id);
-    
-    if (filteredItems.length === items.length) return false;
-    
-    saveToStorage(STORAGE_KEYS.NOW_ITEMS, filteredItems);
-    return true;
+  update: async (id: string, updates: Partial<Omit<NowItem, 'id' | 'createdAt'>>): Promise<NowItem | null> => {
+    try {
+      return await apiCall(`/api/now-items/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(updates),
+      })
+    } catch (error) {
+      console.error('Error updating now item:', error)
+      return null
+    }
+  },
+  
+  delete: async (id: string): Promise<boolean> => {
+    try {
+      await apiCall(`/api/now-items/${id}`, {
+        method: 'DELETE',
+      })
+      return true
+    } catch (error) {
+      console.error('Error deleting now item:', error)
+      return false
+    }
   },
 };
 
 export const alertsStorage = {
-  getAll: (): Alert[] => getFromStorage<Alert>(STORAGE_KEYS.ALERTS),
-  
-  create: (alert: Omit<Alert, 'id' | 'createdAt' | 'updatedAt'>): Alert => {
-    const newAlert: Alert = {
-      ...alert,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    const alerts = alertsStorage.getAll();
-    alerts.push(newAlert);
-    saveToStorage(STORAGE_KEYS.ALERTS, alerts);
-    return newAlert;
+  getAll: async (): Promise<Alert[]> => {
+    return apiCall('/api/alerts')
   },
   
-  update: (id: string, updates: Partial<Omit<Alert, 'id' | 'createdAt'>>): Alert | null => {
-    const alerts = alertsStorage.getAll();
-    const index = alerts.findIndex(a => a.id === id);
-    
-    if (index === -1) return null;
-    
-    alerts[index] = {
-      ...alerts[index],
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
-    
-    saveToStorage(STORAGE_KEYS.ALERTS, alerts);
-    return alerts[index];
+  create: async (alert: Omit<Alert, 'id' | 'createdAt' | 'updatedAt'>): Promise<Alert> => {
+    return apiCall('/api/alerts', {
+      method: 'POST',
+      body: JSON.stringify(alert),
+    })
   },
   
-  delete: (id: string): boolean => {
-    const alerts = alertsStorage.getAll();
-    const filteredAlerts = alerts.filter(a => a.id !== id);
-    
-    if (filteredAlerts.length === alerts.length) return false;
-    
-    saveToStorage(STORAGE_KEYS.ALERTS, filteredAlerts);
-    return true;
+  update: async (id: string, updates: Partial<Omit<Alert, 'id' | 'createdAt'>>): Promise<Alert | null> => {
+    try {
+      return await apiCall(`/api/alerts/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(updates),
+      })
+    } catch (error) {
+      console.error('Error updating alert:', error)
+      return null
+    }
+  },
+  
+  delete: async (id: string): Promise<boolean> => {
+    try {
+      await apiCall(`/api/alerts/${id}`, {
+        method: 'DELETE',
+      })
+      return true
+    } catch (error) {
+      console.error('Error deleting alert:', error)
+      return false
+    }
   },
 };

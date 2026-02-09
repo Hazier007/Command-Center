@@ -21,11 +21,13 @@ import { ideasStorage, type Idea } from "@/lib/storage"
 
 export default function IdeasPage() {
   const [ideas, setIdeas] = useState<Idea[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [selectedPriority, setSelectedPriority] = useState<string>("all")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingIdea, setEditingIdea] = useState<Idea | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -36,8 +38,20 @@ export default function IdeasPage() {
   })
 
   useEffect(() => {
-    setIdeas(ideasStorage.getAll().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
+    loadIdeas()
   }, [])
+
+  const loadIdeas = async () => {
+    try {
+      setLoading(true)
+      const data = await ideasStorage.getAll()
+      setIdeas(data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
+    } catch (error) {
+      console.error('Failed to load ideas:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filteredIdeas = ideas.filter(idea => {
     const matchesSearch = idea.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -47,29 +61,37 @@ export default function IdeasPage() {
     return matchesSearch && matchesCategory && matchesPriority
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (editingIdea) {
-      ideasStorage.update(editingIdea.id, {
-        title: formData.title,
-        description: formData.description,
-        category: formData.category,
-        priority: formData.priority,
-      })
-    } else {
-      ideasStorage.create({
-        title: formData.title,
-        description: formData.description,
-        category: formData.category,
-        priority: formData.priority,
-      })
-    }
+    try {
+      setSubmitting(true)
+      
+      if (editingIdea) {
+        await ideasStorage.update(editingIdea.id, {
+          title: formData.title,
+          description: formData.description,
+          category: formData.category,
+          priority: formData.priority,
+        })
+      } else {
+        await ideasStorage.create({
+          title: formData.title,
+          description: formData.description,
+          category: formData.category,
+          priority: formData.priority,
+        })
+      }
 
-    setIdeas(ideasStorage.getAll().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
-    setIsDialogOpen(false)
-    setEditingIdea(null)
-    resetForm()
+      await loadIdeas()
+      setIsDialogOpen(false)
+      setEditingIdea(null)
+      resetForm()
+    } catch (error) {
+      console.error('Failed to save idea:', error)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const resetForm = () => {
@@ -92,10 +114,14 @@ export default function IdeasPage() {
     setIsDialogOpen(true)
   }
 
-  const handleDelete = (ideaId: string) => {
+  const handleDelete = async (ideaId: string) => {
     if (confirm("Are you sure you want to delete this idea?")) {
-      ideasStorage.delete(ideaId)
-      setIdeas(ideasStorage.getAll().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
+      try {
+        await ideasStorage.delete(ideaId)
+        await loadIdeas()
+      } catch (error) {
+        console.error('Failed to delete idea:', error)
+      }
     }
   }
 
@@ -129,6 +155,18 @@ export default function IdeasPage() {
 
   const highPriorityIdeas = ideas.filter(i => i.priority === 'high')
   const recentIdeas = ideas.slice(0, 5)
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-orange-50 via-background to-background dark:from-orange-950/25 dark:via-background dark:to-background">
+        <div className="mx-auto max-w-6xl px-4 py-6 md:px-6">
+          <div className="flex justify-center items-center h-64">
+            <div className="text-lg">Loading ideas...</div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 via-background to-background dark:from-orange-950/25 dark:via-background dark:to-background">
@@ -216,8 +254,8 @@ export default function IdeasPage() {
                 </div>
 
                 <div className="flex gap-2 pt-4">
-                  <Button type="submit" className="flex-1">
-                    {editingIdea ? 'Update' : 'Capture'} Idea
+                  <Button type="submit" className="flex-1" disabled={submitting}>
+                    {submitting ? 'Saving...' : (editingIdea ? 'Update' : 'Capture')} Idea
                   </Button>
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                     Cancel
