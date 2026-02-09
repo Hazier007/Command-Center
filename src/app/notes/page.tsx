@@ -33,7 +33,11 @@ export default function NotesPage() {
   })
 
   useEffect(() => {
-    setNotes(notesStorage.getAll().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
+    const load = async () => {
+      const all = await notesStorage.getAll()
+      setNotes(all.sort((a: Note, b: Note) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
+    }
+    load()
   }, [])
 
   const filteredNotes = notes.filter(note => {
@@ -50,24 +54,25 @@ export default function NotesPage() {
     )
   ).sort()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (editingNote) {
-      notesStorage.update(editingNote.id, {
+      await notesStorage.update(editingNote.id, {
         title: formData.title,
         content: formData.content,
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean),
       })
     } else {
-      notesStorage.create({
+      await notesStorage.create({
         title: formData.title,
         content: formData.content,
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean),
       })
     }
 
-    setNotes(notesStorage.getAll().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
+    const all = await notesStorage.getAll()
+    setNotes(all.sort((a: Note, b: Note) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
     setIsDialogOpen(false)
     setEditingNote(null)
     resetForm()
@@ -91,10 +96,11 @@ export default function NotesPage() {
     setIsDialogOpen(true)
   }
 
-  const handleDelete = (noteId: string) => {
+  const handleDelete = async (noteId: string) => {
     if (confirm("Are you sure you want to delete this note?")) {
-      notesStorage.delete(noteId)
-      setNotes(notesStorage.getAll().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
+      await notesStorage.delete(noteId)
+      const all = await notesStorage.getAll()
+      setNotes(all.sort((a: Note, b: Note) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
     }
   }
 

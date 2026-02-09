@@ -36,8 +36,15 @@ export default function TasksPage() {
   })
 
   useEffect(() => {
-    setTasks(tasksStorage.getAll())
-    setProjects(projectsStorage.getAll())
+    const load = async () => {
+      const [tasksData, projectsData] = await Promise.all([
+        tasksStorage.getAll(),
+        projectsStorage.getAll(),
+      ])
+      setTasks(tasksData)
+      setProjects(projectsData)
+    }
+    load()
   }, [])
 
   const filteredTasks = tasks.filter(task =>
@@ -49,11 +56,11 @@ export default function TasksPage() {
   const inProgressTasks = filteredTasks.filter(t => t.status === 'in-progress')
   const doneTasks = filteredTasks.filter(t => t.status === 'done')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (editingTask) {
-      tasksStorage.update(editingTask.id, {
+      await tasksStorage.update(editingTask.id, {
         title: formData.title,
         description: formData.description || undefined,
         status: formData.status,
@@ -62,7 +69,7 @@ export default function TasksPage() {
         dueDate: formData.dueDate || undefined,
       })
     } else {
-      tasksStorage.create({
+      await tasksStorage.create({
         title: formData.title,
         description: formData.description || undefined,
         status: formData.status,
@@ -72,7 +79,8 @@ export default function TasksPage() {
       })
     }
 
-    setTasks(tasksStorage.getAll())
+    const allTasks = await tasksStorage.getAll()
+    setTasks(allTasks)
     setIsDialogOpen(false)
     setEditingTask(null)
     resetForm()
@@ -102,16 +110,18 @@ export default function TasksPage() {
     setIsDialogOpen(true)
   }
 
-  const handleDelete = (taskId: string) => {
+  const handleDelete = async (taskId: string) => {
     if (confirm("Are you sure you want to delete this task?")) {
-      tasksStorage.delete(taskId)
-      setTasks(tasksStorage.getAll())
+      await tasksStorage.delete(taskId)
+      const allTasks = await tasksStorage.getAll()
+      setTasks(allTasks)
     }
   }
 
-  const handleStatusChange = (taskId: string, newStatus: Task['status']) => {
-    tasksStorage.update(taskId, { status: newStatus })
-    setTasks(tasksStorage.getAll())
+  const handleStatusChange = async (taskId: string, newStatus: Task['status']) => {
+    await tasksStorage.update(taskId, { status: newStatus })
+    const allTasks = await tasksStorage.getAll()
+    setTasks(allTasks)
   }
 
   const getPriorityColor = (priority?: Task['priority']) => {

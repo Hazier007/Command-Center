@@ -6,7 +6,7 @@ import { seedData } from "@/lib/seedData"
 export function DataInitializer() {
   useEffect(() => {
     // Initialize seed data on first load
-    seedData()
+    seedData().catch(console.error)
   }, [])
 
   return null // This component doesn't render anything

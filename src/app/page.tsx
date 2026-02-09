@@ -34,28 +34,39 @@ export default function Home() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [todayNote, setTodayNote] = useState<string>("");
+  const [sitesCount, setSitesCount] = useState<number>(0);
 
   useEffect(() => {
-    // Load data from localStorage
-    setNowItems(nowItemsStorage.getAll());
-    setAlerts(alertsStorage.getAll().filter(alert => !alert.resolved));
-    setProjects(projectsStorage.getAll());
-    
-    // Today's note could come from notes or be a simple summary
-    const today = new Date().toLocaleDateString();
-    setTodayNote(`• Dashboard deployed with functional data\n• All seed data loaded successfully\n• Ready for mobile-first usage\n\nLast updated: ${today}`);
+    const load = async () => {
+      const [nowData, alertsData, projectsData, sitesData] = await Promise.all([
+        nowItemsStorage.getAll(),
+        alertsStorage.getAll(),
+        projectsStorage.getAll(),
+        sitesStorage.getAll(),
+      ]);
+      setNowItems(nowData);
+      setAlerts(alertsData.filter((alert: Alert) => !alert.resolved));
+      setProjects(projectsData);
+      setSitesCount(sitesData.length);
+      
+      const today = new Date().toLocaleDateString();
+      setTodayNote(`• Dashboard deployed with functional data\n• All seed data loaded successfully\n• Ready for mobile-first usage\n\nLast updated: ${today}`);
+    };
+    load();
   }, []);
 
-  const handleResolveAlert = (alertId: string) => {
-    alertsStorage.update(alertId, { resolved: true });
-    setAlerts(alertsStorage.getAll().filter(alert => !alert.resolved));
+  const handleResolveAlert = async (alertId: string) => {
+    await alertsStorage.update(alertId, { resolved: true });
+    const allAlerts = await alertsStorage.getAll();
+    setAlerts(allAlerts.filter((alert: Alert) => !alert.resolved));
   };
 
-  const handleSnoozeAlert = (alertId: string) => {
+  const handleSnoozeAlert = async (alertId: string) => {
     const snoozedUntil = new Date();
     snoozedUntil.setDate(snoozedUntil.getDate() + 7);
-    alertsStorage.update(alertId, { snoozedUntil: snoozedUntil.toISOString() });
-    setAlerts(alertsStorage.getAll().filter(alert => !alert.resolved && (!alert.snoozedUntil || new Date(alert.snoozedUntil) <= new Date())));
+    await alertsStorage.update(alertId, { snoozedUntil: snoozedUntil.toISOString() });
+    const allAlerts = await alertsStorage.getAll();
+    setAlerts(allAlerts.filter((alert: Alert) => !alert.resolved && (!alert.snoozedUntil || new Date(alert.snoozedUntil) <= new Date())));
   };
 
   const activeProjects = projects.filter(p => p.status === 'active').length;
@@ -209,7 +220,7 @@ export default function Home() {
                   <div className="text-sm font-medium">Quick links</div>
                   <div className="mt-2 flex flex-col gap-2">
                     <Button asChild variant="outline" className="justify-start" size="sm">
-                      <Link href="/sites">Sites ({sitesStorage.getAll().length})</Link>
+                      <Link href="/sites">Sites ({sitesCount})</Link>
                     </Button>
                     <Button asChild variant="outline" className="justify-start" size="sm">
                       <Link href="/projects">Projects ({projects.length})</Link>

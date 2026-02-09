@@ -15,7 +15,7 @@ let prisma: PrismaClient
 if (process.env.NODE_ENV === 'production') {
   // Use Neon adapter for production (Vercel)
   const pool = new Pool({ connectionString: process.env.DATABASE_URL })
-  const adapter = new PrismaNeon(pool)
+  const adapter = new PrismaNeon(pool as any)
   
   prisma = new PrismaClient({ adapter })
 } else {

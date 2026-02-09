@@ -40,8 +40,15 @@ export default function SitesPage() {
   })
 
   useEffect(() => {
-    setSites(sitesStorage.getAll())
-    setProjects(projectsStorage.getAll())
+    const load = async () => {
+      const [sitesData, projectsData] = await Promise.all([
+        sitesStorage.getAll(),
+        projectsStorage.getAll(),
+      ])
+      setSites(sitesData)
+      setProjects(projectsData)
+    }
+    load()
   }, [])
 
   const filteredSites = sites.filter(site => {
@@ -51,11 +58,11 @@ export default function SitesPage() {
     return matchesSearch && matchesStatus
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (editingSite) {
-      sitesStorage.update(editingSite.id, {
+      await sitesStorage.update(editingSite.id, {
         domain: formData.domain,
         status: formData.status,
         projectId: formData.projectId || undefined,
@@ -66,7 +73,7 @@ export default function SitesPage() {
         notes: formData.notes || undefined,
       })
     } else {
-      sitesStorage.create({
+      await sitesStorage.create({
         domain: formData.domain,
         status: formData.status,
         projectId: formData.projectId || undefined,
@@ -78,7 +85,8 @@ export default function SitesPage() {
       })
     }
 
-    setSites(sitesStorage.getAll())
+    const allSites = await sitesStorage.getAll()
+    setSites(allSites)
     setIsDialogOpen(false)
     setEditingSite(null)
     resetForm()
@@ -112,10 +120,11 @@ export default function SitesPage() {
     setIsDialogOpen(true)
   }
 
-  const handleDelete = (siteId: string) => {
+  const handleDelete = async (siteId: string) => {
     if (confirm("Are you sure you want to delete this site?")) {
-      sitesStorage.delete(siteId)
-      setSites(sitesStorage.getAll())
+      await sitesStorage.delete(siteId)
+      const allSites = await sitesStorage.getAll()
+      setSites(allSites)
     }
   }
 
