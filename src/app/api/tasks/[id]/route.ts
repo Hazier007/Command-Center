@@ -18,6 +18,7 @@ export async function PATCH(
         status: data.status,
         projectId: data.projectId,
         priority: data.priority,
+        assignee: data.assignee,
         dueDate: data.dueDate ? new Date(data.dueDate) : null,
       },
       include: {

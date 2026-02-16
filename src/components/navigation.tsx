@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Menu } from "lucide-react"
+import { Menu, Users } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -21,6 +21,7 @@ const navItems = [
   { href: "/sites", label: "Sites" },
   { href: "/ideas", label: "Ideas" },
   { href: "/tasks", label: "Tasks" },
+  { href: "/team", label: "Team", icon: Users },
   { href: "/notes", label: "Notes" },
 ]
 
@@ -46,9 +47,10 @@ export function Navigation() {
                   size="sm"
                   className={cn(
                     "text-sm",
-                    pathname === item.href && "bg-orange-100 text-orange-900 dark:bg-orange-900/20 dark:text-orange-200"
+                    pathname === item.href && "bg-orange-500 text-white hover:bg-orange-600 dark:bg-orange-600 dark:text-white"
                   )}
                 >
+                  {item.icon && <item.icon className="h-4 w-4 mr-1" />}
                   {item.label}
                 </Button>
               </Link>
@@ -75,9 +77,10 @@ export function Navigation() {
                         variant={pathname === item.href ? "default" : "ghost"}
                         className={cn(
                           "w-full justify-start",
-                          pathname === item.href && "bg-orange-100 text-orange-900 dark:bg-orange-900/20 dark:text-orange-200"
+                          pathname === item.href && "bg-orange-500 text-white hover:bg-orange-600 dark:bg-orange-600 dark:text-white"
                         )}
                       >
+                        {item.icon && <item.icon className="h-4 w-4 mr-2" />}
                         {item.label}
                       </Button>
                     </Link>

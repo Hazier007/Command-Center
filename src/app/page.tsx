@@ -75,7 +75,7 @@ export default function Home() {
   return (
     <>
       <DataInitializer />
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 via-background to-background dark:from-orange-950/25 dark:via-background dark:to-background">
+      <div className="min-h-screen bg-gradient-to-b from-orange-950/10 via-background to-background">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 md:px-6 md:py-10">
           <header className="flex flex-col gap-2">
             <div className="flex flex-wrap items-center justify-between gap-3">

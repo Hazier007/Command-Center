@@ -65,6 +65,7 @@ model Task {
   status      String    // 'todo' | 'in-progress' | 'done'
   projectId   String?
   priority    String?   // 'low' | 'medium' | 'high'
+  assignee    String?   // 'bart' | 'lisa' | 'jc' | 'wout'
   dueDate     DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

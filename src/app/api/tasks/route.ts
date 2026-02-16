@@ -33,6 +33,7 @@ export async function POST(request: Request) {
         status: data.status,
         projectId: data.projectId,
         priority: data.priority,
+        assignee: data.assignee,
         dueDate: data.dueDate ? new Date(data.dueDate) : null,
       },
       include: {
