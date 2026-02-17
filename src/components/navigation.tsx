@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Menu, Users } from "lucide-react"
+import { Menu, Users, DollarSign } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -23,6 +23,7 @@ const navItems = [
   { href: "/tasks", label: "Tasks" },
   { href: "/team", label: "Team", icon: Users },
   { href: "/notes", label: "Notes" },
+  { href: "/adsense", label: "AdSense", icon: DollarSign },
 ]
 
 export function Navigation() {
