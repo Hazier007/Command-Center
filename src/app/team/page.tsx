@@ -97,7 +97,7 @@ export default function TeamPage() {
     }
   };
 
-  const updateTaskStatus = async (taskId: string, newStatus: string) => {
+  const updateTaskStatus = async (taskId: string, newStatus: Task['status']) => {
     try {
       const updatedTask = await tasksStorage.update(taskId, { status: newStatus });
       if (updatedTask) {
