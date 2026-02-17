@@ -18,8 +18,8 @@ import {
 export async function seedData() {
   // Check if already seeded
   const existing = await projectsStorage.getAll();
-  if (existing.length > 0) {
-    return; // Already has data, don't seed again
+  if (existing.length > 3) {
+    return; // Already seeded with full data
   }
 
   // Create Projects
