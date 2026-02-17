@@ -29,8 +29,8 @@ export async function GET(request: Request) {
         
         for (const account of accounts) {
           if (account.name) {
-            const propertiesRes = await analyticsadmin.accounts.properties.list({
-              parent: account.name,
+            const propertiesRes = await analyticsadmin.properties.list({
+              filter: `parent:${account.name}`,
             });
             
             if (propertiesRes.data.properties) {
