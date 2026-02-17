@@ -111,7 +111,7 @@ export default function ProjectsPage() {
   }
 
   const handleDelete = async (projectId: string) => {
-    if (confirm("Are you sure you want to delete this project?")) {
+    if (confirm("Weet je zeker dat je dit project wilt verwijderen?")) {
       try {
         await projectsStorage.delete(projectId)
         await loadProjects()
@@ -162,37 +162,37 @@ export default function ProjectsPage() {
       <div className="mx-auto max-w-6xl px-4 py-6 md:px-6">
         <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Projecten</h1>
             <p className="text-muted-foreground">
-              €{totalRevenue.toLocaleString()}/month · {activeProjects.length} active · {projects.length} total
+              €{totalRevenue.toLocaleString()}/maand · {activeProjects.length} actief · {projects.length} totaal
             </p>
           </div>
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => {
+              <Button className="bg-[#F5911E] hover:bg-[#e07d0a] text-white" onClick={() => {
                 setEditingProject(null)
                 setFormData({ name: "", status: "planned", category: "tool", description: "", revenue: "" })
               }}>
                 <Plus className="mr-2 h-4 w-4" />
-                Add Project
+                Project toevoegen
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>{editingProject ? 'Edit Project' : 'Create New Project'}</DialogTitle>
+                <DialogTitle>{editingProject ? 'Project bewerken' : 'Nieuw project'}</DialogTitle>
                 <DialogDescription>
-                  {editingProject ? 'Update project details' : 'Add a new project to track'}
+                  {editingProject ? 'Pas de projectgegevens aan' : 'Voeg een nieuw project toe'}
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label htmlFor="name" className="text-sm font-medium">Name</label>
+                  <label htmlFor="name" className="text-sm font-medium">Naam</label>
                   <Input
                     id="name"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Project name"
+                    placeholder="Projectnaam"
                     required
                   />
                 </div>
@@ -228,7 +228,7 @@ export default function ProjectsPage() {
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="revenue" className="text-sm font-medium">Monthly Revenue (€)</label>
+                  <label htmlFor="revenue" className="text-sm font-medium">Maandelijkse omzet (€)</label>
                   <Input
                     id="revenue"
                     type="number"
@@ -240,20 +240,20 @@ export default function ProjectsPage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="description" className="text-sm font-medium">Description</label>
+                  <label htmlFor="description" className="text-sm font-medium">Beschrijving</label>
                   <Input
                     id="description"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Brief description"
+                    placeholder="Korte beschrijving"
                   />
                 </div>
                 <div className="flex gap-2 pt-4">
-                  <Button type="submit" className="flex-1" disabled={submitting}>
-                    {submitting ? 'Saving...' : (editingProject ? 'Update' : 'Create')} Project
+                  <Button type="submit" className="flex-1 bg-[#F5911E] hover:bg-[#e07d0a] text-white" disabled={submitting}>
+                    {submitting ? 'Opslaan...' : (editingProject ? 'Bijwerken' : 'Toevoegen')}
                   </Button>
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                    Cancel
+                    Annuleren
                   </Button>
                 </div>
               </form>
@@ -264,7 +264,7 @@ export default function ProjectsPage() {
         <div className="mt-6 space-y-4">
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
             <Input
-              placeholder="Search projects..."
+              placeholder="Zoek projecten..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="md:max-w-sm"
@@ -321,12 +321,12 @@ export default function ProjectsPage() {
                     {project.revenue && (
                       <div className="flex items-center gap-1 text-sm">
                         <DollarSign className="h-4 w-4 text-green-600" />
-                        <span className="font-medium">€{project.revenue.toLocaleString()}/month</span>
+                        <span className="font-medium">€{project.revenue.toLocaleString()}/maand</span>
                       </div>
                     )}
                     
                     <div className="text-xs text-muted-foreground">
-                      Created {new Date(project.createdAt).toLocaleDateString()}
+                      Aangemaakt {new Date(project.createdAt).toLocaleDateString('nl-BE')}
                     </div>
                   </div>
                 </CardContent>
@@ -336,11 +336,11 @@ export default function ProjectsPage() {
 
           {filteredProjects.length === 0 && !loading && (
             <div className="text-center py-12">
-              <h3 className="text-lg font-medium text-muted-foreground">No projects found</h3>
+              <h3 className="text-lg font-medium text-muted-foreground">Geen projecten gevonden</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {searchTerm || selectedCategory !== "all" 
-                  ? "Try adjusting your search or filter"
-                  : "Create your first project to get started"
+                  ? "Pas je zoekopdracht of filter aan"
+                  : "Voeg je eerste project toe om te beginnen"
                 }
               </p>
             </div>

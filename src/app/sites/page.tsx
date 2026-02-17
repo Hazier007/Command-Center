@@ -121,7 +121,7 @@ export default function SitesPage() {
   }
 
   const handleDelete = async (siteId: string) => {
-    if (confirm("Are you sure you want to delete this site?")) {
+    if (confirm("Weet je zeker dat je deze site wilt verwijderen?")) {
       await sitesStorage.delete(siteId)
       const allSites = await sitesStorage.getAll()
       setSites(allSites)
@@ -153,25 +153,25 @@ export default function SitesPage() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Sites</h1>
             <p className="text-muted-foreground">
-              €{totalRevenue.toLocaleString()}/month · {liveSites.length} live · {sites.length} total
+              €{totalRevenue.toLocaleString()}/maand · {liveSites.length} live · {sites.length} totaal
             </p>
           </div>
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => {
+              <Button className="bg-[#F5911E] hover:bg-[#e07d0a] text-white" onClick={() => {
                 setEditingSite(null)
                 resetForm()
               }}>
                 <Plus className="mr-2 h-4 w-4" />
-                Add Site
+                Site toevoegen
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle>{editingSite ? 'Edit Site' : 'Create New Site'}</DialogTitle>
+                <DialogTitle>{editingSite ? 'Site bewerken' : 'Nieuwe site'}</DialogTitle>
                 <DialogDescription>
-                  {editingSite ? 'Update site details' : 'Add a new site to track'}
+                  {editingSite ? 'Pas de sitegegevens aan' : 'Voeg een nieuwe site toe'}
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -224,12 +224,12 @@ export default function SitesPage() {
                     onChange={(e) => setFormData({ ...formData, techStack: e.target.value })}
                     placeholder="Next.js, TypeScript, etc."
                   />
-                  <p className="text-xs text-muted-foreground mt-1">Separate with commas</p>
+                  <p className="text-xs text-muted-foreground mt-1">Scheid met komma&apos;s</p>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label htmlFor="revenue" className="text-sm font-medium">Revenue €</label>
+                    <label htmlFor="revenue" className="text-sm font-medium">Omzet €</label>
                     <Input
                       id="revenue"
                       type="number"
@@ -265,21 +265,21 @@ export default function SitesPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="notes" className="text-sm font-medium">Notes</label>
+                  <label htmlFor="notes" className="text-sm font-medium">Notities</label>
                   <Input
                     id="notes"
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    placeholder="Additional notes"
+                    placeholder="Extra notities"
                   />
                 </div>
 
                 <div className="flex gap-2 pt-4">
-                  <Button type="submit" className="flex-1">
-                    {editingSite ? 'Update' : 'Create'} Site
+                  <Button type="submit" className="flex-1 bg-[#F5911E] hover:bg-[#e07d0a] text-white">
+                    {editingSite ? 'Bijwerken' : 'Toevoegen'}
                   </Button>
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                    Cancel
+                    Annuleren
                   </Button>
                 </div>
               </form>
@@ -290,7 +290,7 @@ export default function SitesPage() {
         <div className="mt-6 space-y-4">
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
             <Input
-              placeholder="Search sites..."
+              placeholder="Zoek sites..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="md:max-w-sm"
@@ -387,7 +387,7 @@ export default function SitesPage() {
                     )}
                     
                     <div className="text-xs text-muted-foreground">
-                      Added {new Date(site.createdAt).toLocaleDateString()}
+                      Toegevoegd {new Date(site.createdAt).toLocaleDateString('nl-BE')}
                     </div>
                   </div>
                 </CardContent>
@@ -397,11 +397,11 @@ export default function SitesPage() {
 
           {filteredSites.length === 0 && (
             <div className="text-center py-12">
-              <h3 className="text-lg font-medium text-muted-foreground">No sites found</h3>
+              <h3 className="text-lg font-medium text-muted-foreground">Geen sites gevonden</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {searchTerm || selectedStatus !== "all" 
-                  ? "Try adjusting your search or filter"
-                  : "Add your first site to get started"
+                  ? "Pas je zoekopdracht of filter aan"
+                  : "Voeg je eerste site toe om te beginnen"
                 }
               </p>
             </div>

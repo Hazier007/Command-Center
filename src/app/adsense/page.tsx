@@ -38,7 +38,8 @@ export default function AdSensePage() {
   const rejected = adsenseSites.filter((s) => s.status === "rejected").length
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 via-background to-background dark:from-orange-950/25 dark:via-background dark:to-background">
+      <div className="mx-auto max-w-6xl px-4 py-6 md:px-6 space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">AdSense Sites</h1>
@@ -173,6 +174,7 @@ export default function AdSensePage() {
           </Table>
         </CardContent>
       </Card>
+      </div>
     </div>
   )
 }

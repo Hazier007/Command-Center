@@ -173,49 +173,49 @@ export default function IdeasPage() {
       <div className="mx-auto max-w-6xl px-4 py-6 md:px-6">
         <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Ideas</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Ideeën</h1>
             <p className="text-muted-foreground">
-              {ideas.length} total ideas · {highPriorityIdeas.length} high priority
+              {ideas.length} totaal · {highPriorityIdeas.length} hoge prioriteit
             </p>
           </div>
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => {
+              <Button className="bg-[#F5911E] hover:bg-[#e07d0a] text-white" onClick={() => {
                 setEditingIdea(null)
                 resetForm()
               }}>
                 <Plus className="mr-2 h-4 w-4" />
-                Capture Idea
+                Idee toevoegen
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>{editingIdea ? 'Edit Idea' : 'Capture New Idea'}</DialogTitle>
+                <DialogTitle>{editingIdea ? 'Idee bewerken' : 'Nieuw idee'}</DialogTitle>
                 <DialogDescription>
-                  {editingIdea ? 'Update idea details' : 'Quickly capture your idea for later development'}
+                  {editingIdea ? 'Pas de details aan' : 'Leg snel je idee vast voor later'}
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label htmlFor="title" className="text-sm font-medium">Title</label>
+                  <label htmlFor="title" className="text-sm font-medium">Titel</label>
                   <Input
                     id="title"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="Idea title"
+                    placeholder="Titel van je idee"
                     required
                     autoFocus
                   />
                 </div>
                 
                 <div>
-                  <label htmlFor="description" className="text-sm font-medium">Description</label>
+                  <label htmlFor="description" className="text-sm font-medium">Beschrijving</label>
                   <Textarea
                     id="description"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Describe your idea in more detail..."
+                    placeholder="Beschrijf je idee in meer detail..."
                     className="min-h-[100px]"
                     required
                   />
@@ -223,7 +223,7 @@ export default function IdeasPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="category" className="text-sm font-medium">Category</label>
+                    <label htmlFor="category" className="text-sm font-medium">Categorie</label>
                     <select
                       id="category"
                       value={formData.category}
@@ -239,16 +239,16 @@ export default function IdeasPage() {
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="priority" className="text-sm font-medium">Priority</label>
+                    <label htmlFor="priority" className="text-sm font-medium">Prioriteit</label>
                     <select
                       id="priority"
                       value={formData.priority}
                       onChange={(e) => setFormData({ ...formData, priority: e.target.value as Idea['priority'] })}
                       className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     >
-                      <option value="low">Low</option>
+                      <option value="low">Laag</option>
                       <option value="medium">Medium</option>
-                      <option value="high">High</option>
+                      <option value="high">Hoog</option>
                     </select>
                   </div>
                 </div>
