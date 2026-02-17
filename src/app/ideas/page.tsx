@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Edit, Trash2, Lightbulb, Star } from "lucide-react"
+import { Plus, Edit, Trash2, Lightbulb, Star, ArrowRight, CheckCircle } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -17,7 +17,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { ideasStorage, type Idea } from "@/lib/storage"
+import { ideasStorage, tasksStorage, type Idea } from "@/lib/storage"
+
+const assigneeOptions = [
+  { value: 'bart', label: 'Bart 👑' },
+  { value: 'lisa', label: 'Lisa 📋' },
+  { value: 'jc', label: 'JC 🥊' },
+  { value: 'wout', label: 'Wout 🔭' },
+]
 
 export default function IdeasPage() {
   const [ideas, setIdeas] = useState<Idea[]>([])
@@ -35,6 +42,7 @@ export default function IdeasPage() {
     description: "",
     category: "tool" as Idea['category'],
     priority: "medium" as Idea['priority'],
+    assignee: "",  // Local field, not stored in DB
   })
 
   useEffect(() => {
@@ -100,6 +108,7 @@ export default function IdeasPage() {
       description: "",
       category: "tool",
       priority: "medium",
+      assignee: "",
     })
   }
 
@@ -110,6 +119,7 @@ export default function IdeasPage() {
       description: idea.description,
       category: idea.category,
       priority: idea.priority,
+      assignee: "", // Reset assignee as it's not stored
     })
     setIsDialogOpen(true)
   }
@@ -122,6 +132,30 @@ export default function IdeasPage() {
       } catch (error) {
         console.error('Failed to delete idea:', error)
       }
+    }
+  }
+
+  const convertToTask = async (idea: Idea, assignee?: string) => {
+    try {
+      // Create task from idea
+      await tasksStorage.create({
+        title: idea.title,
+        description: idea.description,
+        priority: idea.priority,
+        status: 'todo',
+        assignee: assignee || undefined,
+      })
+
+      // Optionally mark idea as converted or delete it
+      if (confirm("Idee omgezet naar taak! Wil je het idee verwijderen?")) {
+        await ideasStorage.delete(idea.id)
+        await loadIdeas()
+      }
+
+      alert("✅ Idee succesvol omgezet naar taak!")
+    } catch (error) {
+      console.error('Failed to convert idea to task:', error)
+      alert("❌ Fout bij omzetten naar taak")
     }
   }
 
@@ -221,7 +255,7 @@ export default function IdeasPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label htmlFor="category" className="text-sm font-medium">Categorie</label>
                     <select
@@ -249,6 +283,20 @@ export default function IdeasPage() {
                       <option value="low">Laag</option>
                       <option value="medium">Medium</option>
                       <option value="high">Hoog</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="assignee" className="text-sm font-medium">Toewijzen aan</label>
+                    <select
+                      id="assignee"
+                      value={formData.assignee}
+                      onChange={(e) => setFormData({ ...formData, assignee: e.target.value })}
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    >
+                      <option value="">Niet toegewezen</option>
+                      {assigneeOptions.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -368,6 +416,15 @@ export default function IdeasPage() {
                       </div>
                     </div>
                     <div className="flex gap-1 flex-shrink-0">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => convertToTask(idea, formData.assignee)}
+                        className="text-green-600 hover:bg-green-100"
+                        title="Omzetten naar taak"
+                      >
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
                       <Button variant="ghost" size="sm" onClick={() => handleEdit(idea)}>
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -379,9 +436,21 @@ export default function IdeasPage() {
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="space-y-3">
-                    <Badge className={getPriorityColor(idea.priority)}>
-                      {idea.priority === 'high' ? 'Hoog' : idea.priority === 'medium' ? 'Medium' : 'Laag'}
-                    </Badge>
+                    <div className="flex items-center justify-between">
+                      <Badge className={getPriorityColor(idea.priority)}>
+                        {idea.priority === 'high' ? 'Hoog' : idea.priority === 'medium' ? 'Medium' : 'Laag'}
+                      </Badge>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => convertToTask(idea)}
+                        className="text-green-600 border-green-300 hover:bg-green-50"
+                        title="Omzetten naar taak"
+                      >
+                        <ArrowRight className="h-3 w-3 mr-1" />
+                        Naar taak
+                      </Button>
+                    </div>
                     
                     <p className="text-sm text-muted-foreground line-clamp-3">
                       {idea.description}

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Edit, Trash2, Calendar, Flag, User } from "lucide-react"
+import { Plus, Edit, Trash2, Calendar, Flag, User, Users } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -18,6 +18,27 @@ import {
 } from "@/components/ui/dialog"
 import { tasksStorage, projectsStorage, type Task, type Project } from "@/lib/storage"
 
+const assigneeOptions = [
+  { value: 'bart', label: 'Bart 👑' },
+  { value: 'lisa', label: 'Lisa 📋' },
+  { value: 'jc', label: 'JC 🥊' },
+  { value: 'wout', label: 'Wout 🔭' },
+]
+
+const assigneeEmojis = {
+  bart: '👑',
+  lisa: '📋',
+  jc: '🥊',
+  wout: '🔭'
+}
+
+const assigneeNames = {
+  bart: 'Bart',
+  lisa: 'Lisa',
+  jc: 'JC',
+  wout: 'Wout'
+}
+
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [projects, setProjects] = useState<Project[]>([])
@@ -32,6 +53,7 @@ export default function TasksPage() {
     status: "todo" as Task['status'],
     projectId: "",
     priority: "medium" as Task['priority'],
+    assignee: "",
     dueDate: "",
   })
 
@@ -67,6 +89,7 @@ export default function TasksPage() {
         status: formData.status,
         projectId: formData.projectId || undefined,
         priority: formData.priority || undefined,
+        assignee: formData.assignee || undefined,
         dueDate: formData.dueDate || undefined,
       })
     } else {
@@ -76,6 +99,7 @@ export default function TasksPage() {
         status: formData.status,
         projectId: formData.projectId || undefined,
         priority: formData.priority || undefined,
+        assignee: formData.assignee || undefined,
         dueDate: formData.dueDate || undefined,
       })
     }
@@ -94,6 +118,7 @@ export default function TasksPage() {
       status: "todo",
       projectId: "",
       priority: "medium",
+      assignee: "",
       dueDate: "",
     })
   }
@@ -106,6 +131,7 @@ export default function TasksPage() {
       status: task.status,
       projectId: task.projectId || "",
       priority: task.priority || "medium",
+      assignee: task.assignee || "",
       dueDate: task.dueDate || "",
     })
     setIsDialogOpen(true)
@@ -180,6 +206,12 @@ export default function TasksPage() {
               <Badge className={getPriorityColor(task.priority)}>
                 <Flag className="h-2 w-2 mr-1" />
                 {task.priority}
+              </Badge>
+            )}
+            {task.assignee && (
+              <Badge variant="outline" className="text-xs">
+                <Users className="h-2 w-2 mr-1" />
+                {assigneeEmojis[task.assignee as keyof typeof assigneeEmojis]} {assigneeNames[task.assignee as keyof typeof assigneeNames]}
               </Badge>
             )}
             {task.dueDate && (
@@ -328,7 +360,7 @@ export default function TasksPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
                     <div>
                       <label htmlFor="projectId" className="text-sm font-medium">Project</label>
                       <select
@@ -340,6 +372,20 @@ export default function TasksPage() {
                         <option value="">No project</option>
                         {projects.map((project) => (
                           <option key={project.id} value={project.id}>{project.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="assignee" className="text-sm font-medium">Toewijzen aan</label>
+                      <select
+                        id="assignee"
+                        value={formData.assignee}
+                        onChange={(e) => setFormData({ ...formData, assignee: e.target.value })}
+                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      >
+                        <option value="">Niet toegewezen</option>
+                        {assigneeOptions.map((option) => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
                         ))}
                       </select>
                     </div>
