@@ -115,7 +115,7 @@ export default function IdeasPage() {
   }
 
   const handleDelete = async (ideaId: string) => {
-    if (confirm("Are you sure you want to delete this idea?")) {
+    if (confirm("Weet je zeker dat je dit idee wilt verwijderen?")) {
       try {
         await ideasStorage.delete(ideaId)
         await loadIdeas()
@@ -254,11 +254,11 @@ export default function IdeasPage() {
                 </div>
 
                 <div className="flex gap-2 pt-4">
-                  <Button type="submit" className="flex-1" disabled={submitting}>
-                    {submitting ? 'Saving...' : (editingIdea ? 'Update' : 'Capture')} Idea
+                  <Button type="submit" className="flex-1 bg-[#F5911E] hover:bg-[#e07d0a] text-white" disabled={submitting}>
+                    {submitting ? 'Opslaan...' : (editingIdea ? 'Bijwerken' : 'Toevoegen')}
                   </Button>
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                    Cancel
+                    Annuleren
                   </Button>
                 </div>
               </form>
@@ -269,7 +269,7 @@ export default function IdeasPage() {
         <div className="mt-6 space-y-4">
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
             <Input
-              placeholder="Search ideas..."
+              placeholder="Zoek ideeën..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="md:max-w-sm"
@@ -303,12 +303,12 @@ export default function IdeasPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Star className="h-5 w-5 text-red-600" />
-                  High Priority
+                  Hoge Prioriteit
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{highPriorityIdeas.length}</div>
-                <p className="text-sm text-muted-foreground">Ideas needing attention</p>
+                <p className="text-sm text-muted-foreground">Ideeën die aandacht nodig hebben</p>
               </CardContent>
             </Card>
             
@@ -316,12 +316,12 @@ export default function IdeasPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Lightbulb className="h-5 w-5 text-orange-600" />
-                  Recent Ideas
+                  Recente Ideeën
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{recentIdeas.length}</div>
-                <p className="text-sm text-muted-foreground">Added this week</p>
+                <p className="text-sm text-muted-foreground">Deze week toegevoegd</p>
               </CardContent>
             </Card>
             
@@ -329,7 +329,7 @@ export default function IdeasPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Plus className="h-5 w-5 text-blue-600" />
-                  Quick Capture
+                  Snel vastleggen
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -342,7 +342,7 @@ export default function IdeasPage() {
                     setIsDialogOpen(true)
                   }}
                 >
-                  New Idea
+                  Nieuw idee
                 </Button>
               </CardContent>
             </Card>
@@ -380,7 +380,7 @@ export default function IdeasPage() {
                 <CardContent className="pt-0">
                   <div className="space-y-3">
                     <Badge className={getPriorityColor(idea.priority)}>
-                      {idea.priority} priority
+                      {idea.priority === 'high' ? 'Hoog' : idea.priority === 'medium' ? 'Medium' : 'Laag'}
                     </Badge>
                     
                     <p className="text-sm text-muted-foreground line-clamp-3">
@@ -399,11 +399,11 @@ export default function IdeasPage() {
           {filteredIdeas.length === 0 && (
             <div className="text-center py-12">
               <Lightbulb className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium text-muted-foreground">No ideas found</h3>
+              <h3 className="text-lg font-medium text-muted-foreground">Geen ideeën gevonden</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {searchTerm || selectedCategory !== "all" || selectedPriority !== "all"
-                  ? "Try adjusting your search or filters"
-                  : "Capture your first idea to get started"
+                  ? "Pas je zoekopdracht of filters aan"
+                  : "Voeg je eerste idee toe om te beginnen"
                 }
               </p>
               {!searchTerm && selectedCategory === "all" && selectedPriority === "all" && (
@@ -416,7 +416,7 @@ export default function IdeasPage() {
                   }}
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  Capture Your First Idea
+                  Voeg je eerste idee toe
                 </Button>
               )}
             </div>
