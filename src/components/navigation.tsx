@@ -6,7 +6,7 @@ import { useState, useRef, useEffect } from "react"
 import {
   Menu, Users, DollarSign, Bell, Wallet, FileText, BarChart3, Brain,
   LayoutDashboard, Globe, Lightbulb, CheckSquare, FolderOpen, StickyNote,
-  ChevronDown, Zap
+  ChevronDown, Zap, Activity
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -25,6 +25,7 @@ const navGroups = [
     label: "Overzicht",
     items: [
       { href: "/", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/activity", label: "Activiteit", icon: Activity },
       { href: "/alerts", label: "Alerts", icon: Bell },
     ],
   },
