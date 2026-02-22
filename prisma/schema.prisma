@@ -22,6 +22,7 @@ model Project {
   sites    Site[]
   tasks    Task[]
   nowItems NowItem[]
+  content  Content[]
 
   @@map("projects")
 }
@@ -126,4 +127,24 @@ model Cost {
   updatedAt DateTime @updatedAt
 
   @@map("costs")
+}
+
+model Content {
+  id         String   @id @default(cuid())
+  title      String
+  body       String   // the actual content (markdown)
+  type       String   // 'article' | 'product-review' | 'buyers-guide' | 'page' | 'other'
+  status     String   // 'draft' | 'review' | 'approved' | 'rejected' | 'live'
+  author     String   // 'wout' | 'copycat' | 'lisa' | 'jc' | 'bart'
+  targetSite String?  // e.g. 'preppedia.com', 'btw-calculator.be'
+  targetPath String?  // e.g. '/guide/best-water-filters'
+  projectId  String?
+  feedback   String?  // Bart's review notes
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@map("content")
 }
