@@ -34,6 +34,7 @@ export default function ProjectsPage() {
   const [formData, setFormData] = useState({
     name: "",
     status: "planned" as Project['status'],
+    phase: "idea" as Project['phase'],
     category: "tool" as Project['category'],
     description: "",
     revenue: "",
@@ -77,6 +78,7 @@ export default function ProjectsPage() {
         await projectsStorage.update(editingProject.id, {
           name: formData.name,
           status: formData.status,
+          phase: formData.phase,
           category: formData.category,
           description: formData.description || undefined,
           revenue: formData.revenue ? parseFloat(formData.revenue) : undefined,
@@ -85,6 +87,7 @@ export default function ProjectsPage() {
         await projectsStorage.create({
           name: formData.name,
           status: formData.status,
+          phase: formData.phase,
           category: formData.category,
           description: formData.description || undefined,
           revenue: formData.revenue ? parseFloat(formData.revenue) : undefined,
@@ -97,7 +100,7 @@ export default function ProjectsPage() {
       // Reset form
       setIsDialogOpen(false)
       setEditingProject(null)
-      setFormData({ name: "", status: "planned", category: "tool", description: "", revenue: "" })
+      setFormData({ name: "", status: "planned", phase: "idea", category: "tool", description: "", revenue: "" })
     } catch (error) {
       console.error('Failed to save project:', error)
     } finally {
@@ -110,6 +113,7 @@ export default function ProjectsPage() {
     setFormData({
       name: project.name,
       status: project.status,
+      phase: project.phase || "idea",
       category: project.category,
       description: project.description || "",
       revenue: project.revenue?.toString() || "",
@@ -197,7 +201,7 @@ export default function ProjectsPage() {
             <DialogTrigger asChild>
               <Button className="bg-[#F5911E] hover:bg-[#e07d0a] text-white" onClick={() => {
                 setEditingProject(null)
-                setFormData({ name: "", status: "planned", category: "tool", description: "", revenue: "" })
+                setFormData({ name: "", status: "planned", phase: "idea", category: "tool", description: "", revenue: "" })
               }}>
                 <Plus className="mr-2 h-4 w-4" />
                 Project toevoegen
@@ -251,6 +255,22 @@ export default function ProjectsPage() {
                       <option value="event">Event</option>
                     </select>
                   </div>
+                </div>
+                <div>
+                  <label htmlFor="phase" className="text-sm font-medium">Fase</label>
+                  <select
+                    id="phase"
+                    value={formData.phase}
+                    onChange={(e) => setFormData({ ...formData, phase: e.target.value as Project['phase'] })}
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  >
+                    <option value="idea">💡 Idee</option>
+                    <option value="research">🔭 Onderzoek</option>
+                    <option value="build">🔨 Bouwen</option>
+                    <option value="testing">🧪 Testen</option>
+                    <option value="live">🚀 Live</option>
+                    <option value="optimizing">📈 Optimaliseren</option>
+                  </select>
                 </div>
                 <div>
                   <label htmlFor="revenue" className="text-sm font-medium">Maandelijkse omzet (€)</label>
