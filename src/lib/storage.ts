@@ -96,6 +96,21 @@ export interface Cost {
   updatedAt: string;
 }
 
+export interface ContentItem {
+  id: string
+  title: string
+  body: string // the actual content (markdown)
+  type: 'article' | 'product-review' | 'buyers-guide' | 'page' | 'other'
+  status: 'draft' | 'review' | 'approved' | 'rejected' | 'live'
+  author: string // 'wout' | 'copycat' | 'lisa' | 'jc' | 'bart'
+  targetSite?: string // e.g. 'preppedia.com', 'btw-calculator.be'
+  targetPath?: string // e.g. '/guide/best-water-filters'
+  projectId?: string
+  feedback?: string // Bart's review notes
+  createdAt: string
+  updatedAt: string
+}
+
 // Generic API functions
 async function apiCall(endpoint: string, options: RequestInit = {}) {
   const response = await fetch(endpoint, {
@@ -405,6 +420,43 @@ export const costsStorage = {
       return true
     } catch (error) {
       console.error('Error deleting cost:', error)
+      return false
+    }
+  },
+};
+
+export const contentStorage = {
+  getAll: async (): Promise<ContentItem[]> => {
+    return apiCall('/api/content')
+  },
+  
+  create: async (content: Omit<ContentItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<ContentItem> => {
+    return apiCall('/api/content', {
+      method: 'POST',
+      body: JSON.stringify(content),
+    })
+  },
+  
+  update: async (id: string, updates: Partial<Omit<ContentItem, 'id' | 'createdAt'>>): Promise<ContentItem | null> => {
+    try {
+      return await apiCall(`/api/content/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(updates),
+      })
+    } catch (error) {
+      console.error('Error updating content:', error)
+      return null
+    }
+  },
+  
+  delete: async (id: string): Promise<boolean> => {
+    try {
+      await apiCall(`/api/content/${id}`, {
+        method: 'DELETE',
+      })
+      return true
+    } catch (error) {
+      console.error('Error deleting content:', error)
       return false
     }
   },
