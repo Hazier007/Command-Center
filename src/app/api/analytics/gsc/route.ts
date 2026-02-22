@@ -6,12 +6,11 @@ function getAuth() {
     // Try to get credentials from environment variable first
     if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
       const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
-      return new google.auth.JWT(
-        credentials.client_email,
-        null,
-        credentials.private_key,
-        ['https://www.googleapis.com/auth/webmasters.readonly']
-      );
+      return new google.auth.JWT({
+        email: credentials.client_email,
+        key: credentials.private_key,
+        scopes: ['https://www.googleapis.com/auth/webmasters.readonly'],
+      });
     }
     
     // Fallback to file (though this won't work in production)
