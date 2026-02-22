@@ -32,6 +32,7 @@ export async function POST(request: Request) {
       data: {
         name: data.name,
         status: data.status,
+        phase: data.phase,
         category: data.category,
         description: data.description,
         revenue: data.revenue,
