@@ -114,3 +114,16 @@ model Alert {
 
   @@map("alerts")
 }
+
+model Cost {
+  id        String   @id @default(cuid())
+  name      String
+  amount    Float    // monthly amount in EUR
+  category  String   // AI, Hosting, Database, Domains, Infrastructure, Tools, Other
+  recurring Boolean  // monthly recurring or one-time
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("costs")
+}
