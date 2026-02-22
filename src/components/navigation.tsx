@@ -6,7 +6,7 @@ import { useState, useRef, useEffect } from "react"
 import {
   Menu, Users, DollarSign, Bell, Wallet, FileText, BarChart3, Brain,
   LayoutDashboard, Globe, Lightbulb, CheckSquare, FolderOpen, StickyNote,
-  ChevronDown, Zap, Activity
+  ChevronDown, Zap, Workflow, Activity, Search
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -33,6 +33,7 @@ const navGroups = [
     label: "Projecten",
     items: [
       { href: "/projects", label: "Projects", icon: FolderOpen },
+      { href: "/pipeline", label: "Pipeline", icon: Workflow },
       { href: "/sites", label: "Sites", icon: Globe },
       { href: "/tasks", label: "Tasks", icon: CheckSquare },
       { href: "/team", label: "Team", icon: Users },
@@ -50,6 +51,7 @@ const navGroups = [
     label: "Kennis",
     items: [
       { href: "/ideas", label: "Ideas", icon: Lightbulb },
+      { href: "/research", label: "Research", icon: Search },
       { href: "/content", label: "Content", icon: FileText },
       { href: "/docs", label: "Docs", icon: FileText },
       { href: "/notes", label: "Notes", icon: StickyNote },
