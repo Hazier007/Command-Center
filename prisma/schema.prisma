@@ -12,6 +12,7 @@ model Project {
   id          String   @id @default(cuid())
   name        String
   status      String   // 'active' | 'planned' | 'paused'
+  phase       String?  // 'idea' | 'research' | 'build' | 'testing' | 'live' | 'optimizing'
   category    String   // 'directory' | 'leadgen' | 'tool' | 'client' | 'business' | 'event'
   description String?
   revenue     Float?   // monthly estimate
@@ -19,10 +20,12 @@ model Project {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  sites    Site[]
-  tasks    Task[]
-  nowItems NowItem[]
-  content  Content[]
+  sites      Site[]
+  tasks      Task[]
+  nowItems   NowItem[]
+  content    Content[]
+  research   Research[]
+  activities Activity[]
 
   @@map("projects")
 }
@@ -147,4 +150,39 @@ model Content {
   project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
 
   @@map("content")
+}
+
+model Research {
+  id        String   @id @default(cuid())
+  title     String
+  body      String   // full markdown content
+  type      String   // 'keyword-research' | 'market-analysis' | 'api-research' | 'oracle' | 'competitor' | 'technical' | 'other'
+  author    String   // 'wout' | 'lisa' | 'jc' | 'copycat' | 'bart'
+  projectId String?
+  tags      String?  // comma-separated
+  status    String   // 'draft' | 'final' | 'outdated'
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@map("research")
+}
+
+model Activity {
+  id          String   @id @default(cuid())
+  type        String   // 'commit' | 'deploy' | 'task' | 'content' | 'research' | 'alert' | 'system'
+  actor       String   // 'bart' | 'lisa' | 'jc' | 'wout' | 'copycat' | 'system'
+  title       String
+  description String?
+  url         String?  // link to commit, deploy, etc
+  projectId   String?
+  metadata    String?  // JSON string for extra data
+  createdAt   DateTime @default(now())
+
+  // Relations
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@map("activities")
 }
