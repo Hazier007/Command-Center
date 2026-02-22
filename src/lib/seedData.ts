@@ -124,92 +124,8 @@ export async function seedData() {
     revenue: 180,
   });
 
-  // === LISA'S PROJECT VOORSTELLEN ===
-  // Passieve inkomen assets — low maintenance, high SEO potential
-
-  const zolderramen = await projectsStorage.create({
-    name: '💡 Zolderramen.be',
-    status: 'planned',
-    category: 'leadgen',
-    description: 'Rank & rent voor dakramen/zolderramen installateurs. Hoge CPC (€3-5), weinig concurrentie. Programmatic SEO: type × locatie paginas.',
-  });
-
-  const schietclub = await projectsStorage.create({
-    name: '💡 Schietclub.be',
-    status: 'planned',
-    category: 'directory',
-    description: 'Directory van schietclubs/schietstanden in België. Niche met weinig goede sites. AdSense + affiliate (uitrusting). ~50-100 listings.',
-  });
-
-  const busstop = await projectsStorage.create({
-    name: '💡 Busstop.be',
-    status: 'planned',
-    category: 'tool',
-    description: 'Bushalte-finder tool met real-time De Lijn/NMBS data. High traffic potentieel, AdSense monetisatie. API-driven, lage onderhoudslast.',
-  });
-
-  const interesten = await projectsStorage.create({
-    name: '💡 Interesten.be',
-    status: 'planned',
-    category: 'tool',
-    description: 'Rente/interest calculator suite: spaarrente, lening, samengestelde interest. Hoge AdSense RPM (finance niche €15-30 RPM). Evergreen content.',
-  });
-
-  const veiligInfo = await projectsStorage.create({
-    name: '💡 Veilig.info',
-    status: 'planned',
-    category: 'leadgen',
-    description: 'Vergelijkingssite alarmsystemen & beveiligingscameras. Hoge commissies (€50-150/lead). Programmatic: product × type × locatie paginas.',
-  });
-
-  const waarheidInfo = await projectsStorage.create({
-    name: '💡 Waarheid.info',
-    status: 'planned',
-    category: 'tool',
-    description: 'Fact-checking/bronverificatie tool. Viral potentieel, AdSense. Kan AI-driven zijn. Unieke .info domein = authority vibe.',
-  });
-
-  const teaPlanet = await projectsStorage.create({
-    name: '💡 Tea-planet.com',
-    status: 'planned',
-    category: 'leadgen',
-    description: 'Internationale thee niche site. Affiliate (thee shops), AdSense. Programmatic: theetype × herkomst × benefit paginas. Engelstalig = groter bereik.',
-  });
-
-  const cordbracelet = await projectsStorage.create({
-    name: '💡 Cordbracelet.com',
-    status: 'planned',
-    category: 'leadgen',
-    description: 'Niche e-commerce/affiliate voor cord bracelets. Etsy/Amazon affiliate. Tutorial content + shop links. Lage concurrentie.',
-  });
-
-  const amateurfotograaf = await projectsStorage.create({
-    name: '💡 Amateurfotograaf.net',
-    status: 'planned',
-    category: 'directory',
-    description: 'Directory + community voor amateur fotografen in Vlaanderen. Workshops, equipment reviews, fotowedstrijden. AdSense + affiliate (camera gear).',
-  });
-
-  const elbowTendonitis = await projectsStorage.create({
-    name: '💡 Elbowtendonitis.com',
-    status: 'planned',
-    category: 'tool',
-    description: 'Medische niche site: tenniselleboog info + oefeningen. Extreem hoge AdSense RPM (health €20-50). Affiliate: braces, tools. Engelstalig evergreen.',
-  });
-
-  const goedkoopStroom = await projectsStorage.create({
-    name: '💡 Goedkoopstroom (uitbreiden)',
-    status: 'planned',
-    category: 'tool',
-    description: 'Energievergelijker tool uitbreiden: zonnepanelen calculator, warmtepomp vergelijker. Hoge affiliate commissies (€30-80/lead). Bestaande repo.',
-  });
-
-  const slotenmakerDir = await projectsStorage.create({
-    name: '💡 Slotenmaker Directory',
-    status: 'planned',
-    category: 'directory',
-    description: 'Nationale slotenmaker directory (je hebt al ervaring via Kristof). Rank & rent per regio. Emergency niche = hoge CPC (€5-10).',
-  });
+  // === IDEEËN — worden ALLEEN als Ideas aangemaakt, NIET als projecten ===
+  // (Zie ideasStorage.create hieronder)
 
   // Create Sites
   await sitesStorage.create({
@@ -301,34 +217,30 @@ export async function seedData() {
     notes: 'Filip Luwaert client site',
   });
 
-  // Domain portfolio sites — linked to Lisa's project proposals
+  // Domain portfolio sites — no longer linked to idea-projects
   await sitesStorage.create({
     domain: 'cordbracelet.com',
-    projectId: cordbracelet.id,
     status: 'planned',
     techStack: ['Next.js'],
-    notes: '💡 Niche affiliate — cord bracelets, Etsy/Amazon links',
+    notes: 'Niche affiliate — cord bracelets, Etsy/Amazon links',
   });
 
   await sitesStorage.create({
     domain: 'tea-planet.com',
-    projectId: teaPlanet.id,
     status: 'planned',
     techStack: ['Next.js'],
-    notes: '💡 Internationale thee niche — affiliate + AdSense',
+    notes: 'Internationale thee niche — affiliate + AdSense',
   });
 
   await sitesStorage.create({
     domain: 'interesten.be',
-    projectId: interesten.id,
     status: 'planned',
     techStack: ['Next.js', 'TypeScript'],
-    notes: '💡 Finance calculator suite — hoge AdSense RPM',
+    notes: 'Finance calculator suite — hoge AdSense RPM',
   });
 
   await sitesStorage.create({
     domain: 'busstop.be',
-    projectId: busstop.id,
     status: 'live',
     techStack: ['Next.js', 'TypeScript'],
     pages: 593,
@@ -337,50 +249,44 @@ export async function seedData() {
 
   await sitesStorage.create({
     domain: 'zolderramen.be',
-    projectId: zolderramen.id,
     status: 'planned',
     techStack: ['Next.js', 'TypeScript'],
-    notes: '💡 Rank & rent dakramen — hoge CPC, programmatic SEO',
+    notes: 'Rank & rent dakramen — hoge CPC, programmatic SEO',
   });
 
   await sitesStorage.create({
     domain: 'schietclub.be',
-    projectId: schietclub.id,
     status: 'planned',
     techStack: ['WordPress', 'Directorist'],
-    notes: '💡 Schietclub directory — niche met weinig concurrentie',
+    notes: 'Schietclub directory — niche met weinig concurrentie',
   });
 
   await sitesStorage.create({
     domain: 'veilig.info',
-    projectId: veiligInfo.id,
     status: 'planned',
     techStack: ['Next.js', 'TypeScript'],
-    notes: '💡 Alarmsystemen vergelijker — hoge lead commissies',
+    notes: 'Alarmsystemen vergelijker — hoge lead commissies',
   });
 
   await sitesStorage.create({
     domain: 'waarheid.info',
-    projectId: waarheidInfo.id,
     status: 'planned',
     techStack: ['Next.js', 'TypeScript'],
-    notes: '💡 Fact-checking tool — viral potentieel',
+    notes: 'Fact-checking tool — viral potentieel',
   });
 
   await sitesStorage.create({
     domain: 'amateurfotograaf.net',
-    projectId: amateurfotograaf.id,
     status: 'planned',
     techStack: ['WordPress', 'Directorist'],
-    notes: '💡 Fotografen directory + community — affiliate camera gear',
+    notes: 'Fotografen directory + community — affiliate camera gear',
   });
 
   await sitesStorage.create({
     domain: 'elbowtendonitis.com',
-    projectId: elbowTendonitis.id,
     status: 'planned',
     techStack: ['Next.js', 'TypeScript'],
-    notes: '💡 Health niche — extreem hoge AdSense RPM, evergreen',
+    notes: 'Health niche — extreem hoge AdSense RPM, evergreen',
   });
 
   // === BART'S VOLLEDIGE DOMEINPORTFOLIO ===
@@ -467,7 +373,6 @@ export async function seedData() {
 
   await sitesStorage.create({
     domain: 'goedkoopstroom.be',
-    projectId: goedkoopStroom.id,
     status: 'live',
     techStack: ['Next.js', 'TypeScript'],
     notes: '🔧 Energievergelijker — hoge affiliate commissies (€30-80/lead)',
