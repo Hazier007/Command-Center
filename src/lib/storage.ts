@@ -8,6 +8,7 @@ export interface Project {
   id: string;
   name: string;
   status: 'active' | 'planned' | 'paused';
+  phase?: 'idea' | 'research' | 'build' | 'testing' | 'live' | 'optimizing';
   category: 'directory' | 'leadgen' | 'tool' | 'client' | 'business' | 'event';
   description?: string;
   revenue?: number; // monthly estimate
@@ -109,6 +110,31 @@ export interface ContentItem {
   feedback?: string // Bart's review notes
   createdAt: string
   updatedAt: string
+}
+
+export interface ResearchItem {
+  id: string
+  title: string
+  body: string // full markdown content
+  type: 'keyword-research' | 'market-analysis' | 'api-research' | 'oracle' | 'competitor' | 'technical' | 'other'
+  author: string // 'wout' | 'lisa' | 'jc' | 'copycat' | 'bart'
+  projectId?: string
+  tags?: string // comma-separated
+  status: 'draft' | 'final' | 'outdated'
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ActivityItem {
+  id: string
+  type: 'commit' | 'deploy' | 'task' | 'content' | 'research' | 'alert' | 'system'
+  actor: string // 'bart' | 'lisa' | 'jc' | 'wout' | 'copycat' | 'system'
+  title: string
+  description?: string
+  url?: string // link to commit, deploy, etc
+  projectId?: string
+  metadata?: string // JSON string for extra data
+  createdAt: string
 }
 
 // Generic API functions
@@ -459,5 +485,60 @@ export const contentStorage = {
       console.error('Error deleting content:', error)
       return false
     }
+  },
+};
+
+export const researchStorage = {
+  getAll: async (): Promise<ResearchItem[]> => {
+    return apiCall('/api/research')
+  },
+  
+  create: async (research: Omit<ResearchItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<ResearchItem> => {
+    return apiCall('/api/research', {
+      method: 'POST',
+      body: JSON.stringify(research),
+    })
+  },
+  
+  update: async (id: string, updates: Partial<Omit<ResearchItem, 'id' | 'createdAt'>>): Promise<ResearchItem | null> => {
+    try {
+      return await apiCall(`/api/research/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(updates),
+      })
+    } catch (error) {
+      console.error('Error updating research:', error)
+      return null
+    }
+  },
+  
+  delete: async (id: string): Promise<boolean> => {
+    try {
+      await apiCall(`/api/research/${id}`, {
+        method: 'DELETE',
+      })
+      return true
+    } catch (error) {
+      console.error('Error deleting research:', error)
+      return false
+    }
+  },
+};
+
+export const activityStorage = {
+  getAll: async (params?: { limit?: number; actor?: string }): Promise<ActivityItem[]> => {
+    const searchParams = new URLSearchParams()
+    if (params?.limit) searchParams.set('limit', params.limit.toString())
+    if (params?.actor) searchParams.set('actor', params.actor)
+    
+    const url = `/api/activity${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
+    return apiCall(url)
+  },
+  
+  create: async (activity: Omit<ActivityItem, 'id' | 'createdAt'>): Promise<ActivityItem> => {
+    return apiCall('/api/activity', {
+      method: 'POST',
+      body: JSON.stringify(activity),
+    })
   },
 };
