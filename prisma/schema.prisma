@@ -45,6 +45,7 @@ model Site {
 
   // Relations
   project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  tasks   Task[]
 
   @@map("sites")
 }
@@ -67,14 +68,18 @@ model Task {
   description String?
   status      String    // 'todo' | 'in-progress' | 'done'
   projectId   String?
+  siteId      String?
   priority    String?   // 'low' | 'medium' | 'high'
   assignee    String?   // 'bart' | 'lisa' | 'jc' | 'wout'
   dueDate     DateTime?
+  notified    Boolean?
+  notifiedAt  DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   // Relations
   project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  site    Site?    @relation(fields: [siteId], references: [id], onDelete: SetNull)
 
   @@map("tasks")
 }
