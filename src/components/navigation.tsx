@@ -49,6 +49,7 @@ const navGroups = [
     label: "Kennis",
     items: [
       { href: "/ideas", label: "Ideas", icon: Lightbulb },
+      { href: "/content", label: "Content", icon: FileText },
       { href: "/docs", label: "Docs", icon: FileText },
       { href: "/notes", label: "Notes", icon: StickyNote },
       { href: "/oracle", label: "Oracle 🔮", icon: Brain },
