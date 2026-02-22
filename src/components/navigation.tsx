@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Menu, Users, DollarSign, Bell, Wallet, FileText, BarChart3 } from "lucide-react"
+import { Menu, Users, DollarSign, Bell, Wallet, FileText, BarChart3, Brain } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -28,6 +28,7 @@ const navItems = [
   { href: "/notes", label: "Notes" },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/adsense", label: "AdSense", icon: DollarSign },
+  { href: "/oracle", label: "Oracle 🔮", icon: Brain },
 ]
 
 export function Navigation() {
