@@ -17,12 +17,16 @@ export async function PATCH(
         description: data.description,
         status: data.status,
         projectId: data.projectId,
+        siteId: data.siteId,
         priority: data.priority,
         assignee: data.assignee,
         dueDate: data.dueDate ? new Date(data.dueDate) : null,
+        notified: data.notified,
+        notifiedAt: data.notifiedAt ? new Date(data.notifiedAt) : undefined,
       },
       include: {
         project: true,
+        site: true,
       },
     })
     
