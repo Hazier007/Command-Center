@@ -46,6 +46,7 @@ export interface Task {
   description?: string;
   status: 'todo' | 'in-progress' | 'review' | 'done';
   projectId?: string;
+  siteId?: string; // linked site
   priority?: 'low' | 'medium' | 'high';
   assignee?: string; // 'bart' | 'lisa' | 'jc' | 'wout' | 'copycat'
   dueDate?: string;
