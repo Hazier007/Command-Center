@@ -316,7 +316,9 @@ export default function SitesPage() {
                         <CardTitle className="text-base truncate">{site.domain}</CardTitle>
                         {getProjectName(site.projectId) && (
                           <CardDescription className="truncate">
-                            {getProjectName(site.projectId)}
+                            <Link href={`/projects/${site.projectId}`} className="hover:text-[#F5911E] transition-colors">
+                              {getProjectName(site.projectId)}
+                            </Link>
                           </CardDescription>
                         )}
                       </div>
