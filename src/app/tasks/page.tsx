@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { tasksStorage, projectsStorage, type Task, type Project } from "@/lib/storage"
+import { tasksStorage, projectsStorage, sitesStorage, type Task, type Project, type Site } from "@/lib/storage"
 
 const assigneeOptions = [
   { value: 'bart', label: 'Bart 👑' },
@@ -42,6 +42,7 @@ const assigneeNames = {
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [projects, setProjects] = useState<Project[]>([])
+  const [sites, setSites] = useState<Site[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
@@ -52,6 +53,7 @@ export default function TasksPage() {
     description: "",
     status: "todo" as Task['status'],
     projectId: "",
+    siteId: "",
     priority: "medium" as Task['priority'],
     assignee: "",
     dueDate: "",
@@ -59,12 +61,14 @@ export default function TasksPage() {
 
   useEffect(() => {
     const load = async () => {
-      const [tasksData, projectsData] = await Promise.all([
+      const [tasksData, projectsData, sitesData] = await Promise.all([
         tasksStorage.getAll(),
         projectsStorage.getAll(),
+        sitesStorage.getAll(),
       ])
       setTasks(tasksData)
       setProjects(projectsData)
+      setSites(sitesData)
     }
     load()
   }, [])
@@ -88,6 +92,7 @@ export default function TasksPage() {
         description: formData.description || undefined,
         status: formData.status,
         projectId: formData.projectId || undefined,
+        siteId: formData.siteId || undefined,
         priority: formData.priority || undefined,
         assignee: formData.assignee || undefined,
         dueDate: formData.dueDate || undefined,
@@ -98,6 +103,7 @@ export default function TasksPage() {
         description: formData.description || undefined,
         status: formData.status,
         projectId: formData.projectId || undefined,
+        siteId: formData.siteId || undefined,
         priority: formData.priority || undefined,
         assignee: formData.assignee || undefined,
         dueDate: formData.dueDate || undefined,
@@ -117,6 +123,7 @@ export default function TasksPage() {
       description: "",
       status: "todo",
       projectId: "",
+      siteId: "",
       priority: "medium",
       assignee: "",
       dueDate: "",
@@ -130,6 +137,7 @@ export default function TasksPage() {
       description: task.description || "",
       status: task.status,
       projectId: task.projectId || "",
+      siteId: task.siteId || "",
       priority: task.priority || "medium",
       assignee: task.assignee || "",
       dueDate: task.dueDate || "",
@@ -360,7 +368,21 @@ export default function TasksPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label htmlFor="siteId" className="text-sm font-medium">Site</label>
+                      <select
+                        id="siteId"
+                        value={formData.siteId}
+                        onChange={(e) => setFormData({ ...formData, siteId: e.target.value })}
+                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      >
+                        <option value="">Geen site</option>
+                        {sites.sort((a, b) => a.domain.localeCompare(b.domain)).map((site) => (
+                          <option key={site.id} value={site.id}>{site.domain}</option>
+                        ))}
+                      </select>
+                    </div>
                     <div>
                       <label htmlFor="projectId" className="text-sm font-medium">Project</label>
                       <select
