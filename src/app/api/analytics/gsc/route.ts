@@ -56,8 +56,7 @@ export async function GET(request: Request) {
       requestBody: {
         startDate: startDateStr,
         endDate: endDateStr,
-        dimensions: [],
-        aggregationType: 'sum'
+        dimensions: []
       }
     });
 
@@ -68,8 +67,7 @@ export async function GET(request: Request) {
         startDate: startDateStr,
         endDate: endDateStr,
         dimensions: ['query'],
-        rowLimit: 20,
-        aggregationType: 'sum'
+        rowLimit: 20
       }
     });
 
@@ -80,8 +78,7 @@ export async function GET(request: Request) {
         startDate: startDateStr,
         endDate: endDateStr,
         dimensions: ['page'],
-        rowLimit: 20,
-        aggregationType: 'sum'
+        rowLimit: 20
       }
     });
 
