@@ -8,6 +8,7 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
       include: {
         project: true,
+        site: true,
       },
     })
     
@@ -32,12 +33,14 @@ export async function POST(request: Request) {
         description: data.description,
         status: data.status,
         projectId: data.projectId,
+        siteId: data.siteId,
         priority: data.priority,
         assignee: data.assignee,
         dueDate: data.dueDate ? new Date(data.dueDate) : null,
       },
       include: {
         project: true,
+        site: true,
       },
     })
     
