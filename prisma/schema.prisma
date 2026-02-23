@@ -175,6 +175,34 @@ model Research {
   @@map("research")
 }
 
+model Product {
+  id              String   @id @default(cuid())
+  name            String
+  site            String
+  category        String   @default("")
+  affiliateUrl    String   @default("")
+  imageUrl        String   @default("")
+  price           String   @default("")
+  status          String   @default("nieuw")
+  keyword         String   @default("")
+  searchVolume    String   @default("")
+  competition     String   @default("")
+  suggestedTitle  String   @default("")
+  metaDescription String   @default("")
+  seoNotes        String   @default("")
+  description     String   @default("")
+  pros            String   @default("")
+  cons            String   @default("")
+  specs           String   @default("")
+  buyerGuide      String   @default("")
+  assignedTo      String   @default("")
+  notes           String   @default("")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("products")
+}
+
 model Activity {
   id          String   @id @default(cuid())
   type        String   // 'commit' | 'deploy' | 'task' | 'content' | 'research' | 'alert' | 'system'
