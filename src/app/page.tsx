@@ -9,6 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { DataInitializer } from "@/components/data-initializer";
+import { LoadingState } from "@/components/ui/loading-spinner";
+import { ErrorState } from "@/components/ui/error-state";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Target } from "lucide-react";
 import {
   nowItemsStorage,
   alertsStorage,
@@ -35,9 +39,13 @@ export default function Home() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [todayNote, setTodayNote] = useState<string>("");
   const [sitesCount, setSitesCount] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const load = async () => {
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
       const [nowData, alertsData, projectsData, sitesData] = await Promise.all([
         nowItemsStorage.getAll(),
         alertsStorage.getAll(),
@@ -51,8 +59,16 @@ export default function Home() {
       
       const today = new Date().toLocaleDateString();
       setTodayNote(`• Dashboard deployed with functional data\n• All seed data loaded successfully\n• Ready for mobile-first usage\n\nLast updated: ${today}`);
-    };
-    load();
+    } catch (err) {
+      console.error('Failed to load dashboard data:', err);
+      setError('Kon dashboard data niet laden. Check je database connectie.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
   }, []);
 
   const handleResolveAlert = async (alertId: string) => {
@@ -71,6 +87,14 @@ export default function Home() {
 
   const activeProjects = projects.filter(p => p.status === 'active').length;
   const totalRevenue = projects.reduce((sum, p) => sum + (p.revenue || 0), 0);
+
+  if (loading) {
+    return <LoadingState message="Dashboard laden..." fullScreen />;
+  }
+
+  if (error) {
+    return <ErrorState message={error} onRetry={loadData} fullScreen />;
+  }
 
   return (
     <>
