@@ -25,6 +25,10 @@ interface Product {
   buyerGuide: string
   assignedTo: string
   notes: string
+  contentType: string
+  compareItems: string
+  targetKeyword: string
+  wordCount: string
   createdAt: string
   updatedAt: string
 }
@@ -45,11 +49,25 @@ const SITE_COLORS: Record<string, string> = {
   hondenpups: 'bg-amber-500/20 text-amber-400',
 }
 
+const CONTENT_TYPES = [
+  { value: 'product', label: '📦 Product', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
+  { value: 'review', label: '⭐ Review', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
+  { value: 'comparison', label: '⚔️ Vergelijking', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
+  { value: 'buyerguide', label: '🛒 Buyer\'s Guide', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
+  { value: 'article', label: '📝 Artikel', color: 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30' },
+  { value: 'listicle', label: '📊 Listicle', color: 'bg-pink-500/20 text-pink-400 border-pink-500/30' },
+] as const
+
+const CONTENT_TYPE_MAP: Record<string, typeof CONTENT_TYPES[number]> = Object.fromEntries(
+  CONTENT_TYPES.map(ct => [ct.value, ct])
+)
+
 const empty: Omit<Product, 'id' | 'createdAt' | 'updatedAt'> = {
   name: '', site: SITES[0], category: '', affiliateUrl: '', imageUrl: '', price: '',
   status: 'nieuw', keyword: '', searchVolume: '', competition: '', suggestedTitle: '',
   metaDescription: '', seoNotes: '', description: '', pros: '[]', cons: '[]', specs: '[]',
-  buyerGuide: '', assignedTo: '', notes: '',
+  buyerGuide: '', assignedTo: '', notes: '', contentType: 'product', compareItems: '',
+  targetKeyword: '', wordCount: '',
 }
 
 function parseJsonArray(s: string): string[] {
@@ -59,24 +77,38 @@ function parseJsonArray(s: string): string[] {
 export default function ProductenPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [siteFilter, setSiteFilter] = useState<string>('alle')
+  const [contentTypeFilter, setContentTypeFilter] = useState<string>('alle')
   const [editing, setEditing] = useState<Product | null>(null)
   const [creating, setCreating] = useState(false)
   const [form, setForm] = useState(empty)
   const [loading, setLoading] = useState(true)
 
   const fetchProducts = useCallback(async () => {
-    const url = siteFilter === 'alle' ? '/api/products' : `/api/products?site=${siteFilter}`
+    const params = new URLSearchParams()
+    if (siteFilter !== 'alle') params.set('site', siteFilter)
+    if (contentTypeFilter !== 'alle') params.set('contentType', contentTypeFilter)
+    const qs = params.toString()
+    const url = `/api/products${qs ? `?${qs}` : ''}`
     const res = await fetch(url)
     const data = await res.json()
     setProducts(data)
     setLoading(false)
-  }, [siteFilter])
+  }, [siteFilter, contentTypeFilter])
 
   useEffect(() => { fetchProducts() }, [fetchProducts])
 
   const openCreate = () => { setForm({ ...empty }); setCreating(true); setEditing(null) }
   const openEdit = (p: Product) => {
-    setForm({ name: p.name, site: p.site, category: p.category, affiliateUrl: p.affiliateUrl, imageUrl: p.imageUrl, price: p.price, status: p.status, keyword: p.keyword, searchVolume: p.searchVolume, competition: p.competition, suggestedTitle: p.suggestedTitle, metaDescription: p.metaDescription, seoNotes: p.seoNotes, description: p.description, pros: p.pros || '[]', cons: p.cons || '[]', specs: p.specs || '[]', buyerGuide: p.buyerGuide, assignedTo: p.assignedTo, notes: p.notes })
+    setForm({
+      name: p.name, site: p.site, category: p.category, affiliateUrl: p.affiliateUrl,
+      imageUrl: p.imageUrl, price: p.price, status: p.status, keyword: p.keyword,
+      searchVolume: p.searchVolume, competition: p.competition, suggestedTitle: p.suggestedTitle,
+      metaDescription: p.metaDescription, seoNotes: p.seoNotes, description: p.description,
+      pros: p.pros || '[]', cons: p.cons || '[]', specs: p.specs || '[]', buyerGuide: p.buyerGuide,
+      assignedTo: p.assignedTo, notes: p.notes, contentType: p.contentType || 'product',
+      compareItems: p.compareItems || '', targetKeyword: p.targetKeyword || '',
+      wordCount: p.wordCount || '',
+    })
     setEditing(p); setCreating(false)
   }
   const close = () => { setEditing(null); setCreating(false) }
@@ -91,7 +123,7 @@ export default function ProductenPage() {
   }
 
   const del = async () => {
-    if (!editing || !confirm('Product verwijderen?')) return
+    if (!editing || !confirm('Item verwijderen?')) return
     await fetch(`/api/products/${editing.id}`, { method: 'DELETE' })
     close(); fetchProducts()
   }
@@ -131,11 +163,25 @@ export default function ProductenPage() {
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
             <Package className="h-6 w-6 text-[#F5911E]" />
-            <h1 className="text-2xl font-bold">Producten</h1>
+            <h1 className="text-2xl font-bold">Content Engine</h1>
           </div>
           <button onClick={openCreate} className="flex items-center gap-2 bg-[#F5911E] text-black font-semibold px-4 py-2 rounded-xl hover:bg-[#F5911E]/90 transition">
-            <Plus className="h-4 w-4" /> Product Toevoegen
+            <Plus className="h-4 w-4" /> Toevoegen
           </button>
+        </div>
+
+        {/* Content Type Filter */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          <button onClick={() => setContentTypeFilter('alle')}
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${contentTypeFilter === 'alle' ? 'bg-[#F5911E] text-black' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'}`}>
+            Alle
+          </button>
+          {CONTENT_TYPES.map(ct => (
+            <button key={ct.value} onClick={() => setContentTypeFilter(ct.value)}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${contentTypeFilter === ct.value ? 'bg-[#F5911E] text-black' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'}`}>
+              {ct.label}
+            </button>
+          ))}
         </div>
 
         {/* Site Filter */}
@@ -143,7 +189,7 @@ export default function ProductenPage() {
           {['alle', ...SITES].map(s => (
             <button key={s} onClick={() => setSiteFilter(s)}
               className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${siteFilter === s ? 'bg-[#F5911E] text-black' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'}`}>
-              {s === 'alle' ? 'Alle' : s.charAt(0).toUpperCase() + s.slice(1)}
+              {s === 'alle' ? 'Alle Sites' : s.charAt(0).toUpperCase() + s.slice(1)}
             </button>
           ))}
         </div>
@@ -160,17 +206,23 @@ export default function ProductenPage() {
                     <span className="text-xs text-zinc-500">{col.length}</span>
                   </div>
                   <div className="space-y-2">
-                    {col.map(p => (
-                      <button key={p.id} onClick={() => openEdit(p)} className="w-full text-left bg-white/5 hover:bg-white/10 rounded-xl p-3 transition border border-white/5">
-                        {p.imageUrl && <img src={p.imageUrl} alt="" className="w-full h-20 object-cover rounded-lg mb-2" />}
-                        <p className="font-medium text-sm text-white truncate">{p.name}</p>
-                        <div className="flex items-center gap-2 mt-1.5">
-                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${SITE_COLORS[p.site] || 'bg-zinc-700 text-zinc-300'}`}>{p.site}</span>
-                          {p.price && <span className="text-[10px] text-zinc-500">{p.price}</span>}
-                        </div>
-                        {p.assignedTo && <p className="text-[10px] text-zinc-500 mt-1">→ {p.assignedTo}</p>}
-                      </button>
-                    ))}
+                    {col.map(p => {
+                      const ct = CONTENT_TYPE_MAP[p.contentType] || CONTENT_TYPE_MAP['product']
+                      return (
+                        <button key={p.id} onClick={() => openEdit(p)} className="w-full text-left bg-white/5 hover:bg-white/10 rounded-xl p-3 transition border border-white/5">
+                          {p.imageUrl && <img src={p.imageUrl} alt="" className="w-full h-20 object-cover rounded-lg mb-2" />}
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${ct.color}`}>{ct.label}</span>
+                          </div>
+                          <p className="font-medium text-sm text-white truncate">{p.name}</p>
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${SITE_COLORS[p.site] || 'bg-zinc-700 text-zinc-300'}`}>{p.site}</span>
+                            {p.price && <span className="text-[10px] text-zinc-500">{p.price}</span>}
+                          </div>
+                          {p.assignedTo && <p className="text-[10px] text-zinc-500 mt-1">→ {p.assignedTo}</p>}
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
               )
@@ -184,12 +236,21 @@ export default function ProductenPage() {
         <div className="fixed inset-0 z-50 bg-black/60 flex items-start justify-center pt-10 px-4 overflow-y-auto">
           <div className="bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-2xl p-6 mb-10 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold">{creating ? 'Product Toevoegen' : 'Product Bewerken'}</h2>
+              <h2 className="text-lg font-bold">{creating ? 'Content Toevoegen' : 'Content Bewerken'}</h2>
               <button onClick={close} className="text-zinc-400 hover:text-white"><X className="h-5 w-5" /></button>
             </div>
 
+            {/* Content Type Selector */}
+            <div className="mb-4">
+              <label className="text-xs text-zinc-400 mb-1 block">Content Type</label>
+              <select value={form.contentType} onChange={e => set('contentType', e.target.value)}
+                className="w-full bg-zinc-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white">
+                {CONTENT_TYPES.map(ct => <option key={ct.value} value={ct.value}>{ct.label}</option>)}
+              </select>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-              <Field label="Naam" value={form.name} onChange={v => set('name', v)} />
+              <Field label="Naam / Titel" value={form.name} onChange={v => set('name', v)} />
               <div>
                 <label className="text-xs text-zinc-400 mb-1 block">Site</label>
                 <select value={form.site} onChange={e => set('site', e.target.value)} className="w-full bg-zinc-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white">
@@ -197,9 +258,49 @@ export default function ProductenPage() {
                 </select>
               </div>
               <Field label="Categorie" value={form.category} onChange={v => set('category', v)} />
-              <Field label="Prijs" value={form.price} onChange={v => set('price', v)} />
-              <Field label="Affiliate URL" value={form.affiliateUrl} onChange={v => set('affiliateUrl', v)} />
+
+              {/* Conditional fields based on content type */}
+              {(form.contentType === 'product' || form.contentType === 'review') && (
+                <Field label="Prijs" value={form.price} onChange={v => set('price', v)} />
+              )}
+              {(form.contentType === 'product' || form.contentType === 'review') && (
+                <Field label="Affiliate URL" value={form.affiliateUrl} onChange={v => set('affiliateUrl', v)} />
+              )}
               <Field label="Afbeelding URL" value={form.imageUrl} onChange={v => set('imageUrl', v)} />
+
+              {/* Article / Listicle: Target Keyword prominently */}
+              {(form.contentType === 'article' || form.contentType === 'listicle') && (
+                <div className="sm:col-span-2">
+                  <label className="text-xs text-[#F5911E] mb-1 block font-semibold">🎯 Target Keyword</label>
+                  <input value={form.targetKeyword} onChange={e => set('targetKeyword', e.target.value)}
+                    className="w-full bg-zinc-800 border border-[#F5911E]/30 rounded-lg px-3 py-2 text-sm text-white" />
+                </div>
+              )}
+
+              {/* Comparison: items to compare */}
+              {form.contentType === 'comparison' && (
+                <div className="sm:col-span-2">
+                  <label className="text-xs text-purple-400 mb-1 block font-semibold">⚔️ Items vergelijken (komma-gescheiden)</label>
+                  <input value={form.compareItems} onChange={e => set('compareItems', e.target.value)}
+                    placeholder="Item A, Item B, Item C"
+                    className="w-full bg-zinc-800 border border-purple-500/30 rounded-lg px-3 py-2 text-sm text-white" />
+                </div>
+              )}
+
+              {/* Buyer's Guide: category + product links */}
+              {form.contentType === 'buyerguide' && (
+                <>
+                  <div className="sm:col-span-2">
+                    <label className="text-xs text-green-400 mb-1 block font-semibold">🛒 Product Links (één per regel)</label>
+                    <textarea value={form.buyerGuide} onChange={e => set('buyerGuide', e.target.value)} rows={3}
+                      placeholder="https://example.com/product-1&#10;https://example.com/product-2"
+                      className="w-full bg-zinc-800 border border-green-500/30 rounded-lg px-3 py-2 text-sm text-white resize-y" />
+                  </div>
+                </>
+              )}
+
+              {/* Word count for all types */}
+              <Field label="Gewenst aantal woorden" value={form.wordCount} onChange={v => set('wordCount', v)} />
             </div>
 
             {form.imageUrl && <img src={form.imageUrl} alt="" className="w-full h-32 object-cover rounded-xl mb-4 border border-white/10" />}
@@ -228,14 +329,22 @@ export default function ProductenPage() {
               <FieldArea label="SEO Notities" value={form.seoNotes} onChange={v => set('seoNotes', v)} />
             </Section>
 
-            {/* Content Section */}
-            <Section title="Content (Copycat)">
-              <FieldArea label="Beschrijving" value={form.description} onChange={v => set('description', v)} />
-              <ListEditor label="Voordelen (Pros)" field="pros" />
-              <ListEditor label="Nadelen (Cons)" field="cons" />
-              <ListEditor label="Specificaties" field="specs" />
-              <FieldArea label="Koopgids" value={form.buyerGuide} onChange={v => set('buyerGuide', v)} />
-            </Section>
+            {/* Content Section - show for product/review types */}
+            {(form.contentType === 'product' || form.contentType === 'review') && (
+              <Section title="Content (Copycat)">
+                <FieldArea label="Beschrijving" value={form.description} onChange={v => set('description', v)} />
+                <ListEditor label="Voordelen (Pros)" field="pros" />
+                <ListEditor label="Nadelen (Cons)" field="cons" />
+                <ListEditor label="Specificaties" field="specs" />
+              </Section>
+            )}
+
+            {/* Description for other types */}
+            {(form.contentType !== 'product' && form.contentType !== 'review') && (
+              <Section title="Content">
+                <FieldArea label="Beschrijving / Briefing" value={form.description} onChange={v => set('description', v)} />
+              </Section>
+            )}
 
             {/* Meta */}
             <Section title="Meta">

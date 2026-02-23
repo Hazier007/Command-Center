@@ -7,9 +7,12 @@ export async function GET(request: Request) {
     const site = searchParams.get('site')
     const status = searchParams.get('status')
 
+    const contentType = searchParams.get('contentType')
+
     const where: Record<string, string> = {}
     if (site) where.site = site
     if (status) where.status = status
+    if (contentType) where.contentType = contentType
 
     const products = await prisma.product.findMany({
       where,
@@ -47,6 +50,10 @@ export async function POST(request: Request) {
         buyerGuide: data.buyerGuide || '',
         assignedTo: data.assignedTo || '',
         notes: data.notes || '',
+        contentType: data.contentType || 'product',
+        compareItems: data.compareItems || '',
+        targetKeyword: data.targetKeyword || '',
+        wordCount: data.wordCount || '',
       },
     })
     return NextResponse.json(product)
