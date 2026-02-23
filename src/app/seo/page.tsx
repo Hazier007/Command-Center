@@ -287,7 +287,7 @@ export default function SEOPage() {
                 <SelectTrigger className="bg-zinc-800 border-zinc-700">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-zinc-800 border-zinc-700">
+                <SelectContent>
                   <SelectItem value="all">Alle websites</SelectItem>
                   {uniqueSites.map(site => (
                     <SelectItem key={site} value={site}>{site}</SelectItem>
@@ -302,7 +302,7 @@ export default function SEOPage() {
                 <SelectTrigger className="bg-zinc-800 border-zinc-700">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-zinc-800 border-zinc-700">
+                <SelectContent>
                   <SelectItem value="50">50+</SelectItem>
                   <SelectItem value="100">100+</SelectItem>
                   <SelectItem value="200">200+</SelectItem>
@@ -317,7 +317,7 @@ export default function SEOPage() {
                 <SelectTrigger className="bg-zinc-800 border-zinc-700">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-zinc-800 border-zinc-700">
+                <SelectContent>
                   <SelectItem value="4-10">4-10</SelectItem>
                   <SelectItem value="4-20">4-20</SelectItem>
                   <SelectItem value="11-20">11-20</SelectItem>
@@ -332,7 +332,7 @@ export default function SEOPage() {
                 <SelectTrigger className="bg-zinc-800 border-zinc-700">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-zinc-800 border-zinc-700">
+                <SelectContent>
                   <SelectItem value="all">Alle statussen</SelectItem>
                   {Object.entries(statusLabels).map(([key, label]) => (
                     <SelectItem key={key} value={key}>{label}</SelectItem>
