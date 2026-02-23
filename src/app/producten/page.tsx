@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { Plus, X, Trash2, ChevronRight, Package, ExternalLink } from 'lucide-react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { Plus, X, Trash2, ChevronRight, Package, ExternalLink, Search } from 'lucide-react'
 
 interface Product {
   id: string
@@ -33,7 +33,30 @@ interface Product {
   updatedAt: string
 }
 
-const SITES = ['opblaasbareboot', 'preppedia', 'hondenpups']
+const KNOWN_SITES = [
+  'hazier.be', 'poxy.be', 'ovl-slotenmaker.be', 'hondenpups.be', 'preppedia.com',
+  'opblaasbareboot.be', 'travelsecrets.be', 'kinderopvangvlaanderen.be',
+  'btw-calculator.be', 'loonberekening.be', 'buitendrogen.be', 'kleurcodes.be',
+  'datumberekenen.be', 'goedkoopstroom.be', 'kmvergoeding.be', 'ibanvalidator.be',
+  'huurrendementcalculator.be', 'zwangerschapscalculator.be', 'busstop.be',
+  'collectpro.be', 'sleu.tel', 'huizenopkoper.be', 'interesten.be',
+  'factuurfinanciering.be', 'domaining.company', 'elektrik.ink',
+]
+
+// Generate consistent colors from site name
+function siteColor(site: string): string {
+  const colors = [
+    'bg-cyan-500/20 text-cyan-400', 'bg-emerald-500/20 text-emerald-400',
+    'bg-amber-500/20 text-amber-400', 'bg-pink-500/20 text-pink-400',
+    'bg-violet-500/20 text-violet-400', 'bg-teal-500/20 text-teal-400',
+    'bg-rose-500/20 text-rose-400', 'bg-lime-500/20 text-lime-400',
+    'bg-sky-500/20 text-sky-400', 'bg-fuchsia-500/20 text-fuchsia-400',
+  ]
+  let hash = 0
+  for (let i = 0; i < site.length; i++) hash = ((hash << 5) - hash + site.charCodeAt(i)) | 0
+  return colors[Math.abs(hash) % colors.length]
+}
+
 const STATUSES = ['nieuw', 'research', 'content', 'review', 'live'] as const
 const STATUS_COLORS: Record<string, string> = {
   nieuw: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
@@ -42,11 +65,6 @@ const STATUS_COLORS: Record<string, string> = {
   review: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
   live: 'bg-green-500/20 text-green-400 border-green-500/30',
   archived: 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30',
-}
-const SITE_COLORS: Record<string, string> = {
-  opblaasbareboot: 'bg-cyan-500/20 text-cyan-400',
-  preppedia: 'bg-emerald-500/20 text-emerald-400',
-  hondenpups: 'bg-amber-500/20 text-amber-400',
 }
 
 const CONTENT_TYPES = [
@@ -63,7 +81,7 @@ const CONTENT_TYPE_MAP: Record<string, typeof CONTENT_TYPES[number]> = Object.fr
 )
 
 const empty: Omit<Product, 'id' | 'createdAt' | 'updatedAt'> = {
-  name: '', site: SITES[0], category: '', affiliateUrl: '', imageUrl: '', price: '',
+  name: '', site: KNOWN_SITES[0], category: '', affiliateUrl: '', imageUrl: '', price: '',
   status: 'nieuw', keyword: '', searchVolume: '', competition: '', suggestedTitle: '',
   metaDescription: '', seoNotes: '', description: '', pros: '[]', cons: '[]', specs: '[]',
   buyerGuide: '', assignedTo: '', notes: '', contentType: 'product', compareItems: '',
@@ -77,11 +95,25 @@ function parseJsonArray(s: string): string[] {
 export default function ProductenPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [siteFilter, setSiteFilter] = useState<string>('alle')
+  const [siteSearch, setSiteSearch] = useState('')
   const [contentTypeFilter, setContentTypeFilter] = useState<string>('alle')
   const [editing, setEditing] = useState<Product | null>(null)
   const [creating, setCreating] = useState(false)
   const [form, setForm] = useState(empty)
   const [loading, setLoading] = useState(true)
+
+  // Merge known sites + any sites from products
+  const allSites = useMemo(() => {
+    const set = new Set(KNOWN_SITES)
+    products.forEach(p => { if (p.site) set.add(p.site) })
+    return [...set].sort((a, b) => a.localeCompare(b))
+  }, [products])
+
+  const filteredSites = useMemo(() => {
+    if (!siteSearch) return allSites
+    const q = siteSearch.toLowerCase()
+    return allSites.filter(s => s.toLowerCase().includes(q))
+  }, [allSites, siteSearch])
 
   const fetchProducts = useCallback(async () => {
     const params = new URLSearchParams()
@@ -185,13 +217,30 @@ export default function ProductenPage() {
         </div>
 
         {/* Site Filter */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          {['alle', ...SITES].map(s => (
-            <button key={s} onClick={() => setSiteFilter(s)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${siteFilter === s ? 'bg-[#F5911E] text-black' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'}`}>
-              {s === 'alle' ? 'Alle Sites' : s.charAt(0).toUpperCase() + s.slice(1)}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="relative flex-1 max-w-xs">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500" />
+              <input
+                value={siteSearch}
+                onChange={e => setSiteSearch(e.target.value)}
+                placeholder="Zoek site..."
+                className="w-full bg-zinc-800 border border-white/10 rounded-lg pl-8 pr-3 py-1.5 text-sm text-white placeholder:text-zinc-500"
+              />
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
+            <button onClick={() => setSiteFilter('alle')}
+              className={`px-3 py-1 rounded-lg text-xs font-medium transition ${siteFilter === 'alle' ? 'bg-[#F5911E] text-black' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'}`}>
+              Alle Sites ({allSites.length})
             </button>
-          ))}
+            {filteredSites.map(s => (
+              <button key={s} onClick={() => setSiteFilter(s)}
+                className={`px-3 py-1 rounded-lg text-xs font-medium transition ${siteFilter === s ? 'bg-[#F5911E] text-black' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'}`}>
+                {s}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Kanban */}
@@ -216,7 +265,7 @@ export default function ProductenPage() {
                           </div>
                           <p className="font-medium text-sm text-white truncate">{p.name}</p>
                           <div className="flex items-center gap-2 mt-1.5">
-                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${SITE_COLORS[p.site] || 'bg-zinc-700 text-zinc-300'}`}>{p.site}</span>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${siteColor(p.site)}`}>{p.site}</span>
                             {p.price && <span className="text-[10px] text-zinc-500">{p.price}</span>}
                           </div>
                           {p.assignedTo && <p className="text-[10px] text-zinc-500 mt-1">→ {p.assignedTo}</p>}
@@ -251,12 +300,7 @@ export default function ProductenPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
               <Field label="Naam / Titel" value={form.name} onChange={v => set('name', v)} />
-              <div>
-                <label className="text-xs text-zinc-400 mb-1 block">Site</label>
-                <select value={form.site} onChange={e => set('site', e.target.value)} className="w-full bg-zinc-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white">
-                  {SITES.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
+              <SiteCombobox value={form.site} onChange={v => set('site', v)} sites={allSites} />
               <Field label="Categorie" value={form.category} onChange={v => set('category', v)} />
 
               {/* Conditional fields based on content type */}
@@ -397,6 +441,56 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       </summary>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-5">{children}</div>
     </details>
+  )
+}
+
+function SiteCombobox({ value, onChange, sites }: { value: string; onChange: (v: string) => void; sites: string[] }) {
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const filtered = query ? sites.filter(s => s.toLowerCase().includes(query.toLowerCase())) : sites
+  const showCustom = query && !sites.includes(query.toLowerCase()) && !filtered.length
+
+  return (
+    <div ref={ref} className="relative">
+      <label className="text-xs text-zinc-400 mb-1 block">Site</label>
+      <div className="flex items-center gap-1">
+        <span className={`w-2 h-2 rounded-full shrink-0 ${siteColor(value).split(' ')[0]}`} />
+        <input
+          value={open ? query : value}
+          onFocus={() => { setOpen(true); setQuery(value) }}
+          onChange={e => { setQuery(e.target.value); setOpen(true) }}
+          onKeyDown={e => { if (e.key === 'Enter' && query) { onChange(query); setOpen(false) } }}
+          className="w-full bg-zinc-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
+          placeholder="Typ of kies site..."
+        />
+      </div>
+      {open && (
+        <div className="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto bg-zinc-800 border border-white/10 rounded-lg shadow-xl">
+          {filtered.map(s => (
+            <button key={s} onClick={() => { onChange(s); setOpen(false) }}
+              className={`w-full text-left px-3 py-1.5 text-sm hover:bg-zinc-700 flex items-center gap-2 ${s === value ? 'text-[#F5911E]' : 'text-white'}`}>
+              <span className={`w-2 h-2 rounded-full shrink-0 ${siteColor(s).split(' ')[0]}`} />
+              {s}
+            </button>
+          ))}
+          {showCustom && (
+            <button onClick={() => { onChange(query); setOpen(false) }}
+              className="w-full text-left px-3 py-1.5 text-sm text-[#F5911E] hover:bg-zinc-700">
+              + &quot;{query}&quot; toevoegen
+            </button>
+          )}
+          {!filtered.length && !showCustom && <p className="px-3 py-2 text-xs text-zinc-500">Geen resultaten</p>}
+        </div>
+      )}
+    </div>
   )
 }
 
