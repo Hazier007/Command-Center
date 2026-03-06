@@ -1,30 +1,49 @@
-# Roadmap: Tankkosten.be 🚗
+# Roadmap: Tankkosten.be 🗺️
+**Gebaseerd op:** Wout de Scout keyword research (06/03/2026)  
+**Strategie:** Actuele brandstofinformatie + Fiscale gidsen + Leadgen (Tankkaarten)  
+**Builder:** Jean-Cloud van Damme 🥊
 
-## Project Info
-- **Domein:** tankkosten.be
-- **Type:** AdSense / Tool site
-- **Stack:** Next.js + TypeScript
-- **Target Revenue:** €200-500/mnd
-- **Verdienmodel:** AdSense + Affiliate tankkaarten
+---
 
-## Fase 1: Core Tool Build (MVP)
-- [ ] Brandstof calculator (Bereken kosten rit op basis van verbruik + prijs)
-- [ ] Real-time brandstofprijzen integratie (Scraper of API indien beschikbaar)
-- [ ] Pagina "Goedkoopste tankstations in de buurt" (Geolocation)
-- [ ] Mobiele optimalisatie (Focus op gebruik onderweg)
+## 🎯 Doel
+De go-to bron voor brandstofkosten in België, met focus op dagelijkse prijzen, besparingstips en zakelijke optimalisatie (BTW/Tankkaarten).
 
-## Fase 2: Content & SEO Expansion
-- [ ] Stad-specifieke pagina's: "Goedkoopst tanken in [Brussel/Antwerpen/Brugge]"
-- [ ] Vergelijkingstabel brandstofsoorten (E10 vs E5, Diesel, LPG)
-- [ ] SEO content: "Tips om brandstof te besparen", "Wanneer zijn de prijzen het laagst?"
-- [ ] Integratie affiliate links voor tankkaarten (B2B/Freelance focus)
+---
 
-## Fase 3: Retentie & Schaal
-- [ ] Prijs-alert instellen via email/push (Cron jobs)
-- [ ] PWA (Progressive Web App) ondersteuning
-- [ ] Dark mode design (Hazier stijl #F5911E)
+## FASE 1: Core Content & SEO (Nu) 🚀
+**Doel:** De top 3 prioritaire pagina's live zetten om rankings te claimen.
 
-## Success Metrics
-- 500+ unieke bezoekers per dag
-- CPC optimalisatie voor AdSense
-- CTR op affiliate links > 2%
+### Todo's
+
+#### 1.1 Actuele Prijspagina (Prio 1)
+- [ ] Pagina: `/benzineprijs-belgie-vandaag`
+- [ ] Content: Focus op Petrolfed maximumprijzen (E10, E5, Diesel).
+- [ ] Feature: "Laatst geüpdatet" badge (handmatig of via simpele data-fetch).
+- [ ] SEO: Title "Actuele Benzineprijs [Maand] 2026 België"
+
+#### 1.2 Besparingsgids (Prio 2)
+- [ ] Pagina: `/goedkoop-tanken-tips`
+- [ ] Content: Onbemande stations, tanken buiten de snelweg, impact van tijdstip.
+- [ ] Link naar: Prijs-tracker pagina.
+
+#### 1.3 Fiscale Gids (Prio 3)
+- [ ] Pagina: `/btw-brandstof-aftrekbaar-2026`
+- [ ] Content: Uitleg 50% regel, wijzigingen voor bedrijfswagens vanaf 2026.
+- [ ] Doel: Autoriteit bouwen bij zelfstandigen (hoge CPC traffic).
+
+---
+
+## FASE 2: Leadgen & Tools (Volgende week) 💰
+- [ ] **Tankkaarten Vergelijker:** `/beste-tankkaart-zelfstandige` (Affiliate focus).
+- [ ] **Vakantie-Calculator:** `/brandstofkosten-vakantie-berekenen` (Interactieve tool).
+
+---
+
+## FASE 3: Expansie 📈
+- [ ] **Mazout-Sectie:** `/mazoutprijs-vandaag` (Groot zoekvolume in BE).
+- [ ] **Programmatic Regio's:** `/goedkoop-tanken/[provincie]` (Lokaal SEO).
+
+---
+
+## ⚠️ WACHT OP BART VOOR TAAKTOEWIJZING
+Roadmap staat op GitHub. Ik sta klaar om de eerste pagina's te bouwen zodra de DNS van loonberekening.be is opgelost of Bart de 'go' geeft voor tankkosten. 🥊
