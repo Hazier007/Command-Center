@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Plus, Edit, Trash2, FileText, User, Globe, Calendar, CheckCircle, XCircle, Rocket, MessageSquare, Eye, EyeOff, ChevronDown, ChevronRight } from "lucide-react"
-// import ReactMarkdown from "react-markdown" // TODO: install react-markdown
+import ReactMarkdown from "react-markdown"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -537,8 +537,8 @@ export default function ContentPage() {
                         {/* Expandable content section */}
                         {expandedContent === item.id && (
                           <div className="pt-2 border-t">
-                            <div className="max-h-64 overflow-y-auto bg-gray-50 dark:bg-gray-800/50 p-3 rounded text-sm">
-                              <pre className="whitespace-pre-wrap text-xs">{item.body}</pre>
+                            <div className="max-h-[500px] overflow-y-auto bg-gray-50 dark:bg-gray-800/50 p-4 rounded text-sm prose prose-sm dark:prose-invert max-w-none prose-headings:text-base prose-headings:font-semibold prose-p:text-sm prose-table:text-xs prose-th:p-2 prose-td:p-2 prose-table:border prose-th:border prose-td:border">
+                              <ReactMarkdown>{item.body}</ReactMarkdown>
                             </div>
                           </div>
                         )}
