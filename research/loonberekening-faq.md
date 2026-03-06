@@ -1,126 +1,92 @@
----
-meta_title: "Loonberekening FAQ – 8 Veelgestelde Vragen"
-meta_description: "Antwoorden op de 8 meest gestelde vragen over loonberekening in België. Van bruto naar netto, RSZ, belastingen en meer."
----
+# Loonberekening: Veelgestelde Vragen
 
-# Loonberekening FAQ: 8 Veelgestelde Vragen
-
-Heb je vragen over je loon? Je bent niet alleen. Duizenden Belgen zoeken elke maand naar antwoorden over hun loonbrief. Hieronder vind je de 8 meest gestelde vragen over loonberekening — helder uitgelegd, zonder vakjargon.
+**Meta title:** Loonberekening FAQ — 8 Veelgestelde Vragen Beantwoord
+**Meta description:** Alles over loonberekening in België: bruto naar netto, belastingschijven, vakantiegeld en meer. Vind snel antwoord op jouw loonvragen.
 
 ---
 
-## 1. Hoe bereken ik mijn nettoloon vanuit mijn brutoloon?
+## Veelgestelde Vragen over Loonberekening
 
-Je nettoloon bereken je door drie grote afhoudingen van je brutoloon af te trekken:
+### Hoe bereken ik mijn nettoloon vanuit mijn brutoloon?
 
-- **RSZ-bijdrage** (13,07% van je brutoloon)
-- **Beroepskosten** (forfaitair of werkelijke kosten)
-- **Bedrijfsvoorheffing** (belastingen op basis van je belastbaar inkomen)
+Je nettoloon bereken je door van je brutoloon de sociale bijdragen (13,07% voor werknemers) en de bedrijfsvoorheffing af te trekken. De bedrijfsvoorheffing hangt af van je belastingschijf, gezinssituatie en eventuele aftrekposten. Een alleenstaande met een bruto maandloon van €3.000 houdt na alle inhoudingen ongeveer €2.000 tot €2.100 netto over — maar dat verschilt per situatie.
 
-Eventueel krijg je er nog een **werkbonus** bij als je brutoloon onder een bepaalde grens valt.
-
-👉 **[Bereken je nettoloon in 10 seconden met onze gratis tool →](/)**
+**👉 [Bereken jouw nettoloon met onze calculator →](#calculator)**
 
 ---
 
-## 2. Wat is het verschil tussen bruto en netto?
+### Wat is het verschil tussen bruto en netto loon?
 
-Je **brutoloon** is het bedrag dat je werkgever betaalt vóór alle afhoudingen. Je **nettoloon** is wat er effectief op je rekening terechtkomt.
+Je **brutoloon** is het bedrag dat je werkgever betaalt vóór alle inhoudingen. Je **nettoloon** is wat effectief op je rekening verschijnt. Het verschil bestaat uit twee grote blokken: de RSZ-bijdrage (sociale zekerheid) en de bedrijfsvoorheffing (belastingen). In België bedraagt dat verschil vaak 40% tot 50% van je bruto — daarom is het zo belangrijk om niet enkel naar je bruto te kijken bij loononderhandelingen.
 
-Het verschil? Dat zijn je sociale bijdragen (RSZ) en belastingen (bedrijfsvoorheffing). Afhankelijk van je situatie hou je tussen de 55% en 70% van je brutoloon netto over.
-
-👉 **[Lees onze volledige uitleg over bruto vs netto →](/blog/verschil-bruto-netto)**
+**👉 [Bekijk het verschil voor jouw situatie →](#calculator)**
 
 ---
 
-## 3. Wat is de RSZ-bijdrage en hoeveel bedraagt die?
+### Hoeveel bedragen de belastingschijven in België?
 
-RSZ staat voor Rijksdienst voor Sociale Zekerheid. Als werknemer betaal je **13,07%** van je brutoloon aan RSZ. Dit financiert je sociale bescherming: ziekteverzekering, pensioen, werkloosheidsuitkering en meer.
+België werkt met een progressief belastingsysteem. De schijven voor het aanslagjaar 2026 (inkomsten 2025) zijn:
 
-Je werkgever betaalt daar bovenop nog eens **ongeveer 25%** patronale bijdragen — maar die zie je niet op je loonbrief.
+- **25%** op de eerste €15.820
+- **40%** van €15.820 tot €27.920
+- **45%** van €27.920 tot €48.320
+- **50%** op alles boven €48.320
 
-👉 **[Bekijk hoeveel RSZ jij betaalt met onze calculator →](/)**
+Let op: er geldt een belastingvrije som (±€10.570) waardoor je over dat eerste deel géén belasting betaalt. Hoe hoger je loon, hoe groter het percentage dat je afdraagt op de bovenste schijf.
 
----
-
-## 4. Wat is de bedrijfsvoorheffing?
-
-De bedrijfsvoorheffing is een **voorschot op je personenbelasting**. Je werkgever houdt dit maandelijks in op je loon en stort het door aan de fiscus.
-
-Het bedrag hangt af van:
-
-- Je belastbaar inkomen (bruto min RSZ min beroepskosten)
-- Je gezinssituatie (alleenstaand, gehuwd, kinderen ten laste)
-- Je statuut (arbeider, bediende)
-
-Bij je belastingaangifte wordt alles verrekend. Betaalde je te veel voorheffing? Dan krijg je geld terug.
-
-👉 **[Bereken je bedrijfsvoorheffing →](/)**
+**👉 [Bereken jouw belastingdruk →](#calculator)**
 
 ---
 
-## 5. Wat is de werkbonus en kom ik in aanmerking?
+### Wat is de RSZ-bijdrage en hoeveel bedraagt die?
 
-De werkbonus is een **vermindering van je RSZ-bijdrage** voor werknemers met een laag tot gemiddeld brutoloon. Het doel: werken financieel aantrekkelijker maken.
+De RSZ-bijdrage (Rijksdienst voor Sociale Zekerheid) financiert de sociale zekerheid: ziekteverzekering, pensioen, werkloosheidsuitkeringen en kinderbijslag. Als werknemer betaal je **13,07%** van je brutoloon. Je werkgever betaalt daar bovenop nog eens ongeveer 25% tot 30% werkgeversbijdrage — maar die zie je niet op je loonbrief. De RSZ-bijdrage wordt automatisch ingehouden en is niet onderhandelbaar.
 
-In 2025-2026 kom je in aanmerking als je bruto maandloon **onder ±2.961,27 euro** ligt. Hoe lager je loon, hoe hoger de bonus.
-
-De maximale werkbonus bedraagt **€277,83 per maand** bij een voltijds minimumloon.
-
-👉 **[Check je werkbonus met onze tool →](/werkbonus)**
+**👉 [Zie hoeveel RSZ jij betaalt →](#calculator)**
 
 ---
 
-## 6. Hoeveel belastingen betaal ik op mijn loon?
+### Hoe wordt vakantiegeld berekend?
 
-België hanteert een **progressief belastingstelsel** met schijven (2025-2026):
+Er zijn twee soorten vakantiegeld. **Enkel vakantiegeld** is je gewone loon tijdens je vakantiedagen. **Dubbel vakantiegeld** is een extra uitbetaling, meestal in mei of juni, en bedraagt **92% van je bruto maandloon**. Dat percentage lijkt vreemd, maar het komt doordat er al RSZ wordt ingehouden aan de bron. Voor bedienden betaalt je werkgever het vakantiegeld; voor arbeiders betaalt de Rijksdienst voor Jaarlijkse Vakantie (RJV) het uit op basis van je loon van het voorgaande jaar.
 
-| Belastbaar inkomen | Tarief |
-|---|---|
-| €0 – €15.820 | 25% |
-| €15.820 – €27.920 | 40% |
-| €27.920 – €48.320 | 45% |
-| Boven €48.320 | 50% |
-
-Let op: je betaalt niet 50% op je volledige inkomen. Elke schijf wordt apart belast. Bovendien geniet iedereen een **belastingvrije som** van ±€10.570.
-
-👉 **[Bereken je exacte belastingdruk →](/)**
+**👉 [Bereken jouw vakantiegeld →](#calculator)**
 
 ---
 
-## 7. Telt mijn eindejaarspremie / 13e maand mee?
+### Wat is de bedrijfsvoorheffing?
 
-Ja, maar anders. Je **eindejaarspremie** (of 13e maand) wordt apart belast tegen een **vast tarief van ongeveer 35-40%** (afhankelijk van je situatie). Er geldt geen progressieve belasting op.
+De bedrijfsvoorheffing is een **voorschot op je personenbelasting** dat je werkgever maandelijks inhoudt op je loon. Het bedrag hangt af van je brutoloon, burgerlijke staat, aantal kinderen ten laste en andere factoren. Na je jaarlijkse belastingaangifte wordt verrekend: heb je te veel bedrijfsvoorheffing betaald, dan krijg je geld terug. Te weinig? Dan moet je bijbetalen. De tabellen worden jaarlijks aangepast door de FOD Financiën.
 
-Daarom valt het nettobedrag van je eindejaarspremie vaak tegen. De RSZ-bijdrage van 13,07% is er ook op van toepassing.
-
-👉 **[Simuleer je 13e maand netto →](/)**
+**👉 [Bekijk jouw bedrijfsvoorheffing →](#calculator)**
 
 ---
 
-## 8. Klopt mijn loonbrief? Hoe controleer ik dat?
+### Heeft mijn gezinssituatie invloed op mijn nettoloon?
 
-Controleer deze zaken op je loonbrief:
+Absoluut. Je gezinssituatie heeft een **grote impact** op je nettoloon. Gehuwden of wettelijk samenwonenden kunnen profiteren van het huwelijksquotiënt als één partner weinig of niet verdient. Kinderen ten laste verhogen je belastingvrije som, wat resulteert in een lagere bedrijfsvoorheffing. Een alleenstaande ouder met twee kinderen houdt merkbaar meer netto over dan een alleenstaande zonder kinderen — bij hetzelfde brutoloon.
 
-- **Brutoloon**: komt overeen met je contract?
-- **RSZ**: is dit 13,07% van je bruto?
-- **Belastbaar loon**: bruto min RSZ min forfaitaire beroepskosten
-- **Bedrijfsvoorheffing**: gebruik onze tool om te vergelijken
-- **Nettoloon**: de optelsom klopt?
-
-Zie je afwijkingen? Neem dan contact op met je HR-afdeling of sociaal secretariaat.
-
-👉 **[Controleer je loonbrief met onze gratis calculator →](/)**
+**👉 [Bereken het effect van jouw gezinssituatie →](#calculator)**
 
 ---
 
-## Nog vragen?
+### Wat zijn veelvoorkomende extralegale voordelen en hoe worden ze belast?
 
-Heb je een specifieke vraag over jouw loonsituatie? Gebruik onze **[gratis loonberekening tool](/)** om snel inzicht te krijgen in je nettoloon. Geen registratie nodig, resultaat in seconden.
+Extralegale voordelen zijn looncomponenten bovenop je bruto, zoals een **bedrijfswagen, maaltijdcheques, hospitalisatieverzekering, gsm-vergoeding of groepsverzekering**. Ze worden fiscaal anders behandeld dan gewoon loon:
+
+- **Maaltijdcheques:** niet belast (tot €8/cheque, max eigen bijdrage €1,09)
+- **Bedrijfswagen:** belast via een forfaitair voordeel alle aard (VAA) op basis van CO₂-uitstoot en cataloguswaarde
+- **Groepsverzekering:** bijdrage werknemer is fiscaal aftrekbaar
+- **Gsm/internet:** forfaitair VAA van €3/maand (gsm) en €5/maand (internet)
+
+Extralegale voordelen zijn vaak voordeliger dan een brutoloonsverhoging, omdat ze minder of niet belast worden.
+
+**👉 [Ontdek wat jouw voordelen waard zijn →](#calculator)**
 
 ---
 
-<!-- Schema.org FAQPage markup -->
+## FAQ Schema Markup (JSON-LD)
+
 ```json
 {
   "@context": "https://schema.org",
@@ -131,15 +97,23 @@ Heb je een specifieke vraag over jouw loonsituatie? Gebruik onze **[gratis loonb
       "name": "Hoe bereken ik mijn nettoloon vanuit mijn brutoloon?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Je nettoloon bereken je door RSZ-bijdrage (13,07%), beroepskosten en bedrijfsvoorheffing van je brutoloon af te trekken. Eventueel krijg je er nog een werkbonus bij."
+        "text": "Je nettoloon bereken je door van je brutoloon de sociale bijdragen (13,07% voor werknemers) en de bedrijfsvoorheffing af te trekken. De bedrijfsvoorheffing hangt af van je belastingschijf, gezinssituatie en eventuele aftrekposten."
       }
     },
     {
       "@type": "Question",
-      "name": "Wat is het verschil tussen bruto en netto?",
+      "name": "Wat is het verschil tussen bruto en netto loon?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Je brutoloon is het bedrag vóór afhoudingen. Je nettoloon is wat op je rekening komt. Het verschil zijn je sociale bijdragen (RSZ) en belastingen (bedrijfsvoorheffing)."
+        "text": "Je brutoloon is het bedrag vóór alle inhoudingen. Je nettoloon is wat op je rekening verschijnt. Het verschil bestaat uit de RSZ-bijdrage en de bedrijfsvoorheffing, vaak 40% tot 50% van je bruto."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Hoeveel bedragen de belastingschijven in België?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "25% op de eerste €15.820, 40% van €15.820 tot €27.920, 45% van €27.920 tot €48.320, en 50% op alles boven €48.320. Er geldt een belastingvrije som van ±€10.570."
       }
     },
     {
@@ -147,7 +121,15 @@ Heb je een specifieke vraag over jouw loonsituatie? Gebruik onze **[gratis loonb
       "name": "Wat is de RSZ-bijdrage en hoeveel bedraagt die?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "RSZ staat voor Rijksdienst voor Sociale Zekerheid. Als werknemer betaal je 13,07% van je brutoloon. Dit financiert je sociale bescherming."
+        "text": "De RSZ-bijdrage financiert de sociale zekerheid. Als werknemer betaal je 13,07% van je brutoloon. Je werkgever betaalt daar bovenop nog 25% tot 30%."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Hoe wordt vakantiegeld berekend?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Enkel vakantiegeld is je gewone loon tijdens vakantie. Dubbel vakantiegeld bedraagt 92% van je bruto maandloon en wordt meestal in mei of juni uitbetaald."
       }
     },
     {
@@ -155,41 +137,31 @@ Heb je een specifieke vraag over jouw loonsituatie? Gebruik onze **[gratis loonb
       "name": "Wat is de bedrijfsvoorheffing?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "De bedrijfsvoorheffing is een voorschot op je personenbelasting dat je werkgever maandelijks inhoudt. Het bedrag hangt af van je inkomen, gezinssituatie en statuut."
+        "text": "De bedrijfsvoorheffing is een voorschot op je personenbelasting dat je werkgever maandelijks inhoudt. Na je belastingaangifte wordt verrekend."
       }
     },
     {
       "@type": "Question",
-      "name": "Wat is de werkbonus en kom ik in aanmerking?",
+      "name": "Heeft mijn gezinssituatie invloed op mijn nettoloon?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "De werkbonus is een RSZ-vermindering voor werknemers met een laag tot gemiddeld brutoloon (onder ±€2.961,27). De maximale bonus bedraagt €277,83 per maand."
+        "text": "Ja, je gezinssituatie heeft grote impact. Het huwelijksquotiënt en kinderen ten laste verhogen je belastingvrije som, wat resulteert in een hoger nettoloon."
       }
     },
     {
       "@type": "Question",
-      "name": "Hoeveel belastingen betaal ik op mijn loon?",
+      "name": "Wat zijn veelvoorkomende extralegale voordelen en hoe worden ze belast?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "België hanteert progressieve belastingschijven: 25%, 40%, 45% en 50%. Iedereen geniet een belastingvrije som van ±€10.570."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Telt mijn eindejaarspremie mee?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Ja, maar je eindejaarspremie wordt apart belast tegen een vast tarief van ongeveer 35-40%, niet progressief. RSZ van 13,07% is ook van toepassing."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Klopt mijn loonbrief? Hoe controleer ik dat?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Controleer je brutoloon, RSZ (13,07%), belastbaar loon, bedrijfsvoorheffing en nettoloon. Zie je afwijkingen? Contacteer je HR-afdeling of sociaal secretariaat."
+        "text": "Extralegale voordelen zoals maaltijdcheques, bedrijfswagen en groepsverzekering worden fiscaal voordeliger behandeld dan gewoon loon. Ze zijn vaak voordeliger dan een brutoloonsverhoging."
       }
     }
   ]
 }
 ```
+
+---
+
+**Interne link suggesties:**
+- Link naar de loonberekening calculator tool
+- Link naar gerelateerde tools (belastingberekening, vakantiegeld calculator)

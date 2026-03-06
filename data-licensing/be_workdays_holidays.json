@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "1.0.0",
+  "jurisdiction": "BE",
+  "type": "workdays_holidays",
+  "generatedAt": "2026-02-18",
+  "notes": [
+    "Belgium has 10 statutory public holidays.",
+    "If a public holiday falls on a Sunday or non-working day, a replacement day off is typically granted, but the exact replacement date can be set by the employer/sector via collective agreement. This dataset includes the statutory dates plus a rule stub for replacements."
+  ],
+  "workweek": {
+    "defaultWorkdays": ["monday", "tuesday", "wednesday", "thursday", "friday"],
+    "defaultWeekend": ["saturday", "sunday"],
+    "timeZone": "Europe/Brussels"
+  },
+  "replacementHolidayRule": {
+    "enabled": true,
+    "description": "If a statutory holiday falls on a non-working day for the employee, a replacement day off is granted. The replacement date is employer/sector-defined.",
+    "replacementDate": null,
+    "requiresEmployerCalendar": true
+  },
+  "years": {
+    "2026": {
+      "publicHolidays": [
+        {"name": "New Year's Day", "date": "2026-01-01"},
+        {"name": "Easter Monday", "date": "2026-04-06"},
+        {"name": "Labour Day", "date": "2026-05-01"},
+        {"name": "Ascension Day", "date": "2026-05-14"},
+        {"name": "Whit Monday", "date": "2026-05-25"},
+        {"name": "Belgian National Holiday", "date": "2026-07-21"},
+        {"name": "Assumption Day", "date": "2026-08-15"},
+        {"name": "All Saints' Day", "date": "2026-11-01"},
+        {"name": "Armistice Day", "date": "2026-11-11"},
+        {"name": "Christmas Day", "date": "2026-12-25"}
+      ]
+    }
+  }
+}

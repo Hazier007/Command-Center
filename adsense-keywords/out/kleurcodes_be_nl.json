@@ -1,0 +1,370 @@
+{
+    "version": "0.1.20260218",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "4.2872 sec.",
+    "cost": 0.075,
+    "tasks_count": 1,
+    "tasks_error": 0,
+    "tasks": [
+        {
+            "id": "02190832-7962-0367-0000-fd8ecb229bc5",
+            "status_code": 20000,
+            "status_message": "Ok.",
+            "time": "4.1287 sec.",
+            "cost": 0.075,
+            "result_count": 10,
+            "path": [
+                "v3",
+                "keywords_data",
+                "google_ads",
+                "search_volume",
+                "live"
+            ],
+            "data": {
+                "api": "keywords_data",
+                "function": "search_volume",
+                "se": "google_ads",
+                "keywords": [
+                    "ral kleurcode zoeken",
+                    "kleurcode auto opzoeken",
+                    "hex naar rgb omzetten",
+                    "rgb naar hex omzetten",
+                    "pantone naar ral",
+                    "kleurcode verf muur",
+                    "kleurcode wit ral 9010 vs 9016",
+                    "kleurcode zwart ral",
+                    "kleurcode grijs ral",
+                    "kleurcode blauwe ral"
+                ],
+                "location_code": 2528,
+                "language_code": "nl"
+            },
+            "result": [
+                {
+                    "keyword": "ral kleurcode zoeken",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                },
+                {
+                    "keyword": "kleurcode auto opzoeken",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": "LOW",
+                    "competition_index": 7,
+                    "search_volume": 20,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": [
+                        {
+                            "year": 2025,
+                            "month": 12,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 11,
+                            "search_volume": 20
+                        },
+                        {
+                            "year": 2025,
+                            "month": 10,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 9,
+                            "search_volume": 20
+                        },
+                        {
+                            "year": 2025,
+                            "month": 8,
+                            "search_volume": 20
+                        },
+                        {
+                            "year": 2025,
+                            "month": 7,
+                            "search_volume": 20
+                        },
+                        {
+                            "year": 2025,
+                            "month": 6,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 5,
+                            "search_volume": 20
+                        },
+                        {
+                            "year": 2025,
+                            "month": 4,
+                            "search_volume": 20
+                        },
+                        {
+                            "year": 2025,
+                            "month": 3,
+                            "search_volume": 20
+                        },
+                        {
+                            "year": 2025,
+                            "month": 2,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 1,
+                            "search_volume": 10
+                        }
+                    ]
+                },
+                {
+                    "keyword": "hex naar rgb omzetten",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                },
+                {
+                    "keyword": "rgb naar hex omzetten",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                },
+                {
+                    "keyword": "pantone naar ral",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": "LOW",
+                    "competition_index": 4,
+                    "search_volume": 70,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": [
+                        {
+                            "year": 2025,
+                            "month": 12,
+                            "search_volume": 50
+                        },
+                        {
+                            "year": 2025,
+                            "month": 11,
+                            "search_volume": 70
+                        },
+                        {
+                            "year": 2025,
+                            "month": 10,
+                            "search_volume": 70
+                        },
+                        {
+                            "year": 2025,
+                            "month": 9,
+                            "search_volume": 70
+                        },
+                        {
+                            "year": 2025,
+                            "month": 8,
+                            "search_volume": 70
+                        },
+                        {
+                            "year": 2025,
+                            "month": 7,
+                            "search_volume": 70
+                        },
+                        {
+                            "year": 2025,
+                            "month": 6,
+                            "search_volume": 90
+                        },
+                        {
+                            "year": 2025,
+                            "month": 5,
+                            "search_volume": 70
+                        },
+                        {
+                            "year": 2025,
+                            "month": 4,
+                            "search_volume": 70
+                        },
+                        {
+                            "year": 2025,
+                            "month": 3,
+                            "search_volume": 110
+                        },
+                        {
+                            "year": 2025,
+                            "month": 2,
+                            "search_volume": 90
+                        },
+                        {
+                            "year": 2025,
+                            "month": 1,
+                            "search_volume": 110
+                        }
+                    ]
+                },
+                {
+                    "keyword": "kleurcode verf muur",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                },
+                {
+                    "keyword": "kleurcode wit ral 9010 vs 9016",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                },
+                {
+                    "keyword": "kleurcode zwart ral",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": "LOW",
+                    "competition_index": 7,
+                    "search_volume": 40,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": [
+                        {
+                            "year": 2025,
+                            "month": 12,
+                            "search_volume": 30
+                        },
+                        {
+                            "year": 2025,
+                            "month": 11,
+                            "search_volume": 40
+                        },
+                        {
+                            "year": 2025,
+                            "month": 10,
+                            "search_volume": 40
+                        },
+                        {
+                            "year": 2025,
+                            "month": 9,
+                            "search_volume": 30
+                        },
+                        {
+                            "year": 2025,
+                            "month": 8,
+                            "search_volume": 50
+                        },
+                        {
+                            "year": 2025,
+                            "month": 7,
+                            "search_volume": 50
+                        },
+                        {
+                            "year": 2025,
+                            "month": 6,
+                            "search_volume": 50
+                        },
+                        {
+                            "year": 2025,
+                            "month": 5,
+                            "search_volume": 50
+                        },
+                        {
+                            "year": 2025,
+                            "month": 4,
+                            "search_volume": 50
+                        },
+                        {
+                            "year": 2025,
+                            "month": 3,
+                            "search_volume": 40
+                        },
+                        {
+                            "year": 2025,
+                            "month": 2,
+                            "search_volume": 50
+                        },
+                        {
+                            "year": 2025,
+                            "month": 1,
+                            "search_volume": 40
+                        }
+                    ]
+                },
+                {
+                    "keyword": "kleurcode grijs ral",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                },
+                {
+                    "keyword": "kleurcode blauwe ral",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                }
+            ]
+        }
+    ]
+}

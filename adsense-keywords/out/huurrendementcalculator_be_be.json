@@ -1,0 +1,431 @@
+{
+    "version": "0.1.20260218",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "2.7600 sec.",
+    "cost": 0.075,
+    "tasks_count": 1,
+    "tasks_error": 0,
+    "tasks": [
+        {
+            "id": "02190832-7962-0367-0000-abc1ccc20fa0",
+            "status_code": 20000,
+            "status_message": "Ok.",
+            "time": "2.7156 sec.",
+            "cost": 0.075,
+            "result_count": 10,
+            "path": [
+                "v3",
+                "keywords_data",
+                "google_ads",
+                "search_volume",
+                "live"
+            ],
+            "data": {
+                "api": "keywords_data",
+                "function": "search_volume",
+                "se": "google_ads",
+                "keywords": [
+                    "bruto huurrendement berekenen",
+                    "netto huurrendement berekenen",
+                    "huurprijs bepalen rendement",
+                    "kosten verhuur appartement",
+                    "registratierechten belgie berekenen",
+                    "onroerende voorheffing berekenen",
+                    "huurindexatie berekenen",
+                    "huurwaarborg berekenen",
+                    "rendement vastgoed belgie",
+                    "cashflow berekenen vastgoed"
+                ],
+                "location_code": 2056,
+                "language_code": "nl"
+            },
+            "result": [
+                {
+                    "keyword": "bruto huurrendement berekenen",
+                    "spell": null,
+                    "location_code": 2056,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                },
+                {
+                    "keyword": "netto huurrendement berekenen",
+                    "spell": null,
+                    "location_code": 2056,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": "MEDIUM",
+                    "competition_index": 57,
+                    "search_volume": 10,
+                    "low_top_of_page_bid": 0.52,
+                    "high_top_of_page_bid": 3.5,
+                    "cpc": 3.15,
+                    "monthly_searches": [
+                        {
+                            "year": 2025,
+                            "month": 12,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 11,
+                            "search_volume": 20
+                        },
+                        {
+                            "year": 2025,
+                            "month": 10,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 9,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 8,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 7,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 6,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 5,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 4,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 3,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 2,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 1,
+                            "search_volume": 10
+                        }
+                    ]
+                },
+                {
+                    "keyword": "huurprijs bepalen rendement",
+                    "spell": null,
+                    "location_code": 2056,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                },
+                {
+                    "keyword": "kosten verhuur appartement",
+                    "spell": null,
+                    "location_code": 2056,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": "MEDIUM",
+                    "competition_index": 34,
+                    "search_volume": 70,
+                    "low_top_of_page_bid": 1.03,
+                    "high_top_of_page_bid": 3.38,
+                    "cpc": 3.82,
+                    "monthly_searches": [
+                        {
+                            "year": 2025,
+                            "month": 12,
+                            "search_volume": 40
+                        },
+                        {
+                            "year": 2025,
+                            "month": 11,
+                            "search_volume": 70
+                        },
+                        {
+                            "year": 2025,
+                            "month": 10,
+                            "search_volume": 50
+                        },
+                        {
+                            "year": 2025,
+                            "month": 9,
+                            "search_volume": 70
+                        },
+                        {
+                            "year": 2025,
+                            "month": 8,
+                            "search_volume": 50
+                        },
+                        {
+                            "year": 2025,
+                            "month": 7,
+                            "search_volume": 50
+                        },
+                        {
+                            "year": 2025,
+                            "month": 6,
+                            "search_volume": 50
+                        },
+                        {
+                            "year": 2025,
+                            "month": 5,
+                            "search_volume": 70
+                        },
+                        {
+                            "year": 2025,
+                            "month": 4,
+                            "search_volume": 70
+                        },
+                        {
+                            "year": 2025,
+                            "month": 3,
+                            "search_volume": 90
+                        },
+                        {
+                            "year": 2025,
+                            "month": 2,
+                            "search_volume": 110
+                        },
+                        {
+                            "year": 2025,
+                            "month": 1,
+                            "search_volume": 90
+                        }
+                    ]
+                },
+                {
+                    "keyword": "registratierechten belgie berekenen",
+                    "spell": null,
+                    "location_code": 2056,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                },
+                {
+                    "keyword": "onroerende voorheffing berekenen",
+                    "spell": null,
+                    "location_code": 2056,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": "LOW",
+                    "competition_index": 0,
+                    "search_volume": 1300,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": 1.33,
+                    "monthly_searches": [
+                        {
+                            "year": 2025,
+                            "month": 12,
+                            "search_volume": 880
+                        },
+                        {
+                            "year": 2025,
+                            "month": 11,
+                            "search_volume": 1300
+                        },
+                        {
+                            "year": 2025,
+                            "month": 10,
+                            "search_volume": 1600
+                        },
+                        {
+                            "year": 2025,
+                            "month": 9,
+                            "search_volume": 1600
+                        },
+                        {
+                            "year": 2025,
+                            "month": 8,
+                            "search_volume": 1600
+                        },
+                        {
+                            "year": 2025,
+                            "month": 7,
+                            "search_volume": 1300
+                        },
+                        {
+                            "year": 2025,
+                            "month": 6,
+                            "search_volume": 1300
+                        },
+                        {
+                            "year": 2025,
+                            "month": 5,
+                            "search_volume": 1000
+                        },
+                        {
+                            "year": 2025,
+                            "month": 4,
+                            "search_volume": 880
+                        },
+                        {
+                            "year": 2025,
+                            "month": 3,
+                            "search_volume": 1000
+                        },
+                        {
+                            "year": 2025,
+                            "month": 2,
+                            "search_volume": 1000
+                        },
+                        {
+                            "year": 2025,
+                            "month": 1,
+                            "search_volume": 1300
+                        }
+                    ]
+                },
+                {
+                    "keyword": "huurindexatie berekenen",
+                    "spell": null,
+                    "location_code": 2056,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": "LOW",
+                    "competition_index": 5,
+                    "search_volume": 2900,
+                    "low_top_of_page_bid": 0.02,
+                    "high_top_of_page_bid": 0.05,
+                    "cpc": 0.06,
+                    "monthly_searches": [
+                        {
+                            "year": 2025,
+                            "month": 12,
+                            "search_volume": 2400
+                        },
+                        {
+                            "year": 2025,
+                            "month": 11,
+                            "search_volume": 2400
+                        },
+                        {
+                            "year": 2025,
+                            "month": 10,
+                            "search_volume": 2400
+                        },
+                        {
+                            "year": 2025,
+                            "month": 9,
+                            "search_volume": 2900
+                        },
+                        {
+                            "year": 2025,
+                            "month": 8,
+                            "search_volume": 2400
+                        },
+                        {
+                            "year": 2025,
+                            "month": 7,
+                            "search_volume": 2400
+                        },
+                        {
+                            "year": 2025,
+                            "month": 6,
+                            "search_volume": 2400
+                        },
+                        {
+                            "year": 2025,
+                            "month": 5,
+                            "search_volume": 2900
+                        },
+                        {
+                            "year": 2025,
+                            "month": 4,
+                            "search_volume": 2900
+                        },
+                        {
+                            "year": 2025,
+                            "month": 3,
+                            "search_volume": 2900
+                        },
+                        {
+                            "year": 2025,
+                            "month": 2,
+                            "search_volume": 3600
+                        },
+                        {
+                            "year": 2025,
+                            "month": 1,
+                            "search_volume": 3600
+                        }
+                    ]
+                },
+                {
+                    "keyword": "huurwaarborg berekenen",
+                    "spell": null,
+                    "location_code": 2056,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                },
+                {
+                    "keyword": "rendement vastgoed belgie",
+                    "spell": null,
+                    "location_code": 2056,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                },
+                {
+                    "keyword": "cashflow berekenen vastgoed",
+                    "spell": null,
+                    "location_code": 2056,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                }
+            ]
+        }
+    ]
+}

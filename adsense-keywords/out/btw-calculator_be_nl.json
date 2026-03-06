@@ -1,0 +1,370 @@
+{
+    "version": "0.1.20260218",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "2.6852 sec.",
+    "cost": 0.075,
+    "tasks_count": 1,
+    "tasks_error": 0,
+    "tasks": [
+        {
+            "id": "02190833-7962-0367-0000-3ec3cef2b718",
+            "status_code": 20000,
+            "status_message": "Ok.",
+            "time": "2.6171 sec.",
+            "cost": 0.075,
+            "result_count": 10,
+            "path": [
+                "v3",
+                "keywords_data",
+                "google_ads",
+                "search_volume",
+                "live"
+            ],
+            "data": {
+                "api": "keywords_data",
+                "function": "search_volume",
+                "se": "google_ads",
+                "keywords": [
+                    "btw berekenen zelfstandige",
+                    "btw berekenen webshop",
+                    "btw berekenen verlegd",
+                    "btw berekenen marge",
+                    "btw berekenen uit bedrag",
+                    "btw berekenen inclusief exclusief",
+                    "btw tarief horeca belgie",
+                    "btw tarief renovatie 6 procent",
+                    "btw vrijgesteld wat betekent",
+                    "btw nummer controleren"
+                ],
+                "location_code": 2528,
+                "language_code": "nl"
+            },
+            "result": [
+                {
+                    "keyword": "btw berekenen zelfstandige",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                },
+                {
+                    "keyword": "btw berekenen webshop",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                },
+                {
+                    "keyword": "btw berekenen verlegd",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                },
+                {
+                    "keyword": "btw berekenen marge",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                },
+                {
+                    "keyword": "btw berekenen uit bedrag",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": "LOW",
+                    "competition_index": 5,
+                    "search_volume": 10,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": 0.02,
+                    "monthly_searches": [
+                        {
+                            "year": 2025,
+                            "month": 12,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 11,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 10,
+                            "search_volume": 20
+                        },
+                        {
+                            "year": 2025,
+                            "month": 9,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 8,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 7,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 6,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 5,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 4,
+                            "search_volume": 20
+                        },
+                        {
+                            "year": 2025,
+                            "month": 3,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 2,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 1,
+                            "search_volume": 10
+                        }
+                    ]
+                },
+                {
+                    "keyword": "btw berekenen inclusief exclusief",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                },
+                {
+                    "keyword": "btw tarief horeca belgie",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": "LOW",
+                    "competition_index": 0,
+                    "search_volume": 10,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": [
+                        {
+                            "year": 2025,
+                            "month": 12,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 11,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 10,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 9,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 8,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 7,
+                            "search_volume": 0
+                        },
+                        {
+                            "year": 2025,
+                            "month": 6,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 5,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 4,
+                            "search_volume": 0
+                        },
+                        {
+                            "year": 2025,
+                            "month": 3,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 2,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 1,
+                            "search_volume": 10
+                        }
+                    ]
+                },
+                {
+                    "keyword": "btw tarief renovatie 6 procent",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                },
+                {
+                    "keyword": "btw vrijgesteld wat betekent",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                },
+                {
+                    "keyword": "btw nummer controleren",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": "LOW",
+                    "competition_index": 4,
+                    "search_volume": 4400,
+                    "low_top_of_page_bid": 0.21,
+                    "high_top_of_page_bid": 1.66,
+                    "cpc": 1.92,
+                    "monthly_searches": [
+                        {
+                            "year": 2025,
+                            "month": 12,
+                            "search_volume": 3600
+                        },
+                        {
+                            "year": 2025,
+                            "month": 11,
+                            "search_volume": 4400
+                        },
+                        {
+                            "year": 2025,
+                            "month": 10,
+                            "search_volume": 5400
+                        },
+                        {
+                            "year": 2025,
+                            "month": 9,
+                            "search_volume": 4400
+                        },
+                        {
+                            "year": 2025,
+                            "month": 8,
+                            "search_volume": 3600
+                        },
+                        {
+                            "year": 2025,
+                            "month": 7,
+                            "search_volume": 4400
+                        },
+                        {
+                            "year": 2025,
+                            "month": 6,
+                            "search_volume": 4400
+                        },
+                        {
+                            "year": 2025,
+                            "month": 5,
+                            "search_volume": 4400
+                        },
+                        {
+                            "year": 2025,
+                            "month": 4,
+                            "search_volume": 5400
+                        },
+                        {
+                            "year": 2025,
+                            "month": 3,
+                            "search_volume": 5400
+                        },
+                        {
+                            "year": 2025,
+                            "month": 2,
+                            "search_volume": 5400
+                        },
+                        {
+                            "year": 2025,
+                            "month": 1,
+                            "search_volume": 6600
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

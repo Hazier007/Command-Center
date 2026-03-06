@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "1.0.0",
+  "jurisdiction": "BE",
+  "type": "mileage_allowance",
+  "currency": "EUR",
+  "generatedAt": "2026-02-18",
+  "notes": [
+    "Belgium has a tax-free mileage allowance maximum rate that is indexed.",
+    "Employers can typically choose either an annually indexed rate (fixed for a 12-month period) or a quarterly indexed rate (adjusted every quarter).",
+    "This dataset stores commonly published maximums; always verify against the official Belgian publication/circular for payroll/legal use."
+  ],
+  "indexationSystems": [
+    {
+      "id": "annual",
+      "label": "Annual indexed maximum (fixed for 12 months once chosen)",
+      "series": [
+        {
+          "effectiveFrom": "2025-07-01",
+          "effectiveTo": "2026-06-30",
+          "ratePerKm": 0.4449,
+          "sourceHint": "Publicly published annual indexed mileage allowance (Jul 2025–Jun 2026)."
+        }
+      ]
+    },
+    {
+      "id": "quarterly",
+      "label": "Quarterly indexed maximum",
+      "series": [
+        {
+          "effectiveFrom": "2025-10-01",
+          "effectiveTo": "2025-12-31",
+          "ratePerKm": 0.4312,
+          "sourceHint": "Publicly published quarterly indexed mileage allowance (Oct–Dec 2025)."
+        },
+        {
+          "effectiveFrom": "2026-01-01",
+          "effectiveTo": "2026-03-31",
+          "ratePerKm": 0.4326,
+          "sourceHint": "Publicly published quarterly indexed mileage allowance (Jan–Mar 2026)."
+        }
+      ]
+    }
+  ],
+  "taxTreatment": {
+    "typicalTreatment": "Tax-free / social-security-exempt up to the published maximum when conditions are met.",
+    "annualDistanceSoftCapKm": 24000,
+    "note": "If mileage exceeds the cap, proof may be required depending on employer policy/administration."
+  }
+}

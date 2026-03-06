@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Plus, Edit, Trash2, FileText, User, Globe, Calendar, CheckCircle, XCircle, Rocket, MessageSquare, Eye, EyeOff, ChevronDown, ChevronRight } from "lucide-react"
-// import ReactMarkdown from "react-markdown" // TODO: install react-markdown
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -424,15 +425,30 @@ export default function ContentPage() {
             </TabsList>
 
             <TabsContent value={selectedTab} className="mt-4">
-              <div className="flex flex-col gap-3">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {filteredContent.map((item) => (
                   <Card key={item.id}>
-                    {/* Row header: title, badges, actions — all on one line */}
-                    <div className="flex items-center gap-3 px-4 py-3">
-                      <div className="flex-1 min-w-0 flex items-center gap-3">
-                        <CardTitle className="text-base truncate">{item.title}</CardTitle>
-                        <Badge className={getTypeColor(item.type)}>{item.type}</Badge>
-                        <Badge className={getAuthorColor(item.author)}>{item.author}</Badge>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-base truncate">{item.title}</CardTitle>
+                          <CardDescription className="flex items-center gap-2 mt-1">
+                            <Badge className={getTypeColor(item.type)}>{item.type}</Badge>
+                            <Badge className={getAuthorColor(item.author)}>{item.author}</Badge>
+                          </CardDescription>
+                        </div>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => handleDelete(item.id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-3">
                         <Badge className={getStatusColor(item.status)}>
                           {item.status === 'review' && 'Te reviewen'}
                           {item.status === 'approved' && 'Goedgekeurd'}
@@ -440,22 +456,21 @@ export default function ContentPage() {
                           {item.status === 'live' && 'Live'}
                           {item.status === 'draft' && 'Draft'}
                         </Badge>
+                        
                         {item.targetSite && (
-                          <div className="hidden md:flex items-center gap-1 text-sm text-muted-foreground">
-                            <Globe className="h-3 w-3" />
-                            <span>{item.targetSite}</span>
-                            {item.targetPath && <span>{item.targetPath}</span>}
+                          <div className="flex items-center gap-1 text-sm">
+                            <Globe className="h-4 w-4 text-blue-600" />
+                            <span className="font-medium">{item.targetSite}</span>
+                            {item.targetPath && <span className="text-muted-foreground">{item.targetPath}</span>}
                           </div>
                         )}
-                      </div>
 
-                      <div className="flex items-center gap-1 shrink-0">
-                        {/* Review Actions inline */}
+                        {/* Review Actions */}
                         {item.status === 'review' && (
-                          <>
+                          <div className="flex gap-2">
                             <Button
                               size="sm"
-                              className="bg-green-600 hover:bg-green-700 text-white h-8"
+                              className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                               onClick={() => handleStatusUpdate(item.id, 'approved')}
                             >
                               <CheckCircle className="h-4 w-4 mr-1" />
@@ -464,18 +479,20 @@ export default function ContentPage() {
                             <Button
                               size="sm"
                               variant="destructive"
-                              className="h-8"
+                              className="flex-1"
                               onClick={() => openFeedbackDialog(item, 'reject')}
                             >
                               <XCircle className="h-4 w-4 mr-1" />
                               Afwijzen
                             </Button>
-                          </>
+                          </div>
                         )}
+
+                        {/* Live Button for Approved */}
                         {item.status === 'approved' && (
                           <Button
                             size="sm"
-                            className="bg-[#F5911E] hover:bg-[#e07d0a] text-white h-8"
+                            className="w-full bg-[#F5911E] hover:bg-[#e07d0a] text-white"
                             onClick={() => handleStatusUpdate(item.id, 'live')}
                           >
                             <Rocket className="h-4 w-4 mr-1" />
@@ -483,62 +500,55 @@ export default function ContentPage() {
                           </Button>
                         )}
 
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setExpandedContent(
-                            expandedContent === item.id ? null : item.id
-                          )}
-                          className="h-8"
-                        >
-                          {expandedContent === item.id ? (
-                            <><EyeOff className="h-4 w-4 mr-1" /><span className="text-xs">Verberg</span></>
-                          ) : (
-                            <><Eye className="h-4 w-4 mr-1" /><span className="text-xs">Toon</span></>
-                          )}
-                        </Button>
-                        <Button variant="ghost" size="sm" className="h-8" onClick={() => handleEdit(item)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="h-8" onClick={() => handleDelete(item.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
+                        {/* Feedback Display */}
+                        {item.feedback && (
+                          <div className="p-2 rounded bg-red-50 dark:bg-red-900/20">
+                            <div className="flex items-center gap-1 text-xs font-medium text-red-800 dark:text-red-200 mb-1">
+                              <MessageSquare className="h-3 w-3" />
+                              Feedback:
+                            </div>
+                            <p className="text-xs text-red-700 dark:text-red-300">{item.feedback}</p>
+                          </div>
+                        )}
 
-                    {/* Mobile: site info */}
-                    {item.targetSite && (
-                      <div className="flex md:hidden items-center gap-1 text-sm text-muted-foreground px-4 pb-2">
-                        <Globe className="h-3 w-3" />
-                        <span>{item.targetSite}</span>
-                        {item.targetPath && <span>{item.targetPath}</span>}
-                      </div>
-                    )}
-
-                    {/* Feedback Display */}
-                    {item.feedback && (
-                      <div className="mx-4 mb-2 p-2 rounded bg-red-50 dark:bg-red-900/20">
-                        <div className="flex items-center gap-1 text-xs font-medium text-red-800 dark:text-red-200 mb-1">
-                          <MessageSquare className="h-3 w-3" />
-                          Feedback:
+                        {/* Expand/Collapse Content */}
+                        <div className="flex items-center justify-between">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setExpandedContent(
+                              expandedContent === item.id ? null : item.id
+                            )}
+                            className="h-6 px-2"
+                          >
+                            {expandedContent === item.id ? (
+                              <>
+                                <EyeOff className="h-3 w-3 mr-1" />
+                                <span className="text-xs">Verberg content</span>
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="h-3 w-3 mr-1" />
+                                <span className="text-xs">Toon content</span>
+                              </>
+                            )}
+                          </Button>
                         </div>
-                        <p className="text-xs text-red-700 dark:text-red-300">{item.feedback}</p>
-                      </div>
-                    )}
 
-                    {/* Expanded full-width content preview */}
-                    {expandedContent === item.id && (
-                      <div className="border-t px-4 py-4">
-                        <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg overflow-y-auto max-h-[70vh]">
-                          <pre className="whitespace-pre-wrap text-sm leading-relaxed">{item.body}</pre>
+                        {/* Expandable content section */}
+                        {expandedContent === item.id && (
+                          <div className="pt-2 border-t">
+                            <div className="max-h-[500px] overflow-y-auto bg-gray-50 dark:bg-gray-800/50 p-4 rounded text-sm prose prose-sm dark:prose-invert max-w-none prose-headings:text-base prose-headings:font-semibold prose-p:text-sm prose-table:text-xs prose-th:p-2 prose-td:p-2 prose-table:border prose-th:border prose-td:border">
+                              <ReactMarkdown remarkPlugins={[remarkGfm]}>{item.body}</ReactMarkdown>
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="text-xs text-muted-foreground">
+                          Aangemaakt {new Date(item.createdAt).toLocaleDateString('nl-BE')}
                         </div>
                       </div>
-                    )}
-
-                    {/* Footer: date */}
-                    <div className="px-4 pb-2 text-xs text-muted-foreground">
-                      Aangemaakt {new Date(item.createdAt).toLocaleDateString('nl-BE')}
-                    </div>
+                    </CardContent>
                   </Card>
                 ))}
               </div>

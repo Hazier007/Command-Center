@@ -1,0 +1,553 @@
+{
+    "version": "0.1.20260218",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "4.6287 sec.",
+    "cost": 0.075,
+    "tasks_count": 1,
+    "tasks_error": 0,
+    "tasks": [
+        {
+            "id": "02190832-7962-0367-0000-7aaf3b517145",
+            "status_code": 20000,
+            "status_message": "Ok.",
+            "time": "4.5304 sec.",
+            "cost": 0.075,
+            "result_count": 10,
+            "path": [
+                "v3",
+                "keywords_data",
+                "google_ads",
+                "search_volume",
+                "live"
+            ],
+            "data": {
+                "api": "keywords_data",
+                "function": "search_volume",
+                "se": "google_ads",
+                "keywords": [
+                    "goedkoopste energieleverancier belgie",
+                    "energie vergelijken vaste vs variabele",
+                    "dynamisch energiecontract belgie",
+                    "kwh prijs vandaag belgie",
+                    "elektriciteitsprijs per kwh",
+                    "gasprijs per kwh",
+                    "hoeveel verbruik gemiddeld gezin",
+                    "energiefactuur berekenen",
+                    "zonnepanelen terugleververgoeding",
+                    "energiecontract opzeggen termijn"
+                ],
+                "location_code": 2528,
+                "language_code": "nl"
+            },
+            "result": [
+                {
+                    "keyword": "goedkoopste energieleverancier belgie",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": "HIGH",
+                    "competition_index": 89,
+                    "search_volume": 30,
+                    "low_top_of_page_bid": 1.5,
+                    "high_top_of_page_bid": 9.78,
+                    "cpc": 6.11,
+                    "monthly_searches": [
+                        {
+                            "year": 2025,
+                            "month": 12,
+                            "search_volume": 20
+                        },
+                        {
+                            "year": 2025,
+                            "month": 11,
+                            "search_volume": 40
+                        },
+                        {
+                            "year": 2025,
+                            "month": 10,
+                            "search_volume": 40
+                        },
+                        {
+                            "year": 2025,
+                            "month": 9,
+                            "search_volume": 30
+                        },
+                        {
+                            "year": 2025,
+                            "month": 8,
+                            "search_volume": 40
+                        },
+                        {
+                            "year": 2025,
+                            "month": 7,
+                            "search_volume": 30
+                        },
+                        {
+                            "year": 2025,
+                            "month": 6,
+                            "search_volume": 30
+                        },
+                        {
+                            "year": 2025,
+                            "month": 5,
+                            "search_volume": 30
+                        },
+                        {
+                            "year": 2025,
+                            "month": 4,
+                            "search_volume": 40
+                        },
+                        {
+                            "year": 2025,
+                            "month": 3,
+                            "search_volume": 30
+                        },
+                        {
+                            "year": 2025,
+                            "month": 2,
+                            "search_volume": 20
+                        },
+                        {
+                            "year": 2025,
+                            "month": 1,
+                            "search_volume": 30
+                        }
+                    ]
+                },
+                {
+                    "keyword": "energie vergelijken vaste vs variabele",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                },
+                {
+                    "keyword": "dynamisch energiecontract belgie",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": "HIGH",
+                    "competition_index": 89,
+                    "search_volume": 10,
+                    "low_top_of_page_bid": 1.01,
+                    "high_top_of_page_bid": 5.62,
+                    "cpc": null,
+                    "monthly_searches": [
+                        {
+                            "year": 2025,
+                            "month": 12,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 11,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 10,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 9,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 8,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 7,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 6,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 5,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 4,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 3,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 2,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 1,
+                            "search_volume": 10
+                        }
+                    ]
+                },
+                {
+                    "keyword": "kwh prijs vandaag belgie",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                },
+                {
+                    "keyword": "elektriciteitsprijs per kwh",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": "MEDIUM",
+                    "competition_index": 61,
+                    "search_volume": 140,
+                    "low_top_of_page_bid": 0.17,
+                    "high_top_of_page_bid": 1.65,
+                    "cpc": 0.96,
+                    "monthly_searches": [
+                        {
+                            "year": 2025,
+                            "month": 12,
+                            "search_volume": 110
+                        },
+                        {
+                            "year": 2025,
+                            "month": 11,
+                            "search_volume": 170
+                        },
+                        {
+                            "year": 2025,
+                            "month": 10,
+                            "search_volume": 210
+                        },
+                        {
+                            "year": 2025,
+                            "month": 9,
+                            "search_volume": 110
+                        },
+                        {
+                            "year": 2025,
+                            "month": 8,
+                            "search_volume": 50
+                        },
+                        {
+                            "year": 2025,
+                            "month": 7,
+                            "search_volume": 110
+                        },
+                        {
+                            "year": 2025,
+                            "month": 6,
+                            "search_volume": 110
+                        },
+                        {
+                            "year": 2025,
+                            "month": 5,
+                            "search_volume": 90
+                        },
+                        {
+                            "year": 2025,
+                            "month": 4,
+                            "search_volume": 90
+                        },
+                        {
+                            "year": 2025,
+                            "month": 3,
+                            "search_volume": 170
+                        },
+                        {
+                            "year": 2025,
+                            "month": 2,
+                            "search_volume": 170
+                        },
+                        {
+                            "year": 2025,
+                            "month": 1,
+                            "search_volume": 260
+                        }
+                    ]
+                },
+                {
+                    "keyword": "gasprijs per kwh",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": "MEDIUM",
+                    "competition_index": 56,
+                    "search_volume": 50,
+                    "low_top_of_page_bid": 0.27,
+                    "high_top_of_page_bid": 2,
+                    "cpc": 2.57,
+                    "monthly_searches": [
+                        {
+                            "year": 2025,
+                            "month": 12,
+                            "search_volume": 50
+                        },
+                        {
+                            "year": 2025,
+                            "month": 11,
+                            "search_volume": 50
+                        },
+                        {
+                            "year": 2025,
+                            "month": 10,
+                            "search_volume": 70
+                        },
+                        {
+                            "year": 2025,
+                            "month": 9,
+                            "search_volume": 30
+                        },
+                        {
+                            "year": 2025,
+                            "month": 8,
+                            "search_volume": 20
+                        },
+                        {
+                            "year": 2025,
+                            "month": 7,
+                            "search_volume": 30
+                        },
+                        {
+                            "year": 2025,
+                            "month": 6,
+                            "search_volume": 40
+                        },
+                        {
+                            "year": 2025,
+                            "month": 5,
+                            "search_volume": 50
+                        },
+                        {
+                            "year": 2025,
+                            "month": 4,
+                            "search_volume": 70
+                        },
+                        {
+                            "year": 2025,
+                            "month": 3,
+                            "search_volume": 50
+                        },
+                        {
+                            "year": 2025,
+                            "month": 2,
+                            "search_volume": 90
+                        },
+                        {
+                            "year": 2025,
+                            "month": 1,
+                            "search_volume": 140
+                        }
+                    ]
+                },
+                {
+                    "keyword": "hoeveel verbruik gemiddeld gezin",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                },
+                {
+                    "keyword": "energiefactuur berekenen",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": 10,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": [
+                        {
+                            "year": 2025,
+                            "month": 12,
+                            "search_volume": 0
+                        },
+                        {
+                            "year": 2025,
+                            "month": 11,
+                            "search_volume": 0
+                        },
+                        {
+                            "year": 2025,
+                            "month": 10,
+                            "search_volume": 0
+                        },
+                        {
+                            "year": 2025,
+                            "month": 9,
+                            "search_volume": 0
+                        },
+                        {
+                            "year": 2025,
+                            "month": 8,
+                            "search_volume": 0
+                        },
+                        {
+                            "year": 2025,
+                            "month": 7,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 6,
+                            "search_volume": 0
+                        },
+                        {
+                            "year": 2025,
+                            "month": 5,
+                            "search_volume": 10
+                        },
+                        {
+                            "year": 2025,
+                            "month": 4,
+                            "search_volume": 0
+                        },
+                        {
+                            "year": 2025,
+                            "month": 3,
+                            "search_volume": 0
+                        },
+                        {
+                            "year": 2025,
+                            "month": 2,
+                            "search_volume": 0
+                        },
+                        {
+                            "year": 2025,
+                            "month": 1,
+                            "search_volume": 10
+                        }
+                    ]
+                },
+                {
+                    "keyword": "zonnepanelen terugleververgoeding",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": "HIGH",
+                    "competition_index": 76,
+                    "search_volume": 140,
+                    "low_top_of_page_bid": 0.59,
+                    "high_top_of_page_bid": 3.53,
+                    "cpc": 2.41,
+                    "monthly_searches": [
+                        {
+                            "year": 2025,
+                            "month": 12,
+                            "search_volume": 50
+                        },
+                        {
+                            "year": 2025,
+                            "month": 11,
+                            "search_volume": 90
+                        },
+                        {
+                            "year": 2025,
+                            "month": 10,
+                            "search_volume": 90
+                        },
+                        {
+                            "year": 2025,
+                            "month": 9,
+                            "search_volume": 170
+                        },
+                        {
+                            "year": 2025,
+                            "month": 8,
+                            "search_volume": 70
+                        },
+                        {
+                            "year": 2025,
+                            "month": 7,
+                            "search_volume": 110
+                        },
+                        {
+                            "year": 2025,
+                            "month": 6,
+                            "search_volume": 110
+                        },
+                        {
+                            "year": 2025,
+                            "month": 5,
+                            "search_volume": 170
+                        },
+                        {
+                            "year": 2025,
+                            "month": 4,
+                            "search_volume": 210
+                        },
+                        {
+                            "year": 2025,
+                            "month": 3,
+                            "search_volume": 320
+                        },
+                        {
+                            "year": 2025,
+                            "month": 2,
+                            "search_volume": 170
+                        },
+                        {
+                            "year": 2025,
+                            "month": 1,
+                            "search_volume": 110
+                        }
+                    ]
+                },
+                {
+                    "keyword": "energiecontract opzeggen termijn",
+                    "spell": null,
+                    "location_code": 2528,
+                    "language_code": "nl",
+                    "search_partners": false,
+                    "competition": null,
+                    "competition_index": null,
+                    "search_volume": null,
+                    "low_top_of_page_bid": null,
+                    "high_top_of_page_bid": null,
+                    "cpc": null,
+                    "monthly_searches": null
+                }
+            ]
+        }
+    ]
+}
