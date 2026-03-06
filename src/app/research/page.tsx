@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { Plus, Edit, Trash2, Search, User, Calendar, Eye, EyeOff, FileText, BarChart3, Brain, Database, Users, Wrench } from "lucide-react"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -226,7 +228,7 @@ export default function ResearchPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 via-background to-background dark:from-orange-950/25 dark:via-background dark:to-background">
-      <div className="mx-auto max-w-6xl px-4 py-6 md:px-6">
+      <div className="mx-auto max-w-7xl px-4 py-6 md:px-6">
         <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Onderzoeken</h1>
@@ -393,53 +395,35 @@ export default function ResearchPage() {
             </TabsList>
 
             <TabsContent value={selectedTab} className="mt-4">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="flex flex-col gap-3">
                 {filteredResearch.map((item) => {
                   const TypeIcon = getTypeIcon(item.type)
                   return (
                     <Card key={item.id}>
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1 min-w-0">
-                            <CardTitle className="text-base flex items-center gap-2">
-                              <TypeIcon className="h-4 w-4" />
-                              {item.title}
-                            </CardTitle>
-                            <CardDescription className="flex items-center gap-2 mt-2">
-                              <Badge className={getTypeColor(item.type)}>
-                                {item.type === 'keyword-research' ? 'Keyword Research' : 
-                                 item.type === 'market-analysis' ? 'Market Analysis' :
-                                 item.type === 'api-research' ? 'API Research' :
-                                 item.type === 'oracle' ? 'Oracle' :
-                                 item.type === 'competitor' ? 'Competitor' :
-                                 item.type === 'technical' ? 'Technical' : 'Other'
-                                }
-                              </Badge>
-                              <Badge className={getAuthorColor(item.author)}>
-                                {getAuthorEmoji(item.author)} {item.author}
-                              </Badge>
-                            </CardDescription>
-                          </div>
-                          <div className="flex gap-1">
-                            <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm" onClick={() => handleDelete(item.id)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pt-0">
-                        <div className="space-y-3">
+                      {/* Row header */}
+                      <div className="flex items-center gap-3 px-4 py-3 flex-wrap md:flex-nowrap">
+                        <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
+                          <TypeIcon className="h-4 w-4 shrink-0" />
+                          <CardTitle className="text-base truncate">{item.title}</CardTitle>
+                          <Badge className={getTypeColor(item.type)}>
+                            {item.type === 'keyword-research' ? 'Keyword Research' : 
+                             item.type === 'market-analysis' ? 'Market Analysis' :
+                             item.type === 'api-research' ? 'API Research' :
+                             item.type === 'oracle' ? 'Oracle' :
+                             item.type === 'competitor' ? 'Competitor' :
+                             item.type === 'technical' ? 'Technical' : 'Other'
+                            }
+                          </Badge>
+                          <Badge className={getAuthorColor(item.author)}>
+                            {getAuthorEmoji(item.author)} {item.author}
+                          </Badge>
                           <Badge className={getStatusColor(item.status)}>
                             {item.status === 'draft' ? 'Draft' : 
                              item.status === 'final' ? 'Final' : 'Outdated'
                             }
                           </Badge>
-
                           {item.tags && (
-                            <div className="flex flex-wrap gap-1">
+                            <div className="hidden md:flex flex-wrap gap-1">
                               {item.tags.split(',').map((tag, index) => (
                                 <Badge key={index} variant="secondary" className="text-xs">
                                   {tag.trim()}
@@ -447,48 +431,46 @@ export default function ResearchPage() {
                               ))}
                             </div>
                           )}
+                        </div>
 
-                          <p className="text-sm text-muted-foreground line-clamp-3">
-                            {item.body.slice(0, 200)}...
-                          </p>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Button variant="ghost" size="sm" className="h-8" onClick={() => setExpandedResearch(expandedResearch === item.id ? null : item.id)}>
+                            {expandedResearch === item.id ? <><EyeOff className="h-4 w-4 mr-1" /><span className="text-xs">Verberg</span></> : <><Eye className="h-4 w-4 mr-1" /><span className="text-xs">Lees</span></>}
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-8" onClick={() => handleEdit(item)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-8" onClick={() => handleDelete(item.id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
 
-                          <div className="flex items-center justify-between">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setExpandedResearch(
-                                expandedResearch === item.id ? null : item.id
-                              )}
-                              className="h-6 px-2"
-                            >
-                              {expandedResearch === item.id ? (
-                                <>
-                                  <EyeOff className="h-3 w-3 mr-1" />
-                                  <span className="text-xs">Verberg</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Eye className="h-3 w-3 mr-1" />
-                                  <span className="text-xs">Lees meer</span>
-                                </>
-                              )}
-                            </Button>
-                          </div>
+                      {/* Mobile: tags */}
+                      {item.tags && (
+                        <div className="flex md:hidden flex-wrap gap-1 px-4 pb-2">
+                          {item.tags.split(',').map((tag, index) => (
+                            <Badge key={index} variant="secondary" className="text-xs">
+                              {tag.trim()}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
 
-                          {expandedResearch === item.id && (
-                            <div className="pt-2 border-t">
-                              <div className="max-h-64 overflow-y-auto bg-gray-50 dark:bg-gray-800/50 p-3 rounded text-sm">
-                                <pre className="whitespace-pre-wrap text-xs">{item.body}</pre>
-                              </div>
-                            </div>
-                          )}
-
-                          <div className="text-xs text-muted-foreground flex items-center gap-2">
-                            <Calendar className="h-3 w-3" />
-                            {new Date(item.createdAt).toLocaleDateString('nl-BE')}
+                      {/* Expanded full-width content */}
+                      {expandedResearch === item.id && (
+                        <div className="border-t px-4 py-4">
+                          <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg overflow-y-auto max-h-[70vh] prose prose-sm dark:prose-invert max-w-none prose-headings:text-base prose-headings:font-semibold prose-p:text-sm prose-table:text-xs prose-th:p-2 prose-td:p-2 prose-table:border prose-th:border prose-td:border">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{item.body}</ReactMarkdown>
                           </div>
                         </div>
-                      </CardContent>
+                      )}
+
+                      {/* Footer */}
+                      <div className="px-4 pb-2 text-xs text-muted-foreground flex items-center gap-2">
+                        <Calendar className="h-3 w-3" />
+                        {new Date(item.createdAt).toLocaleDateString('nl-BE')}
+                      </div>
                     </Card>
                   )
                 })}
