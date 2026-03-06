@@ -1,0 +1,331 @@
+{
+  "disclaimer": {
+    "note": "Producten zijn geselecteerd via publieke listings/merken die vaak op Amazon NL voorkomen. Prijzen/rating kunnen veranderen; verifieer live op Amazon voor import.",
+    "currency": "EUR",
+    "market": "amazon.nl"
+  },
+  "categories": {
+    "kayaks": [
+      {
+        "name": "Intex Challenger K1 Kayak (1-persoons set)",
+        "brand": "Intex",
+        "amazon_query": "Intex Challenger K1 kayak",
+        "url": "https://www.amazon.nl/s?k=Intex+Challenger+K1+kayak",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["bekend instapmodel", "set (peddel/pomp) vaak inbegrepen"],
+        "specs": {"capacity": "1 persoons", "type": "recreatie"}
+      },
+      {
+        "name": "Intex Challenger K2 Kayak (2-persoons)",
+        "brand": "Intex",
+        "amazon_query": "Intex Challenger K2 kayak",
+        "url": "https://www.amazon.nl/s?k=Intex+Challenger+K2+kayak",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["2-persoons", "populair voor recreatief gebruik"],
+        "specs": {"capacity": "2 persoons", "type": "recreatie"}
+      },
+      {
+        "name": "Bestway Hydro-Force (Cove Champion / Ventura-achtig)",
+        "brand": "Bestway",
+        "amazon_query": "Bestway Hydro-Force kayak",
+        "url": "https://www.amazon.nl/s?k=Bestway+Hydro-Force+kayak",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["budgetvriendelijk", "veel reviews"],
+        "specs": {"type": "recreatie"}
+      },
+      {
+        "name": "Sevylor Tahiti / Colorado (opblaasbare kayak)",
+        "brand": "Sevylor",
+        "amazon_query": "Sevylor kayak opblaasbaar",
+        "url": "https://www.amazon.nl/s?k=Sevylor+kayak+opblaasbaar",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["bekend merk in inflatable", "meerdere modellen"],
+        "specs": {"type": "recreatie/touring"}
+      },
+      {
+        "name": "Aqua Marina Laxo (opblaasbare kayak)",
+        "brand": "Aqua Marina",
+        "amazon_query": "Aqua Marina Laxo kayak",
+        "url": "https://www.amazon.nl/s?k=Aqua+Marina+Laxo+kayak",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["sterke prijs/kwaliteit", "2-3 persoons varianten"],
+        "specs": {"type": "recreatie"}
+      }
+    ],
+    "sup_boards": [
+      {
+        "name": "Aqua Marina Fusion SUP set",
+        "brand": "Aqua Marina",
+        "amazon_query": "Aqua Marina Fusion SUP",
+        "url": "https://www.amazon.nl/s?k=Aqua+Marina+Fusion+SUP",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["allround", "vaak complete set"],
+        "specs": {"length": "~10'10", "type": "allround"}
+      },
+      {
+        "name": "FunWater SUP board set",
+        "brand": "FunWater",
+        "amazon_query": "FunWater SUP board set",
+        "url": "https://www.amazon.nl/s?k=FunWater+SUP+board+set",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["budget set", "populair op marketplaces"],
+        "specs": {"type": "allround"}
+      },
+      {
+        "name": "Bestway Hydro-Force SUP (Aqua Journey / Oceana)",
+        "brand": "Bestway",
+        "amazon_query": "Bestway Hydro-Force SUP",
+        "url": "https://www.amazon.nl/s?k=Bestway+Hydro-Force+SUP",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["goed verkrijgbaar", "instapniveau"],
+        "specs": {"type": "allround"}
+      },
+      {
+        "name": "Bluefin Cruise SUP (premium set)",
+        "brand": "Bluefin",
+        "amazon_query": "Bluefin Cruise SUP",
+        "url": "https://www.amazon.nl/s?k=Bluefin+Cruise+SUP",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["premium", "hoge max PSI (model-afhankelijk)"],
+        "specs": {"type": "allround"}
+      },
+      {
+        "name": "Niphean / FEATH-R-LITE SUP (varianten)",
+        "brand": "Niphean/FEATH-R-LITE",
+        "amazon_query": "FEATH-R-LITE SUP",
+        "url": "https://www.amazon.nl/s?k=FEATH-R-LITE+SUP",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["veel varianten", "vaak bundels"],
+        "specs": {"type": "allround"}
+      }
+    ],
+    "vissersboten": [
+      {
+        "name": "Belly boat (verschillende modellen) — visboot opblaasbaar",
+        "brand": "diverse",
+        "amazon_query": "belly boat",
+        "url": "https://www.amazon.nl/s?k=belly+boat",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["sterke koopintentie", "niche"],
+        "specs": {"type": "belly boat"}
+      },
+      {
+        "name": "Intex Seahawk (opblaasboot) — geschikt voor vissen",
+        "brand": "Intex",
+        "amazon_query": "Intex Seahawk opblaasboot",
+        "url": "https://www.amazon.nl/s?k=Intex+Seahawk+opblaasboot",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["klassieker", "vaak met hengelhouders (model-afhankelijk)"],
+        "specs": {"type": "dinghy"}
+      },
+      {
+        "name": "Intex Mariner (steviger opblaasboot, motor-mogelijk model-afhankelijk)",
+        "brand": "Intex",
+        "amazon_query": "Intex Mariner opblaasboot",
+        "url": "https://www.amazon.nl/s?k=Intex+Mariner+opblaasboot",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["steviger klasse", "geschikt voor zwaarder gebruik"],
+        "specs": {"type": "dinghy"}
+      },
+      {
+        "name": "Talamex / Hydro-Force opblaasboot (alternatieven)",
+        "brand": "Talamex/Bestway",
+        "amazon_query": "opblaasboot met spiegel motor",
+        "url": "https://www.amazon.nl/s?k=opblaasboot+met+spiegel+motor",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["motor-compatibiliteit (spiegel)", "vissers-use-case"],
+        "specs": {"type": "dinghy"}
+      },
+      {
+        "name": "Anker + lijn set (voor boot/vissen)",
+        "brand": "diverse",
+        "amazon_query": "anker set opblaasboot",
+        "url": "https://www.amazon.nl/s?k=anker+set+opblaasboot",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["accessoire met duidelijke intent", "upsell"],
+        "specs": {"type": "accessoire"}
+      }
+    ],
+    "kinderboten": [
+      {
+        "name": "Intex Explorer Pro 100",
+        "brand": "Intex",
+        "amazon_query": "Intex Explorer Pro 100",
+        "url": "https://www.amazon.nl/s?k=Intex+Explorer+Pro+100",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["populair budget", "1 kind/klein bootje"],
+        "specs": {"capacity": "1 kind"}
+      },
+      {
+        "name": "Intex Explorer Pro 200",
+        "brand": "Intex",
+        "amazon_query": "Intex Explorer Pro 200",
+        "url": "https://www.amazon.nl/s?k=Intex+Explorer+Pro+200",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["groter dan Pro 100", "vaak met peddels/pomp"],
+        "specs": {"capacity": "1-2 kinderen"}
+      },
+      {
+        "name": "Bestway opblaasboot kind (varianten)",
+        "brand": "Bestway",
+        "amazon_query": "Bestway opblaasboot kind",
+        "url": "https://www.amazon.nl/s?k=Bestway+opblaasboot+kind",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["veel designs", "goed verkrijgbaar"],
+        "specs": {"type": "speelboot"}
+      },
+      {
+        "name": "Opblaasboot met stuur (kids) — varianten",
+        "brand": "diverse",
+        "amazon_query": "opblaasboot met stuur kinderen",
+        "url": "https://www.amazon.nl/s?k=opblaasboot+met+stuur+kinderen",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["sterke differentiator", "cadeau-intent"],
+        "specs": {"type": "speelboot"}
+      },
+      {
+        "name": "Kinderzwemvest (veiligheid upsell)",
+        "brand": "diverse",
+        "amazon_query": "kinder zwemvest 15-30 kg",
+        "url": "https://www.amazon.nl/s?k=kinder+zwemvest+15-30+kg",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["veiligheid", "cross-sell"],
+        "specs": {"type": "veiligheid"}
+      }
+    ],
+    "zwembaden": [
+      {
+        "name": "Intex Easy Set (rond opblaasbaar zwembad)",
+        "brand": "Intex",
+        "amazon_query": "Intex Easy Set zwembad",
+        "url": "https://www.amazon.nl/s?k=Intex+Easy+Set+zwembad",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["top seller type", "veel maten"],
+        "specs": {"shape": "rond", "type": "easy set"}
+      },
+      {
+        "name": "Intex opblaasbaar kinderzwembad (klein)",
+        "brand": "Intex",
+        "amazon_query": "Intex kinderzwembad opblaasbaar",
+        "url": "https://www.amazon.nl/s?k=Intex+kinderzwembad+opblaasbaar",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["laag instapbudget", "veel varianten"],
+        "specs": {"type": "kinderbad"}
+      },
+      {
+        "name": "Bestway Fast Set (opblaasbaar zwembad)",
+        "brand": "Bestway",
+        "amazon_query": "Bestway Fast Set zwembad",
+        "url": "https://www.amazon.nl/s?k=Bestway+Fast+Set+zwembad",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["alternatief voor Intex", "goed verkrijgbaar"],
+        "specs": {"type": "fast set"}
+      },
+      {
+        "name": "Opblaasbaar zwembad met filterpomp (bundel)",
+        "brand": "Intex/Bestway",
+        "amazon_query": "zwembad opblaasbaar met filterpomp",
+        "url": "https://www.amazon.nl/s?k=zwembad+opblaasbaar+met+filterpomp",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["filter = duidelijke USP", "hogere orderwaarde"],
+        "specs": {"feature": "filterpomp"}
+      },
+      {
+        "name": "Opblaasbaar kinderzwembad met glijbaan/sproeier",
+        "brand": "Intex/Bestway",
+        "amazon_query": "kinderzwembad opblaasbaar met glijbaan",
+        "url": "https://www.amazon.nl/s?k=kinderzwembad+opblaasbaar+met+glijbaan",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["cadeau/gezins-intent", "veel clicks"],
+        "specs": {"feature": "glijbaan"}
+      }
+    ],
+    "accessoires": [
+      {
+        "name": "Elektrische pomp 12V/230V (SUP/boot)",
+        "brand": "diverse",
+        "amazon_query": "elektrische pomp sup 20 psi",
+        "url": "https://www.amazon.nl/s?k=elektrische+pomp+sup+20+psi",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["grootste painkiller", "upsell"],
+        "specs": {"power": "12V/230V", "psi": "tot 20 (model-afhankelijk)"}
+      },
+      {
+        "name": "SUP peddel verstelbaar (aluminium/carbon)",
+        "brand": "diverse",
+        "amazon_query": "sup peddel verstelbaar",
+        "url": "https://www.amazon.nl/s?k=sup+peddel+verstelbaar",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["veel varianten", "makkelijk vergelijken"],
+        "specs": {"type": "peddel"}
+      },
+      {
+        "name": "Kayak peddel dubbelblad (deelbaar)",
+        "brand": "diverse",
+        "amazon_query": "kayak peddel dubbelblad deelbaar",
+        "url": "https://www.amazon.nl/s?k=kayak+peddel+dubbelblad+deelbaar",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["compatibel met opblaas-kayaks", "upsell"],
+        "specs": {"type": "peddel"}
+      },
+      {
+        "name": "Leash voor SUP",
+        "brand": "diverse",
+        "amazon_query": "SUP leash",
+        "url": "https://www.amazon.nl/s?k=SUP+leash",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["veiligheid", "hoge attach rate"],
+        "specs": {"type": "leash"}
+      },
+      {
+        "name": "Dry bag (waterdichte tas)",
+        "brand": "diverse",
+        "amazon_query": "dry bag waterdicht",
+        "url": "https://www.amazon.nl/s?k=dry+bag+waterdicht",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["universeel", "cross-sell"],
+        "specs": {"type": "tas"}
+      },
+      {
+        "name": "Reparatieset voor opblaasboot/SUP",
+        "brand": "diverse",
+        "amazon_query": "reparatieset opblaasboot",
+        "url": "https://www.amazon.nl/s?k=reparatieset+opblaasboot",
+        "price_eur": null,
+        "rating": null,
+        "usps": ["handig", "differentiator op productpagina"],
+        "specs": {"type": "repair"}
+      }
+    ]
+  }
+}

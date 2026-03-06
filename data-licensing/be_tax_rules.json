@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "1.0.0",
+  "jurisdiction": "BE",
+  "type": "vat",
+  "currency": "EUR",
+  "generatedAt": "2026-02-18",
+  "notes": [
+    "This file captures Belgium VAT rate tiers and a small curated set of notable rate/application changes with effective dates.",
+    "It is NOT a full legal VAT classification database (which depends on product/service definitions and exceptions)."
+  ],
+  "rateTiers": [
+    {
+      "id": "vat_standard",
+      "rate": 0.21,
+      "label": "Standard rate",
+      "effectiveFrom": "2010-01-01",
+      "effectiveTo": null
+    },
+    {
+      "id": "vat_reduced_12",
+      "rate": 0.12,
+      "label": "Reduced rate",
+      "effectiveFrom": "2010-01-01",
+      "effectiveTo": null
+    },
+    {
+      "id": "vat_reduced_6",
+      "rate": 0.06,
+      "label": "Super-reduced rate",
+      "effectiveFrom": "2010-01-01",
+      "effectiveTo": null
+    }
+  ],
+  "notableChanges": [
+    {
+      "id": "2026-03-01_hospitality_takeaway_leisure",
+      "effectiveFrom": "2026-03-01",
+      "summary": "Planned VAT reclassification changes for specific hospitality/take-away/leisure items (postponed to March 1, 2026 in public reporting).",
+      "changes": [
+        {
+          "topic": "Hotels / campgrounds / certain leisure activities",
+          "fromRate": 0.06,
+          "toRate": 0.12,
+          "note": "Scope depends on exact service and legal definitions."
+        },
+        {
+          "topic": "Certain take-away meals",
+          "fromRate": 0.06,
+          "toRate": 0.12,
+          "note": "Scope depends on exact product definition."
+        },
+        {
+          "topic": "Non-alcoholic drinks in restaurants/cafés (in-venue)",
+          "fromRate": 0.21,
+          "toRate": 0.12,
+          "note": "Applies to specific contexts per the announced change package."
+        }
+      ],
+      "sourceHint": "Public summaries/press articles about Belgium 2026 VAT change package (verify against Belgian official publications before relying for invoicing)."
+    }
+  ],
+  "changelog": [
+    {
+      "effectiveFrom": "2010-01-01",
+      "change": "VAT tiers (21%, 12%, 6%) in common use; treated as baseline in this dataset.",
+      "sourceHint": "General VAT rate references."
+    },
+    {
+      "effectiveFrom": "2026-03-01",
+      "change": "Curated set of announced reclassifications for specific goods/services (see notableChanges).",
+      "sourceHint": "Public reporting; must be verified against official Belgian publications."
+    }
+  ]
+}
