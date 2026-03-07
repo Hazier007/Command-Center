@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Edit, Trash2, Calendar, Flag, User, Users } from "lucide-react"
+import { Plus, Edit, Trash2, Calendar, Flag, User, Users, ChevronDown, ChevronRight, X } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -23,21 +23,26 @@ const assigneeOptions = [
   { value: 'lisa', label: 'Lisa 📋' },
   { value: 'jc', label: 'JC 🥊' },
   { value: 'wout', label: 'Wout 🔭' },
+  { value: 'copycat', label: 'Copycat ✍️' },
 ]
 
-const assigneeEmojis = {
+const assigneeEmojis: Record<string, string> = {
   bart: '👑',
   lisa: '📋',
   jc: '🥊',
-  wout: '🔭'
+  wout: '🔭',
+  copycat: '✍️',
 }
 
-const assigneeNames = {
+const assigneeNames: Record<string, string> = {
   bart: 'Bart',
   lisa: 'Lisa',
   jc: 'JC',
-  wout: 'Wout'
+  wout: 'Wout',
+  copycat: 'Copycat',
 }
+
+const selectClass = "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -46,6 +51,19 @@ export default function TasksPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
+
+  // Filter state
+  const [filterSite, setFilterSite] = useState("")
+  const [filterAssignee, setFilterAssignee] = useState("")
+  const [filterPriority, setFilterPriority] = useState("")
+
+  // Collapsible columns (done collapsed by default)
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
+    todo: false,
+    'in-progress': false,
+    review: false,
+    done: true,
+  })
 
   // Form state
   const [formData, setFormData] = useState({
@@ -73,19 +91,35 @@ export default function TasksPage() {
     load()
   }, [])
 
-  const filteredTasks = tasks.filter(task =>
-    task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    task.description?.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredTasks = tasks.filter(task => {
+    if (searchTerm && !task.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !task.description?.toLowerCase().includes(searchTerm.toLowerCase())) return false
+    if (filterSite && task.siteId !== filterSite) return false
+    if (filterAssignee && task.assignee !== filterAssignee) return false
+    if (filterPriority && task.priority !== filterPriority) return false
+    return true
+  })
 
   const todoTasks = filteredTasks.filter(t => t.status === 'todo')
   const inProgressTasks = filteredTasks.filter(t => t.status === 'in-progress')
   const reviewTasks = filteredTasks.filter(t => t.status === 'review')
   const doneTasks = filteredTasks.filter(t => t.status === 'done')
 
+  const hasActiveFilters = filterSite || filterAssignee || filterPriority
+
+  const clearFilters = () => {
+    setFilterSite("")
+    setFilterAssignee("")
+    setFilterPriority("")
+  }
+
+  const toggleCollapse = (col: string) => {
+    setCollapsed(prev => ({ ...prev, [col]: !prev[col] }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (editingTask) {
       await tasksStorage.update(editingTask.id, {
         title: formData.title,
@@ -208,7 +242,7 @@ export default function TasksPage() {
               {task.description}
             </p>
           )}
-          
+
           <div className="flex flex-wrap gap-1">
             {task.priority && (
               <Badge className={getPriorityColor(task.priority)}>
@@ -219,12 +253,12 @@ export default function TasksPage() {
             {task.assignee && (
               <Badge variant="outline" className="text-xs">
                 <Users className="h-2 w-2 mr-1" />
-                {assigneeEmojis[task.assignee as keyof typeof assigneeEmojis]} {assigneeNames[task.assignee as keyof typeof assigneeNames]}
+                {assigneeEmojis[task.assignee]} {assigneeNames[task.assignee] ?? task.assignee}
               </Badge>
             )}
             {task.dueDate && (
-              <Badge 
-                variant={isOverdue(task.dueDate) ? "destructive" : "outline"} 
+              <Badge
+                variant={isOverdue(task.dueDate) ? "destructive" : "outline"}
                 className="text-xs"
               >
                 <Calendar className="h-2 w-2 mr-1" />
@@ -285,6 +319,52 @@ export default function TasksPage() {
     </Card>
   )
 
+  const KanbanColumn = ({
+    id,
+    label,
+    tasks: colTasks,
+    colorClass,
+    textClass,
+    emptyText,
+    status,
+  }: {
+    id: string
+    label: string
+    tasks: Task[]
+    colorClass: string
+    textClass: string
+    emptyText: string
+    status: Task['status']
+  }) => {
+    const isCollapsed = collapsed[id]
+    return (
+      <div className="space-y-3">
+        <button
+          onClick={() => toggleCollapse(id)}
+          className={`w-full flex items-center justify-between p-4 rounded-lg ${colorClass} hover:opacity-90 transition-opacity`}
+        >
+          <h2 className={`text-lg font-semibold ${textClass} flex items-center gap-2`}>
+            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            {label}
+          </h2>
+          <Badge variant="secondary">{colTasks.length}</Badge>
+        </button>
+        {!isCollapsed && (
+          <div className="min-h-[400px]">
+            {colTasks.map((task) => (
+              <TaskCard key={task.id} task={task} status={status} />
+            ))}
+            {colTasks.length === 0 && (
+              <div className="text-center py-8 text-sm text-muted-foreground">
+                {emptyText}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 via-background to-background dark:from-orange-950/25 dark:via-background dark:to-background">
       <div className="mx-auto max-w-7xl px-4 py-6 md:px-6">
@@ -293,6 +373,7 @@ export default function TasksPage() {
             <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
             <p className="text-muted-foreground">
               {todoTasks.length} to do · {inProgressTasks.length} in progress · {reviewTasks.length} review · {doneTasks.length} done
+              {hasActiveFilters && <span className="text-[#F5911E] ml-1">(filtered)</span>}
             </p>
           </div>
 
@@ -326,7 +407,7 @@ export default function TasksPage() {
                       autoFocus
                     />
                   </div>
-                  
+
                   <div>
                     <label htmlFor="description" className="text-sm font-medium">Description</label>
                     <Textarea
@@ -345,7 +426,7 @@ export default function TasksPage() {
                         id="status"
                         value={formData.status}
                         onChange={(e) => setFormData({ ...formData, status: e.target.value as Task['status'] })}
-                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        className={selectClass}
                       >
                         <option value="todo">To Do</option>
                         <option value="in-progress">In Progress</option>
@@ -359,7 +440,7 @@ export default function TasksPage() {
                         id="priority"
                         value={formData.priority}
                         onChange={(e) => setFormData({ ...formData, priority: e.target.value as Task['priority'] })}
-                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        className={selectClass}
                       >
                         <option value="low">Low</option>
                         <option value="medium">Medium</option>
@@ -375,7 +456,7 @@ export default function TasksPage() {
                         id="siteId"
                         value={formData.siteId}
                         onChange={(e) => setFormData({ ...formData, siteId: e.target.value })}
-                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        className={selectClass}
                       >
                         <option value="">Geen site</option>
                         {sites.sort((a, b) => a.domain.localeCompare(b.domain)).map((site) => (
@@ -389,7 +470,7 @@ export default function TasksPage() {
                         id="projectId"
                         value={formData.projectId}
                         onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
-                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        className={selectClass}
                       >
                         <option value="">No project</option>
                         {projects.map((project) => (
@@ -403,7 +484,7 @@ export default function TasksPage() {
                         id="assignee"
                         value={formData.assignee}
                         onChange={(e) => setFormData({ ...formData, assignee: e.target.value })}
-                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        className={selectClass}
                       >
                         <option value="">Niet toegewezen</option>
                         {assigneeOptions.map((option) => (
@@ -437,102 +518,94 @@ export default function TasksPage() {
         </header>
 
         <div className="mt-6 space-y-4">
-          <Input
-            placeholder="Search tasks..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="md:max-w-sm"
-          />
+          {/* Search + Filter Bar */}
+          <div className="flex flex-wrap gap-2 items-center">
+            <Input
+              placeholder="Search tasks..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="md:max-w-xs"
+            />
+
+            <select
+              value={filterSite}
+              onChange={(e) => setFilterSite(e.target.value)}
+              className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              <option value="">All sites</option>
+              {sites.sort((a, b) => a.domain.localeCompare(b.domain)).map((site) => (
+                <option key={site.id} value={site.id}>{site.domain}</option>
+              ))}
+            </select>
+
+            <select
+              value={filterAssignee}
+              onChange={(e) => setFilterAssignee(e.target.value)}
+              className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              <option value="">All assignees</option>
+              {assigneeOptions.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+
+            <select
+              value={filterPriority}
+              onChange={(e) => setFilterPriority(e.target.value)}
+              className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              <option value="">All priorities</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="text-[#F5911E] hover:text-[#F5911E] hover:bg-orange-50 dark:hover:bg-orange-950/20">
+                <X className="h-3 w-3 mr-1" />
+                Clear filters
+              </Button>
+            )}
+          </div>
 
           {/* Kanban Board */}
           <div className="grid gap-6 md:grid-cols-4">
-            {/* To Do Column */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20">
-                <h2 className="text-lg font-semibold text-blue-900 dark:text-blue-200">
-                  To Do
-                </h2>
-                <Badge variant="secondary">
-                  {todoTasks.length}
-                </Badge>
-              </div>
-              <div className="min-h-[400px]">
-                {todoTasks.map((task) => (
-                  <TaskCard key={task.id} task={task} status="todo" />
-                ))}
-                {todoTasks.length === 0 && (
-                  <div className="text-center py-8 text-sm text-muted-foreground">
-                    No tasks in To Do
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* In Progress Column */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-4 rounded-lg bg-orange-50 dark:bg-orange-950/20">
-                <h2 className="text-lg font-semibold text-orange-900 dark:text-orange-200">
-                  In Progress
-                </h2>
-                <Badge variant="secondary">
-                  {inProgressTasks.length}
-                </Badge>
-              </div>
-              <div className="min-h-[400px]">
-                {inProgressTasks.map((task) => (
-                  <TaskCard key={task.id} task={task} status="in-progress" />
-                ))}
-                {inProgressTasks.length === 0 && (
-                  <div className="text-center py-8 text-sm text-muted-foreground">
-                    No tasks in progress
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Review Column */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-4 rounded-lg bg-amber-50 dark:bg-amber-950/20">
-                <h2 className="text-lg font-semibold text-amber-900 dark:text-amber-200">
-                  🔍 Review
-                </h2>
-                <Badge variant="secondary">
-                  {reviewTasks.length}
-                </Badge>
-              </div>
-              <div className="min-h-[400px]">
-                {reviewTasks.map((task) => (
-                  <TaskCard key={task.id} task={task} status="review" />
-                ))}
-                {reviewTasks.length === 0 && (
-                  <div className="text-center py-8 text-sm text-muted-foreground">
-                    Nothing to review
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Done Column */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-4 rounded-lg bg-green-50 dark:bg-green-950/20">
-                <h2 className="text-lg font-semibold text-green-900 dark:text-green-200">
-                  Done
-                </h2>
-                <Badge variant="secondary">
-                  {doneTasks.length}
-                </Badge>
-              </div>
-              <div className="min-h-[400px]">
-                {doneTasks.map((task) => (
-                  <TaskCard key={task.id} task={task} status="done" />
-                ))}
-                {doneTasks.length === 0 && (
-                  <div className="text-center py-8 text-sm text-muted-foreground">
-                    No completed tasks
-                  </div>
-                )}
-              </div>
-            </div>
+            <KanbanColumn
+              id="todo"
+              label="To Do"
+              tasks={todoTasks}
+              colorClass="bg-blue-50 dark:bg-blue-950/20"
+              textClass="text-blue-900 dark:text-blue-200"
+              emptyText="No tasks in To Do"
+              status="todo"
+            />
+            <KanbanColumn
+              id="in-progress"
+              label="In Progress"
+              tasks={inProgressTasks}
+              colorClass="bg-orange-50 dark:bg-orange-950/20"
+              textClass="text-orange-900 dark:text-orange-200"
+              emptyText="No tasks in progress"
+              status="in-progress"
+            />
+            <KanbanColumn
+              id="review"
+              label="🔍 Review"
+              tasks={reviewTasks}
+              colorClass="bg-amber-50 dark:bg-amber-950/20"
+              textClass="text-amber-900 dark:text-amber-200"
+              emptyText="Nothing to review"
+              status="review"
+            />
+            <KanbanColumn
+              id="done"
+              label="Done"
+              tasks={doneTasks}
+              colorClass="bg-green-50 dark:bg-green-950/20"
+              textClass="text-green-900 dark:text-green-200"
+              emptyText="No completed tasks"
+              status="done"
+            />
           </div>
 
           {tasks.length === 0 && (
@@ -541,8 +614,8 @@ export default function TasksPage() {
               <p className="text-sm text-muted-foreground mt-1">
                 Create your first task to get organized
               </p>
-              <Button 
-                className="mt-4" 
+              <Button
+                className="mt-4"
                 onClick={() => {
                   setEditingTask(null)
                   resetForm()
