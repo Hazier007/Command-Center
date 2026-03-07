@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Edit, Trash2, Calendar, Flag, User, Users, ChevronDown, ChevronRight, X } from "lucide-react"
+import { Plus, Edit, Trash2, Calendar, Flag, User, Users, ChevronDown, ChevronRight, X, Archive, Eye, EyeOff } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -69,12 +69,15 @@ export default function TasksPage() {
     projectId: "",
   })
 
-  // Collapsible columns (done collapsed by default)
+  // Hide done tasks by default
+  const [showDone, setShowDone] = useState(false)
+
+  // Collapsible columns
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
     todo: false,
     'in-progress': false,
     review: false,
-    done: true,
+    done: false,
   })
 
   // Form state
@@ -455,12 +458,20 @@ export default function TasksPage() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
             <p className="text-muted-foreground">
-              {todoTasks.length} to do · {inProgressTasks.length} in progress · {reviewTasks.length} review · {doneTasks.length} done
+              {todoTasks.length} to do · {inProgressTasks.length} in progress · {reviewTasks.length} review
               {hasActiveFilters && <span className="text-[#F5911E] ml-1">(filtered)</span>}
             </p>
           </div>
 
           <div className="flex gap-2">
+            <Button
+              variant={showDone ? "default" : "outline"}
+              onClick={() => setShowDone(!showDone)}
+              className={showDone ? "bg-green-600 hover:bg-green-700" : ""}
+            >
+              {showDone ? <EyeOff className="mr-2 h-4 w-4" /> : <Archive className="mr-2 h-4 w-4" />}
+              {showDone ? "Verberg afgerond" : `Afgerond (${doneTasks.length})`}
+            </Button>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button onClick={() => {
@@ -652,7 +663,7 @@ export default function TasksPage() {
           </div>
 
           {/* Kanban Board */}
-          <div className="grid gap-6 md:grid-cols-4">
+          <div className={`grid gap-6 ${showDone ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
             <KanbanColumn
               id="todo"
               label="To Do"
@@ -680,15 +691,17 @@ export default function TasksPage() {
               emptyText="Nothing to review"
               status="review"
             />
-            <KanbanColumn
-              id="done"
-              label="Done"
-              tasks={doneTasks}
-              colorClass="bg-green-50 dark:bg-green-950/20"
-              textClass="text-green-900 dark:text-green-200"
-              emptyText="No completed tasks"
-              status="done"
-            />
+            {showDone && (
+              <KanbanColumn
+                id="done"
+                label="✅ Afgerond"
+                tasks={doneTasks}
+                colorClass="bg-green-50 dark:bg-green-950/20"
+                textClass="text-green-900 dark:text-green-200"
+                emptyText="Geen afgeronde taken"
+                status="done"
+              />
+            )}
           </div>
 
           {/* Follow-up Task Dialog */}
