@@ -10,6 +10,9 @@ export async function PATCH(
     const { id } = await params
     const data = await request.json()
     
+    // Auto-assign to Bart when status changes to review
+    const assignee = data.status === 'review' && !data.assignee ? 'bart' : data.assignee
+    
     const task = await prisma.task.update({
       where: { id },
       data: {
@@ -19,7 +22,7 @@ export async function PATCH(
         projectId: data.projectId,
         siteId: data.siteId,
         priority: data.priority,
-        assignee: data.assignee,
+        assignee: data.status === 'review' ? 'bart' : assignee,
         dueDate: data.dueDate ? new Date(data.dueDate) : null,
         notified: data.notified,
         notifiedAt: data.notifiedAt ? new Date(data.notifiedAt) : undefined,

@@ -188,7 +188,12 @@ export default function TasksPage() {
   }
 
   const handleStatusChange = async (taskId: string, newStatus: Task['status']) => {
-    await tasksStorage.update(taskId, { status: newStatus })
+    const updateData: Record<string, string> = { status: newStatus }
+    // Auto-assign to Bart when moving to review
+    if (newStatus === 'review') {
+      updateData.assignee = 'bart'
+    }
+    await tasksStorage.update(taskId, updateData)
     const allTasks = await tasksStorage.getAll()
     setTasks(allTasks)
   }
