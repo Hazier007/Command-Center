@@ -57,6 +57,18 @@ export default function TasksPage() {
   const [filterAssignee, setFilterAssignee] = useState("")
   const [filterPriority, setFilterPriority] = useState("")
 
+  // Follow-up dialog state
+  const [followUpDialogOpen, setFollowUpDialogOpen] = useState(false)
+  const [followUpSourceTask, setFollowUpSourceTask] = useState<Task | null>(null)
+  const [followUpForm, setFollowUpForm] = useState({
+    title: "",
+    description: "",
+    assignee: "",
+    priority: "medium" as Task['priority'],
+    siteId: "",
+    projectId: "",
+  })
+
   // Collapsible columns (done collapsed by default)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
     todo: false,
@@ -198,6 +210,72 @@ export default function TasksPage() {
     setTasks(allTasks)
   }
 
+  const getFollowUpSuggestion = (task: Task): { suggestedTitle: string; suggestedAssignee: string } => {
+    const titleLower = task.title.toLowerCase()
+    if (task.assignee === 'wout') {
+      return { suggestedTitle: `Content schrijven: ${task.title}`, suggestedAssignee: 'copycat' }
+    }
+    if (task.assignee === 'copycat') {
+      return { suggestedTitle: `Implementeren: ${task.title}`, suggestedAssignee: 'lisa' }
+    }
+    if (task.assignee === 'lisa') {
+      return { suggestedTitle: `QA Review: ${task.title}`, suggestedAssignee: 'jc' }
+    }
+    if (task.assignee === 'jc') {
+      return { suggestedTitle: `Deploy: ${task.title}`, suggestedAssignee: 'lisa' }
+    }
+    if (titleLower.includes('keyword') || titleLower.includes('research')) {
+      return { suggestedTitle: `Content schrijven: ${task.title}`, suggestedAssignee: 'copycat' }
+    }
+    if (titleLower.includes('content') || titleLower.includes('blog') || titleLower.includes('tekst')) {
+      return { suggestedTitle: `Implementeren: ${task.title}`, suggestedAssignee: 'lisa' }
+    }
+    return { suggestedTitle: '', suggestedAssignee: '' }
+  }
+
+  const handleDoneClick = (task: Task) => {
+    const { suggestedTitle, suggestedAssignee } = getFollowUpSuggestion(task)
+    setFollowUpSourceTask(task)
+    setFollowUpForm({
+      title: suggestedTitle,
+      description: "",
+      assignee: suggestedAssignee,
+      priority: task.priority || "medium",
+      siteId: task.siteId || "",
+      projectId: task.projectId || "",
+    })
+    setFollowUpDialogOpen(true)
+  }
+
+  const handleConfirmWithFollowUp = async () => {
+    if (!followUpSourceTask) return
+    await tasksStorage.update(followUpSourceTask.id, { status: 'done' })
+    if (followUpForm.title.trim()) {
+      await tasksStorage.create({
+        title: followUpForm.title,
+        description: followUpForm.description || undefined,
+        status: 'todo',
+        assignee: followUpForm.assignee || undefined,
+        priority: followUpForm.priority || undefined,
+        siteId: followUpForm.siteId || undefined,
+        projectId: followUpForm.projectId || undefined,
+      })
+    }
+    const allTasks = await tasksStorage.getAll()
+    setTasks(allTasks)
+    setFollowUpDialogOpen(false)
+    setFollowUpSourceTask(null)
+  }
+
+  const handleConfirmWithoutFollowUp = async () => {
+    if (!followUpSourceTask) return
+    await tasksStorage.update(followUpSourceTask.id, { status: 'done' })
+    const allTasks = await tasksStorage.getAll()
+    setTasks(allTasks)
+    setFollowUpDialogOpen(false)
+    setFollowUpSourceTask(null)
+  }
+
   const getPriorityColor = (priority?: Task['priority']) => {
     switch (priority) {
       case 'high': return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200'
@@ -309,7 +387,7 @@ export default function TasksPage() {
                 variant="outline"
                 size="sm"
                 className="text-xs h-6"
-                onClick={() => handleStatusChange(task.id, 'done')}
+                onClick={() => handleDoneClick(task)}
               >
                 Done
               </Button>
@@ -612,6 +690,109 @@ export default function TasksPage() {
               status="done"
             />
           </div>
+
+          {/* Follow-up Task Dialog */}
+          <Dialog open={followUpDialogOpen} onOpenChange={setFollowUpDialogOpen}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Taak afronden — Follow-up?</DialogTitle>
+                <DialogDescription>
+                  Wil je een follow-up taak aanmaken voor &ldquo;{followUpSourceTask?.title}&rdquo;?
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium">Titel follow-up taak</label>
+                  <Input
+                    value={followUpForm.title}
+                    onChange={(e) => setFollowUpForm({ ...followUpForm, title: e.target.value })}
+                    placeholder="Titel van de follow-up taak"
+                    autoFocus
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Omschrijving</label>
+                  <Textarea
+                    value={followUpForm.description}
+                    onChange={(e) => setFollowUpForm({ ...followUpForm, description: e.target.value })}
+                    placeholder="Optionele omschrijving"
+                    className="min-h-[70px]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium">Toewijzen aan</label>
+                    <select
+                      value={followUpForm.assignee}
+                      onChange={(e) => setFollowUpForm({ ...followUpForm, assignee: e.target.value })}
+                      className={selectClass}
+                    >
+                      <option value="">Niet toegewezen</option>
+                      {assigneeOptions.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Prioriteit</label>
+                    <select
+                      value={followUpForm.priority}
+                      onChange={(e) => setFollowUpForm({ ...followUpForm, priority: e.target.value as Task['priority'] })}
+                      className={selectClass}
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Site</label>
+                    <select
+                      value={followUpForm.siteId}
+                      onChange={(e) => setFollowUpForm({ ...followUpForm, siteId: e.target.value })}
+                      className={selectClass}
+                    >
+                      <option value="">Geen site</option>
+                      {sites.sort((a, b) => a.domain.localeCompare(b.domain)).map((site) => (
+                        <option key={site.id} value={site.id}>{site.domain}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Project</label>
+                    <select
+                      value={followUpForm.projectId}
+                      onChange={(e) => setFollowUpForm({ ...followUpForm, projectId: e.target.value })}
+                      className={selectClass}
+                    >
+                      <option value="">Geen project</option>
+                      {projects.map((project) => (
+                        <option key={project.id} value={project.id}>{project.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    className="flex-1"
+                    onClick={handleConfirmWithFollowUp}
+                    disabled={!followUpForm.title.trim()}
+                  >
+                    Afronden + Follow-up aanmaken
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleConfirmWithoutFollowUp}
+                  >
+                    Afronden zonder follow-up
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {tasks.length === 0 && (
             <div className="text-center py-12">
