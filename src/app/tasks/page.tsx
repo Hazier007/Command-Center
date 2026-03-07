@@ -293,7 +293,7 @@ export default function TasksPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs h-6 border-amber-500/50 text-amber-500 hover:bg-amber-500/10"
+                className="text-xs h-6"
                 onClick={() => handleStatusChange(task.id, 'review')}
               >
                 Review
