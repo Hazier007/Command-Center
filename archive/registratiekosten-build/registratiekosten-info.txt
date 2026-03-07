@@ -1,0 +1,6 @@
+Project: registratiekosten.be
+Live URL: https://registratiekosten.be
+Repo: Hazier007/registratiekosten.be
+Branch: main
+Vercel project: registratiekosten-be
+Last verified: 2026-03-07 11:55
