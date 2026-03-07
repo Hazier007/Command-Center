@@ -229,7 +229,7 @@ export default function SitesPage() {
 
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label htmlFor="revenue" className="text-sm font-medium">Omzet €</label>
+                    <label htmlFor="revenue" className="text-sm font-medium">Revenue (EUR/mnd)</label>
                     <Input
                       id="revenue"
                       type="number"
