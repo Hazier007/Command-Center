@@ -1,0 +1,402 @@
+[
+  {
+    "city": "Antwerpen",
+    "population": 556138,
+    "avg_house_price": 392000,
+    "contractor_density": "High (500+ listings)",
+    "popular_renovation_type": "Industrial lofts & row houses",
+    "local_fact": "De Grote Markt features richly decorated gildehuizen and the Brabo Fountain."
+  },
+  {
+    "city": "Gent",
+    "population": 269191,
+    "avg_house_price": 419000,
+    "contractor_density": "High (400+ listings)",
+    "popular_renovation_type": "Row houses & energy upgrades",
+    "local_fact": "Home to the Gravensteen, a medieval castle in the heart of the city."
+  },
+  {
+    "city": "Brugge",
+    "population": 119748,
+    "avg_house_price": 330000,
+    "contractor_density": "High (200+ listings)",
+    "popular_renovation_type": "Historical restoration & row houses",
+    "local_fact": "The Belfort tower offers panoramic views of this UNESCO World Heritage city."
+  },
+  {
+    "city": "Leuven",
+    "population": 103868,
+    "avg_house_price": 470000,
+    "contractor_density": "High (150+ listings)",
+    "popular_renovation_type": "Student housing & modern apartments",
+    "local_fact": "Known for the oldest Catholic university in the world and high property prices."
+  },
+  {
+    "city": "Aalst",
+    "population": 90931,
+    "avg_house_price": 479000,
+    "contractor_density": "Medium (100+ listings)",
+    "popular_renovation_type": "Row houses & urban renewal",
+    "local_fact": "Famous for its vibrant Carnival, which is recognized by UNESCO."
+  },
+  {
+    "city": "Mechelen",
+    "population": 89262,
+    "avg_house_price": 515000,
+    "contractor_density": "Medium (100+ listings)",
+    "popular_renovation_type": "Historical row houses & townhouses",
+    "local_fact": "The Sint-Romboutstoren is a major landmark with a world-famous carillon."
+  },
+  {
+    "city": "Hasselt",
+    "population": 89585,
+    "avg_house_price": 350000,
+    "contractor_density": "Medium (150+ listings)",
+    "popular_renovation_type": "Modern new build & energy upgrades",
+    "local_fact": "Hosts the largest Japanese Garden in Europe."
+  },
+  {
+    "city": "Sint-Niklaas",
+    "population": 81803,
+    "avg_house_price": 304000,
+    "contractor_density": "Medium (120+ listings)",
+    "popular_renovation_type": "Row houses & commercial spaces",
+    "local_fact": "Has the largest market square in Belgium."
+  },
+  {
+    "city": "Kortrijk",
+    "population": 79980,
+    "avg_house_price": 276000,
+    "contractor_density": "Medium (130+ listings)",
+    "popular_renovation_type": "Worker house renovation & lofts",
+    "local_fact": "The medieval Broeltorens are iconic symbols of the city on the Leie river."
+  },
+  {
+    "city": "Oostende",
+    "population": 72504,
+    "avg_house_price": 275000,
+    "contractor_density": "Medium (110+ listings)",
+    "popular_renovation_type": "Coastal apartments & second homes",
+    "local_fact": "Known as the 'Queen of the Seaside Resorts' (Koningin der Badsteden)."
+  },
+  {
+    "city": "Genk",
+    "population": 67838,
+    "avg_house_price": 247000,
+    "contractor_density": "Medium (140+ listings)",
+    "popular_renovation_type": "Mining house restoration & new builds",
+    "local_fact": "C-Mine is an impressive cultural site built on a former coal mine."
+  },
+  {
+    "city": "Roeselare",
+    "population": 66214,
+    "avg_house_price": 248250,
+    "contractor_density": "Medium (120+ listings)",
+    "popular_renovation_type": "Industrial buildings & residential",
+    "local_fact": "Home to the famous Rodenbach brewery and Flemish cycling history."
+  },
+  {
+    "city": "Beveren-Kruibeke-Zwijndrecht",
+    "population": 87490,
+    "avg_house_price": 325000,
+    "contractor_density": "Medium (100+ listings)",
+    "popular_renovation_type": "Modern new builds & port expansions",
+    "local_fact": "Strategically located near the Port of Antwerp expansion zones."
+  },
+  {
+    "city": "Lokeren",
+    "population": 50312,
+    "avg_house_price": 310000,
+    "contractor_density": "Medium (80+ listings)",
+    "popular_renovation_type": "Row houses & energy renovations",
+    "local_fact": "The Lokerse Feesten is a major 10-day music festival in August."
+  },
+  {
+    "city": "Beringen",
+    "population": 48328,
+    "avg_house_price": 280000,
+    "contractor_density": "Moderate (70+ listings)",
+    "popular_renovation_type": "Mining heritage restoration & residential",
+    "local_fact": "The be-MINE site is the best-preserved mining site in Europe."
+  },
+  {
+    "city": "Vilvoorde",
+    "population": 47385,
+    "avg_house_price": 340000,
+    "contractor_density": "Moderate (70+ listings)",
+    "popular_renovation_type": "Industrial lofts & modern apartments",
+    "local_fact": "Locals are nicknamed 'Pjeirefretters' (Horse eaters)."
+  },
+  {
+    "city": "Turnhout",
+    "population": 47222,
+    "avg_house_price": 290000,
+    "contractor_density": "Moderate (75+ listings)",
+    "popular_renovation_type": "Historical houses & residential",
+    "local_fact": "World center for the production of playing cards."
+  },
+  {
+    "city": "Dendermonde",
+    "population": 47179,
+    "avg_house_price": 315000,
+    "contractor_density": "Moderate (65+ listings)",
+    "popular_renovation_type": "Historical restoration & row houses",
+    "local_fact": "Known for the Ros Beiaard, a giant horse legend celebrated every 10 years."
+  },
+  {
+    "city": "Deinze",
+    "population": 45438,
+    "avg_house_price": 335000,
+    "contractor_density": "Moderate (60+ listings)",
+    "popular_renovation_type": "Modern villas & riverside apartments",
+    "local_fact": "The Museum of the Lys region showcases local art and history."
+  },
+  {
+    "city": "Dilbeek",
+    "population": 44871,
+    "avg_house_price": 420000,
+    "contractor_density": "Moderate (70+ listings)",
+    "popular_renovation_type": "Energy upgrades & suburban villas",
+    "local_fact": "Promotes the slogan 'Waar de Vlamingen thuis zijn'."
+  },
+  {
+    "city": "Heist-op-den-Berg",
+    "population": 44488,
+    "avg_house_price": 347000,
+    "contractor_density": "Moderate (80+ listings)",
+    "popular_renovation_type": "Rural renovations & residential",
+    "local_fact": "Named after a 48-meter high hill, one of the highest in the province."
+  },
+  {
+    "city": "Bilzen-Hoeselt",
+    "population": 42862,
+    "avg_house_price": 295000,
+    "contractor_density": "Moderate (60+ listings)",
+    "popular_renovation_type": "Historical & agricultural restoration",
+    "local_fact": "Alden Biesen is a major castle complex and cultural center."
+  },
+  {
+    "city": "Halle",
+    "population": 42577,
+    "avg_house_price": 575250,
+    "contractor_density": "Moderate (65+ listings)",
+    "popular_renovation_type": "Energy upgrades & historical houses",
+    "local_fact": "The Hallerbos (Blue Forest) attracts thousands for its blooming bluebells."
+  },
+  {
+    "city": "Geel",
+    "population": 42286,
+    "avg_house_price": 310000,
+    "contractor_density": "Moderate (85+ listings)",
+    "popular_renovation_type": "Residential extensions & villas",
+    "local_fact": "Famous for its unique tradition of family-based psychiatric care."
+  },
+  {
+    "city": "Sint-Truiden",
+    "population": 41441,
+    "avg_house_price": 207000,
+    "contractor_density": "Moderate (75+ listings)",
+    "popular_renovation_type": "Fruit farm lofts & townhouses",
+    "local_fact": "The heart of the Belgian fruit-growing region, Haspengouw."
+  },
+  {
+    "city": "Ninove",
+    "population": 40363,
+    "avg_house_price": 271077,
+    "contractor_density": "Moderate (60+ listings)",
+    "popular_renovation_type": "Row houses & historical properties",
+    "local_fact": "Often called the 'Wortelstad' (Carrot City) with a strong carnival culture."
+  },
+  {
+    "city": "Maasmechelen",
+    "population": 40174,
+    "avg_house_price": 285000,
+    "contractor_density": "Moderate (70+ listings)",
+    "popular_renovation_type": "Modern new build & energy upgrades",
+    "local_fact": "Home to Maasmechelen Village, a popular luxury outlet shopping destination."
+  },
+  {
+    "city": "Waregem",
+    "population": 39973,
+    "avg_house_price": 320000,
+    "contractor_density": "Moderate (75+ listings)",
+    "popular_renovation_type": "Modern villas & equestrian properties",
+    "local_fact": "Known for the 'Waregem Koerse', a world-famous horse racing event."
+  },
+  {
+    "city": "Grimbergen",
+    "population": 39838,
+    "avg_house_price": 380000,
+    "contractor_density": "Moderate (65+ listings)",
+    "popular_renovation_type": "Farmhouse renovations & townhouses",
+    "local_fact": "Famous for its Abbey and the Grimbergen beer brewed there."
+  },
+  {
+    "city": "Mol",
+    "population": 38496,
+    "avg_house_price": 310000,
+    "contractor_density": "Moderate (80+ listings)",
+    "popular_renovation_type": "Holiday homes & rural residential",
+    "local_fact": "Zilvermeer is a major provincial recreation park with white sand beaches."
+  },
+  {
+    "city": "Lier",
+    "population": 38218,
+    "avg_house_price": 330000,
+    "contractor_density": "Moderate (70+ listings)",
+    "popular_renovation_type": "Historical townhouses & row houses",
+    "local_fact": "The Zimmer Tower features a world-renowned astronomical clock."
+  },
+  {
+    "city": "Merelbeke-Melle",
+    "population": 37210,
+    "avg_house_price": 350000,
+    "contractor_density": "Moderate (60+ listings)",
+    "popular_renovation_type": "Suburban villas & energy upgrades",
+    "local_fact": "Hosts the large Veterinary Medicine campus of Ghent University."
+  },
+  {
+    "city": "Evergem",
+    "population": 36846,
+    "avg_house_price": 325000,
+    "contractor_density": "Moderate (65+ listings)",
+    "popular_renovation_type": "Energy upgrades & residential",
+    "local_fact": "The Kasteel van Wippelgem is a beautiful local heritage site."
+  },
+  {
+    "city": "Zaventem",
+    "population": 36670,
+    "avg_house_price": 300000,
+    "contractor_density": "Moderate (90+ listings)",
+    "popular_renovation_type": "Apartments & office-to-residential",
+    "local_fact": "Brussels Airport, the main international gateway of Belgium, is here."
+  },
+  {
+    "city": "Zottegem",
+    "population": 28085,
+    "avg_house_price": 342288,
+    "contractor_density": "Moderate (55+ listings)",
+    "popular_renovation_type": "Historical houses & row houses",
+    "local_fact": "Known as the city of Count Egmont, whose statue stands in the center."
+  },
+  {
+    "city": "Sint-Pieters-Leeuw",
+    "population": 36521,
+    "avg_house_price": 350000,
+    "contractor_density": "Moderate (60+ listings)",
+    "popular_renovation_type": "Energy upgrades & suburban villas",
+    "local_fact": "The Coloma Rose Garden contains more than 3,000 rose varieties."
+  },
+  {
+    "city": "Tienen",
+    "population": 36543,
+    "avg_house_price": 280000,
+    "contractor_density": "Moderate (65+ listings)",
+    "popular_renovation_type": "Sugar factory lofts & historical homes",
+    "local_fact": "Belgium's 'Sugar City' because of the large Tienen Sugar Refinery."
+  },
+  {
+    "city": "Asse",
+    "population": 35703,
+    "avg_house_price": 360000,
+    "contractor_density": "Moderate (60+ listings)",
+    "popular_renovation_type": "Suburban houses & energy upgrades",
+    "local_fact": "The Hopduvel festival celebrates the local history of hop cultivation."
+  },
+  {
+    "city": "Ieper",
+    "population": 35534,
+    "avg_house_price": 267500,
+    "contractor_density": "Moderate (55+ listings)",
+    "popular_renovation_type": "WWI-era restoration & townhouses",
+    "local_fact": "The Menin Gate hosts the 'Last Post' every evening at 8 PM."
+  },
+  {
+    "city": "Heusden-Zolder",
+    "population": 35014,
+    "avg_house_price": 280000,
+    "contractor_density": "Moderate (70+ listings)",
+    "popular_renovation_type": "Modern new builds & mining renovations",
+    "local_fact": "Circuit Zolder is a famous race track that hosted Formula 1."
+  },
+  {
+    "city": "Geraardsbergen",
+    "population": 34977,
+    "avg_house_price": 269756,
+    "contractor_density": "Moderate (50+ listings)",
+    "popular_renovation_type": "Row houses & historical properties",
+    "local_fact": "Known for its 'Mattentaarten' and the steep 'Muur van Geraardsbergen'."
+  },
+  {
+    "city": "Lommel",
+    "population": 34891,
+    "avg_house_price": 309750,
+    "contractor_density": "Moderate (65+ listings)",
+    "popular_renovation_type": "Modern villas & sand-resistant landscaping",
+    "local_fact": "The Sahara of Lommel is a unique nature reserve with sand dunes."
+  },
+  {
+    "city": "Schoten",
+    "population": 34651,
+    "avg_house_price": 390000,
+    "contractor_density": "Moderate (60+ listings)",
+    "popular_renovation_type": "Estate renovations & high-end villas",
+    "local_fact": "Home to many castle domains, giving it a very green and grand character."
+  },
+  {
+    "city": "Menen",
+    "population": 34393,
+    "avg_house_price": 300000,
+    "contractor_density": "Moderate (50+ listings)",
+    "popular_renovation_type": "Row houses & border-style properties",
+    "local_fact": "A key border city with a shared history with France."
+  },
+  {
+    "city": "Temse",
+    "population": 31265,
+    "avg_house_price": 400000,
+    "contractor_density": "Moderate (55+ listings)",
+    "popular_renovation_type": "Riverside lofts & modern apartments",
+    "local_fact": "The Temse Bridge was designed by the firm of Gustave Eiffel."
+  },
+  {
+    "city": "Aarschot",
+    "population": 31128,
+    "avg_house_price": 290000,
+    "contractor_density": "Moderate (50+ listings)",
+    "popular_renovation_type": "Historical restoration & residential",
+    "local_fact": "The Church of Our Lady is built from local brown ironstone."
+  },
+  {
+    "city": "Harelbeke",
+    "population": 29884,
+    "avg_house_price": 275000,
+    "contractor_density": "Moderate (55+ listings)",
+    "popular_renovation_type": "Industrial restoration & row houses",
+    "local_fact": "Home to the Peter Benoit museum, dedicated to the Flemish composer."
+  },
+  {
+    "city": "Izegem",
+    "population": 29194,
+    "avg_house_price": 320000,
+    "contractor_density": "Moderate (60+ listings)",
+    "popular_renovation_type": "Factory lofts & worker houses",
+    "local_fact": "Known as the 'Brush City' and historically famous for shoe manufacturing."
+  },
+  {
+    "city": "Herentals",
+    "population": 28839,
+    "avg_house_price": 350000,
+    "contractor_density": "Moderate (55+ listings)",
+    "popular_renovation_type": "Residential extensions & villas",
+    "local_fact": "The Toeristentoren provides a view over the Antwerp Kempen region."
+  },
+  {
+    "city": "Roosdaal (Borchtlombeek)",
+    "population": 11951,
+    "avg_house_price": 330000,
+    "contractor_density": "Moderate (40+ listings)",
+    "popular_renovation_type": "Rural renovations & energy upgrades",
+    "local_fact": "Known for its strawberries and the 'Zevenbeuken' scenic spot."
+  }
+]
