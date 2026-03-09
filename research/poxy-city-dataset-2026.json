@@ -1,0 +1,282 @@
+[
+  {
+    "city": "Antwerpen",
+    "population": 556138,
+    "avg_house_price_2024": 477000,
+    "renovation_grade": 8.5,
+    "contractor_density": "High",
+    "long_tail_keywords": [
+      "epoxyvloer garage Antwerpen",
+      "gietvloer renovatie Antwerpen",
+      "prijs per m2 epoxyvloer Antwerpen",
+      "industriële gietvloer Antwerpen"
+    ],
+    "local_context": "Grootste markt, veel historische renovaties en loft-projecten."
+  },
+  {
+    "city": "Gent",
+    "population": 272389,
+    "avg_house_price_2024": 512000,
+    "renovation_grade": 9.2,
+    "contractor_density": "High",
+    "long_tail_keywords": [
+      "design gietvloer Gent",
+      "epoxyvloer prijs per m2 Gent",
+      "epoxyvloer kelder Gent",
+      "vloercoating garage Gent"
+    ],
+    "local_context": "Hoge focus op esthetiek en duurzame renovatie in historische kern."
+  },
+  {
+    "city": "Brussel",
+    "population": 1250000,
+    "avg_house_price_2024": 582930,
+    "renovation_grade": 8.8,
+    "contractor_density": "Very High",
+    "long_tail_keywords": [
+      "sol en époxy Bruxelles",
+      "epoxyvloer Brussel prijs",
+      "garagevloer coating Brussel",
+      "loft gietvloer Brussel"
+    ],
+    "local_context": "Tweetalige markt, enorme renovatiebehoefte in appartementsgebouwen."
+  },
+  {
+    "city": "Brugge",
+    "population": 119869,
+    "avg_house_price_2024": 430000,
+    "renovation_grade": 8.0,
+    "contractor_density": "Medium",
+    "long_tail_keywords": [
+      "epoxyvloer Brugge renovatie",
+      "gietvloer prijs Brugge",
+      "vloercoating garage Brugge",
+      "epoxyvloer badkamer Brugge"
+    ],
+    "local_context": "Toeristisch centrum met veel beschermde monumenten en luxe renovaties."
+  },
+  {
+    "city": "Leuven",
+    "population": 104009,
+    "avg_house_price_2024": 550000,
+    "renovation_grade": 9.5,
+    "contractor_density": "Medium",
+    "long_tail_keywords": [
+      "epoxyvloer studentenkamer Leuven",
+      "gietvloer Leuven prijs",
+      "design vloer Leuven",
+      "epoxyvloer garage Leuven"
+    ],
+    "local_context": "Hoogste gemiddelde prijzen, focus op studentenhuisvesting en moderne lofts."
+  },
+  {
+    "city": "Mechelen",
+    "population": 89313,
+    "avg_house_price_2024": 450000,
+    "renovation_grade": 8.2,
+    "contractor_density": "Medium",
+    "long_tail_keywords": [
+      "epoxyvloer Mechelen offerte",
+      "gietvloer Mechelen prijs",
+      "epoxy coating garage Mechelen",
+      "renovatievloer Mechelen"
+    ],
+    "local_context": "Strategische ligging tussen Antwerpen en Brussel, veel jonge gezinnen."
+  },
+  {
+    "city": "Aalst",
+    "population": 90000,
+    "avg_house_price_2024": 320000,
+    "renovation_grade": 7.5,
+    "contractor_density": "Medium",
+    "long_tail_keywords": [
+      "epoxyvloer Aalst prijs per m2",
+      "garagevloer Aalst",
+      "gietvloer renovatie Aalst",
+      "epoxy coating Aalst"
+    ],
+    "local_context": "Groeiende markt met focus op betaalbare renovatie van arbeiderswoningen."
+  },
+  {
+    "city": "Hasselt",
+    "population": 82000,
+    "avg_house_price_2024": 360000,
+    "renovation_grade": 7.8,
+    "contractor_density": "Medium",
+    "long_tail_keywords": [
+      "epoxyvloer Hasselt toonzaal",
+      "gietvloer Limburg prijs",
+      "epoxyvloer garage Hasselt",
+      "onderhoud gietvloer Hasselt"
+    ],
+    "local_context": "Mode- en designstad, sterke voorkeur voor strakke gietvloeren."
+  },
+  {
+    "city": "Kortrijk",
+    "population": 81045,
+    "avg_house_price_2024": 340000,
+    "renovation_grade": 8.0,
+    "contractor_density": "Medium",
+    "long_tail_keywords": [
+      "epoxyvloer Kortrijk prijs",
+      "industrievloer Kortrijk",
+      "design gietvloer West-Vlaanderen",
+      "epoxyvloer garage Kortrijk"
+    ],
+    "local_context": "Designregio (Interieur), veel vraag naar industriële looks in woningen."
+  },
+  {
+    "city": "Sint-Niklaas",
+    "population": 81863,
+    "avg_house_price_2024": 310000,
+    "renovation_grade": 7.2,
+    "contractor_density": "Medium",
+    "long_tail_keywords": [
+      "epoxyvloer Sint-Niklaas prijs",
+      "gietvloer Waasland",
+      "vloercoating Sint-Niklaas",
+      "epoxyvloer garage Sint-Niklaas"
+    ],
+    "local_context": "Centrale ligging in het Waasland, veel KMO-zones met industrievloer-noden."
+  },
+  {
+    "city": "Oostende",
+    "population": 72586,
+    "avg_house_price_2024": 290000,
+    "renovation_grade": 8.5,
+    "contractor_density": "Low",
+    "long_tail_keywords": [
+      "epoxyvloer appartement Oostende",
+      "gietvloer zeezicht Oostende",
+      "epoxyvloer badkamer Oostende",
+      "prijs epoxyvloer Oostende"
+    ],
+    "local_context": "Veel renovatie van appartementen aan de kust, epoxy is populair wegens zoute lucht."
+  },
+  {
+    "city": "Genk",
+    "population": 67000,
+    "avg_house_price_2024": 280000,
+    "renovation_grade": 6.8,
+    "contractor_density": "Medium",
+    "long_tail_keywords": [
+      "epoxyvloer Genk prijs",
+      "industriële gietvloer Genk",
+      "garagevloer coating Genk",
+      "epoxyvloer renovatie Genk"
+    ],
+    "local_context": "Industrieel verleden, veel vraag naar functionele epoxyvloeren voor garages."
+  },
+  {
+    "city": "Roeselare",
+    "population": 65500,
+    "avg_house_price_2024": 305000,
+    "renovation_grade": 7.4,
+    "contractor_density": "Medium",
+    "long_tail_keywords": [
+      "epoxyvloer Roeselare prijs per m2",
+      "gietvloer Roeselare offerte",
+      "vloercoating garage Roeselare",
+      "epoxyvloer terras Roeselare"
+    ],
+    "local_context": "Handelsstad met veel zelfstandigen en ondernemerswoningen."
+  },
+  {
+    "city": "Beveren",
+    "population": 50000,
+    "avg_house_price_2024": 345000,
+    "renovation_grade": 7.0,
+    "contractor_density": "Low",
+    "long_tail_keywords": [
+      "epoxyvloer Beveren prijs",
+      "gietvloer Waasland",
+      "epoxyvloer garage Beveren",
+      "vloercoating Beveren"
+    ],
+    "local_context": "Sterke link met de haven, veel nieuwbouw en grondige renovaties."
+  },
+  {
+    "city": "Dendermonde",
+    "population": 46500,
+    "avg_house_price_2024": 315000,
+    "renovation_grade": 7.3,
+    "contractor_density": "Low",
+    "long_tail_keywords": [
+      "epoxyvloer Dendermonde prijs",
+      "gietvloer Dendermonde",
+      "vloercoating garage Dendermonde",
+      "epoxyvloer kelder Dendermonde"
+    ],
+    "local_context": "Residentiële markt met veel vraag naar kelder- en garagecoatings."
+  },
+  {
+    "city": "Turnhout",
+    "population": 46500,
+    "avg_house_price_2024": 300000,
+    "renovation_grade": 7.1,
+    "contractor_density": "Low",
+    "long_tail_keywords": [
+      "epoxyvloer Turnhout prijs",
+      "gietvloer Kempen",
+      "epoxyvloer garage Turnhout",
+      "vloercoating Turnhout"
+    ],
+    "local_context": "Hoofdstad van de Kempen, veel vrijstaande woningen met grote garages."
+  },
+  {
+    "city": "Beringen",
+    "population": 48000,
+    "avg_house_price_2024": 295000,
+    "renovation_grade": 6.5,
+    "contractor_density": "Low",
+    "long_tail_keywords": [
+      "epoxyvloer Beringen prijs",
+      "gietvloer Limburg",
+      "vloercoating Beringen",
+      "epoxyvloer garage Beringen"
+    ],
+    "local_context": "Groeiende gemeente met veel nieuwe woonwijken en focus op onderhoud."
+  },
+  {
+    "city": "Vilvoorde",
+    "population": 47000,
+    "avg_house_price_2024": 370000,
+    "renovation_grade": 8.2,
+    "contractor_density": "Medium",
+    "long_tail_keywords": [
+      "epoxyvloer Vilvoorde prijs",
+      "gietvloer rand rond Brussel",
+      "epoxyvloer garage Vilvoorde",
+      "vloercoating Vilvoorde"
+    ],
+    "local_context": "Sterke verstedelijking, veel conversies van oude industriepanden naar lofts."
+  },
+  {
+    "city": "Lokeren",
+    "population": 43000,
+    "avg_house_price_2024": 310000,
+    "renovation_grade": 7.2,
+    "contractor_density": "Low",
+    "long_tail_keywords": [
+      "epoxyvloer Lokeren prijs",
+      "gietvloer Lokeren",
+      "epoxyvloer garage Lokeren",
+      "vloercoating Lokeren"
+    ],
+    "local_context": "Residentiële stad met veel vraag naar duurzame vloeroplossingen."
+  },
+  {
+    "city": "Geel",
+    "population": 42000,
+    "avg_house_price_2024": 320000,
+    "renovation_grade": 7.0,
+    "contractor_density": "Low",
+    "long_tail_keywords": [
+      "epoxyvloer Geel prijs",
+      "gietvloer Kempen prijs",
+      "vloercoating Geel",
+      "epoxyvloer garage Geel"
+    ],
+    "local_context": "Onderwijs- en zorgstad met veel moderne architectuurprojecten."
+  }
+]
