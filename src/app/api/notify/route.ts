@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     }
 
     const discordTag = DISCORD_AGENT_IDS[agent.toLowerCase()] || agent
-    const emoji = AGENT_EMOJI[agent.toLowerCase()] || '👤'
+    const emoji = AGENT_EMOJI[agent.toLowerCase()] || '📌'
     const prioEmoji = PRIORITY_EMOJI[priority?.toLowerCase()] || '⚪'
 
     let message = `📋 **Nieuwe taak voor ${discordTag}** ${emoji}\n\n`
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     if (projectName) message += `**Project:** ${projectName}\n`
     message += `**Prioriteit:** ${prioEmoji} ${priority || 'normaal'}\n`
     if (deadline) message += `**Deadline:** ${deadline}\n`
-    message += `\n🔗 [Bekijk in Command Center](https://command-center-pearl.vercel.app/tasks)`
+    message += `\n🔗 [Bekijk in Command Center](/tasks)`
 
     return NextResponse.json({
       success: true,

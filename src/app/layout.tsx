@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Command Center - Personal Dashboard",
-  description: "Your personal operating system: planning, signals, and momentum.",
+  title: "Command Center",
+  description: "Bart's business command center for assets, projects, pipeline, team, and operations.",
 };
 
 export default function RootLayout({
