@@ -260,6 +260,16 @@ export default function Home() {
   const urgentTasks = openTasks.filter((t) => t.priority === "high")
   const siteMap = Object.fromEntries(sites.map((s) => [s.id, s.domain]))
 
+  const collectProProject = projects.find((p) => p.name.toLowerCase().includes("collectpro"))
+  const collectProTasks = tasks.filter((t) => {
+    if (collectProProject && t.projectId === collectProProject.id) return true
+    const title = t.title.toLowerCase()
+    const description = t.description?.toLowerCase() || ""
+    return title.includes("collectpro") || description.includes("collectpro")
+  })
+  const collectProOpenTasks = collectProTasks.filter((t) => t.status === "todo" || t.status === "in-progress")
+  const collectProReviewTasks = collectProTasks.filter((t) => t.status === "review")
+
   const currentBlockers = [
     "CollectPro growth pipeline is nog niet expliciet zichtbaar in de app",
     "GA / GSC access is nog niet volledig geoperationaliseerd",
@@ -488,7 +498,49 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 xl:grid-cols-[1.15fr_1fr]">
+            <Card className="border-zinc-800 bg-zinc-900/60">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold text-white">CollectPro Growth Lane</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
+                    <div className="text-xs text-zinc-500">Open tasks</div>
+                    <div className="text-2xl font-bold text-white mt-1">{collectProOpenTasks.length}</div>
+                  </div>
+                  <div className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
+                    <div className="text-xs text-zinc-500">Review</div>
+                    <div className="text-2xl font-bold text-white mt-1">{collectProReviewTasks.length}</div>
+                  </div>
+                  <div className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
+                    <div className="text-xs text-zinc-500">State</div>
+                    <div className="text-sm font-semibold text-[#F5B15C] mt-2">active</div>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+                  <div className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Current bottleneck</div>
+                  <p className="text-sm text-zinc-200">Acquisition pipeline is nog niet expliciet genoeg zichtbaar of bestuurbaar in de app.</p>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-4">
+                    <div className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Next action</div>
+                    <p className="text-sm text-[#F5B15C]">Maak funnel stages en blockers expliciet voor CollectPro growth.</p>
+                  </div>
+                  <div className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-4">
+                    <div className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Recommended focus</div>
+                    <p className="text-sm text-zinc-300">Pipeline visibility → current leads → blockers → next commercial step.</p>
+                  </div>
+                </div>
+
+                <Link href="/projects" className="text-xs text-[#F5911E] hover:underline inline-flex items-center gap-1">
+                  Open CollectPro workstream <ArrowRight className="h-3 w-3" />
+                </Link>
+              </CardContent>
+            </Card>
+
             <Card className="border-zinc-800 bg-zinc-900/60">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
