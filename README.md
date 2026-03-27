@@ -1,8 +1,12 @@
-# Command Center 🎯
+# Command Center
+
+## Repository structure note
+
+This repo now separates app code, operations, research, data, and archive material to keep the Command Center usable as a single source of truth.
 
 **Persoonlijk operating systeem voor Hazier — projects, pipeline, team, finance en knowledge management.**
 
-Gebouwd door Lisa 👑 | Fine-tuned door Jean-Cloud 🥊
+Gebouwd door Lisa | Fine-tuned door Jean-Cloud
 
 ---
 
@@ -44,9 +48,9 @@ npm install
 
 ### 2. Database Setup
 
-1. **Maak een Neon account** → [neon.tech](https://neon.tech)
-2. **Maak een nieuw project** → Copy de connection string
-3. **Maak `.env` file**:
+1. **Maak een Neon account** -> [neon.tech](https://neon.tech)
+2. **Maak een nieuw project** -> copy de connection string
+3. **Maak `.env` file**
 
 ```bash
 cp .env.example .env
@@ -88,7 +92,7 @@ Open [http://localhost:3000](http://localhost:3000)
 # Open Prisma Studio (visual database editor)
 npx prisma studio
 
-# Reset database (⚠️ deletes all data)
+# Reset database (warning: deletes all data)
 npx prisma migrate reset
 
 # Re-seed after reset
@@ -97,40 +101,29 @@ npx prisma db seed
 
 ---
 
-## Project Structure
+## Repository Structure
 
-```
-commandcenter/
-├── prisma/
-│   ├── schema.prisma        # Database schema
-│   └── seed.ts              # Seed data (Lisa's projects/sites)
-├── src/
-│   ├── app/
-│   │   ├── api/             # API routes (CRUD voor alle data)
-│   │   ├── page.tsx         # Dashboard
-│   │   ├── projects/        # Projects overzicht + detail
-│   │   ├── pipeline/        # Kanban view
-│   │   ├── sites/           # Sites management
-│   │   ├── tasks/           # Task management
-│   │   ├── content/         # Content review workflow
-│   │   ├── research/        # Research docs
-│   │   ├── oracle/          # AI idea generator (hardcoded top 25)
-│   │   ├── producten/       # Affiliate products
-│   │   ├── team/            # Team overview
-│   │   ├── budget/          # Cost tracking
-│   │   ├── adsense/         # AdSense dashboard
-│   │   ├── analytics/       # Traffic analytics
-│   │   └── seo/             # SEO monitoring
-│   ├── components/
-│   │   ├── ui/              # shadcn components
-│   │   ├── navigation.tsx   # Main nav met grouped dropdowns
-│   │   └── data-initializer.tsx
-│   └── lib/
-│       ├── prisma.ts        # Prisma client singleton
-│       ├── storage.ts       # API wrapper functions
-│       └── utils.ts         # Helper functions
-└── public/                  # Static assets
-```
+### Core application
+- `src/` — Next.js app, routes, components, logic
+- `public/` — static assets
+- `prisma/` — database schema and seed
+
+### Operations
+- `ops/` — operating system, workflows, integrations, reviews, OpenClaw instructions
+- `team/` — roles and team references
+- `docs/` — governance and operations documentation
+
+### Knowledge and inputs
+- `research/` — SEO research, business cases, domain research, project discovery
+- `data/` — reference data and static input material
+- `content/` — content workflow assets
+- `templates/` — reusable templates
+- `shared/` — shared material
+
+### Historical / non-active
+- `archive/` — old transcripts, temp files, generated artifacts, historical material
+- `memory/` — historical notes and working memory files
+- `scripts/` — utility and data-generation scripts
 
 ---
 
@@ -188,13 +181,13 @@ Idem voor:
 
 ## Team Workflow
 
-### Content Review (Wout/Copycat → Bart)
+### Content Review (Wout/Copycat -> Bart)
 
-1. Wout/Copycat schrijft content → status `draft`
-2. Submit voor review → status `review`
-3. Bart opent `/content` → ziet pending items
-4. Approve → status `approved` (ready to publish)
-5. Reject → status `rejected` + feedback note
+1. Wout/Copycat schrijft content -> status `draft`
+2. Submit voor review -> status `review`
+3. Bart opent `/content` -> ziet pending items
+4. Approve -> status `approved` (ready to publish)
+5. Reject -> status `rejected` + feedback note
 
 ### Task Assignment
 
@@ -208,7 +201,7 @@ Toekomstige feature: notificaties via Telegram bot.
 
 ## Roadmap
 
-### ✅ Done (Lisa)
+### Done (Lisa)
 - Dashboard met NOW/Alerts/Today
 - Projects CRUD
 - Sites management
@@ -220,17 +213,17 @@ Toekomstige feature: notificaties via Telegram bot.
 - Mobile navigation
 - Prisma schema + seed
 
-### 🔧 Fine-tuning (JC)
+### Fine-tuning (JC)
 - [x] .env.example + setup docs
 - [x] README update
-- [ ] Mobile responsive fixes (tables → cards)
+- [ ] Mobile responsive fixes (tables -> cards)
 - [ ] Loading states + error boundaries
 - [ ] Content review UI (approve/reject buttons)
 - [ ] Empty state improvements
-- [ ] Oracle → database (nu hardcoded)
-- [ ] Product model refactor (specs → JSON)
+- [ ] Oracle -> database (nu hardcoded)
+- [ ] Product model refactor (specs -> JSON)
 
-### 🚀 Backlog
+### Backlog
 - [ ] Notifications (Telegram bot integration)
 - [ ] AdSense API integration
 - [ ] Analytics API integration
@@ -268,12 +261,12 @@ Requires Node.js 18+.
 
 ## Support
 
-**Built by:** Lisa (Opus 4) 👑  
-**Maintained by:** Jean-Cloud (Sonnet 4.5) 🥊  
+**Built by:** Lisa (Opus 4)
+**Maintained by:** Jean-Cloud (Sonnet 4.5)
 **For:** Bart @ Hazier
 
 Questions? Ping Lisa of JC in de team chat.
 
 ---
 
-**Last updated:** 2026-02-23
+**Last updated:** 2026-03-27
