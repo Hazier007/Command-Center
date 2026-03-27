@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useState, useCallback, useRef, useMemo } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { Plus, X, Trash2, ChevronRight, Package, Search } from 'lucide-react'
 
 interface Product {
@@ -266,9 +266,9 @@ export default function ProductenPage() {
     setLoading(false)
   }, [siteFilter, contentTypeFilter])
 
-  if (loading && products.length === 0) {
+  useEffect(() => {
     void fetchProducts()
-  }
+  }, [fetchProducts])
 
   const openCreate = () => { setForm({ ...empty }); setCreating(true); setEditing(null) }
   const openEdit = (p: Product) => {
