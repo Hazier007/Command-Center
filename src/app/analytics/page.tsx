@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BarChart3, TrendingUp, Eye, MousePointer, Target, ChevronDown } from 'lucide-react';
 
 interface GSCSite {
@@ -50,12 +50,7 @@ export default function Analytics() {
   const [error, setError] = useState<string | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  // Fetch all sites
-  useEffect(() => {
-    fetchSites();
-  }, []);
-
-  const fetchSites = async () => {
+  const fetchSites = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -71,9 +66,8 @@ export default function Analytics() {
       const sitesWithData = data.siteUrls || [];
       setSites(sitesWithData);
       
-      // Fetch data for each site in the background
       sitesWithData.forEach((site: GSCSite) => {
-        fetchSiteData(site.siteUrl);
+        void fetchSiteData(site.siteUrl);
       });
     } catch (error) {
       console.error('Failed to fetch sites:', error);
@@ -81,7 +75,11 @@ export default function Analytics() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    void fetchSites();
+  }, [fetchSites]);
 
   const fetchSiteData = async (siteUrl: string) => {
     try {
@@ -139,6 +137,8 @@ export default function Analytics() {
       .sort((a, b) => b.impressions - a.impressions)
       .slice(0, 10);
   };
+
+  const optimizationHelpText = "(Positie 5-20, hoge vertoningen, lage klikken = optimalisatie mogelijkheden.)";
 
   // Sort sites by clicks (descending)
   const sortedSites = [...sites].sort((a, b) => {
@@ -293,7 +293,7 @@ export default function Analytics() {
           <div className="bg-gray-900/50 rounded-lg border border-gray-800 p-6">
             <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <Eye className="w-5 h-5 text-[#F5911E]" />
-              Top Pagina's
+              Top Pagina&apos;s
             </h3>
             <div className="space-y-2">
               {selectedSiteData.topPages.map((page, index) => (
@@ -325,7 +325,7 @@ export default function Analytics() {
             <TrendingUp className="w-5 h-5 text-[#F5911E]" />
             🍎 Kansen voor Optimalisatie
             <span className="text-sm font-normal text-gray-400">
-              (Positie 5-20, Hoge vertoningen, Lage klikken = Optimalisatie mogelijkheden!)
+              {optimizationHelpText}
             </span>
           </h3>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

@@ -1,17 +1,94 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-interface ImportData {
-  projects?: any[]
-  sites?: any[]
-  ideas?: any[]
-  tasks?: any[]
-  notes?: any[]
-  nowItems?: any[]
-  alerts?: any[]
+type ImportProject = {
+  id: string
+  name: string
+  status: string
+  category: string
+  description?: string | null
+  revenue?: number | null
+  createdAt: string
+  updatedAt: string
 }
 
-// POST /api/import - bulk import localStorage data
+type ImportSite = {
+  id: string
+  domain: string
+  projectId?: string | null
+  status: string
+  techStack?: string[]
+  revenue?: number | null
+  listings?: number | null
+  pages?: number | null
+  notes?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+type ImportIdea = {
+  id: string
+  title: string
+  description: string
+  category: string
+  priority: string
+  createdAt: string
+  updatedAt: string
+}
+
+type ImportTask = {
+  id: string
+  title: string
+  description?: string | null
+  status: string
+  projectId?: string | null
+  priority?: string | null
+  dueDate?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+type ImportNote = {
+  id: string
+  title: string
+  content: string
+  tags?: string[]
+  createdAt: string
+  updatedAt: string
+}
+
+type ImportNowItem = {
+  id: string
+  title: string
+  meta?: string | null
+  tag?: string | null
+  description?: string | null
+  projectId?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+type ImportAlert = {
+  id: string
+  title: string
+  body: string
+  priority: string
+  resolved?: boolean
+  snoozedUntil?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+interface ImportData {
+  projects?: ImportProject[]
+  sites?: ImportSite[]
+  ideas?: ImportIdea[]
+  tasks?: ImportTask[]
+  notes?: ImportNote[]
+  nowItems?: ImportNowItem[]
+  alerts?: ImportAlert[]
+}
+
 export async function POST(request: Request) {
   try {
     const data: ImportData = await request.json()
@@ -25,12 +102,11 @@ export async function POST(request: Request) {
       alerts: 0,
     }
 
-    // Import projects first (as they might be referenced by other entities)
     if (data.projects && data.projects.length > 0) {
       for (const project of data.projects) {
         await prisma.project.create({
           data: {
-            id: project.id, // Keep original IDs for references
+            id: project.id,
             name: project.name,
             status: project.status,
             category: project.category,
@@ -44,7 +120,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Import sites
     if (data.sites && data.sites.length > 0) {
       for (const site of data.sites) {
         await prisma.site.create({
@@ -66,7 +141,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Import ideas
     if (data.ideas && data.ideas.length > 0) {
       for (const idea of data.ideas) {
         await prisma.idea.create({
@@ -84,7 +158,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Import tasks
     if (data.tasks && data.tasks.length > 0) {
       for (const task of data.tasks) {
         await prisma.task.create({
@@ -104,7 +177,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Import notes
     if (data.notes && data.notes.length > 0) {
       for (const note of data.notes) {
         await prisma.note.create({
@@ -121,7 +193,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Import now items
     if (data.nowItems && data.nowItems.length > 0) {
       for (const nowItem of data.nowItems) {
         await prisma.nowItem.create({
@@ -140,7 +211,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Import alerts
     if (data.alerts && data.alerts.length > 0) {
       for (const alert of data.alerts) {
         await prisma.alert.create({
@@ -167,8 +237,8 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Error importing data:', error)
     return NextResponse.json(
-      { 
-        error: 'Failed to import data', 
+      {
+        error: 'Failed to import data',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }

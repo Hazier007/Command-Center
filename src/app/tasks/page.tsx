@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Edit, Trash2, Calendar, Flag, User, Users, ChevronDown, ChevronRight, X, Archive, Eye, EyeOff } from "lucide-react"
+import { Plus, Edit, Trash2, Calendar, Flag, Users, ChevronDown, ChevronRight, X, Archive, EyeOff } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -44,6 +44,191 @@ const assigneeNames: Record<string, string> = {
 
 const selectClass = "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
 
+function getPriorityColor(priority?: Task['priority']) {
+  switch (priority) {
+    case 'high': return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200'
+    case 'medium': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-200'
+    case 'low': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200'
+    default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200'
+  }
+}
+
+function isOverdue(dueDate?: string) {
+  if (!dueDate) return false
+  return new Date(dueDate) < new Date()
+}
+
+function TaskCard({
+  task,
+  status,
+  projectName,
+  onEdit,
+  onDelete,
+  onStatusChange,
+  onDone,
+}: {
+  task: Task
+  status: Task['status']
+  projectName: string | null
+  onEdit: (task: Task) => void
+  onDelete: (taskId: string) => void
+  onStatusChange: (taskId: string, status: Task['status']) => void
+  onDone: (task: Task) => void
+}) {
+  return (
+    <Card className="mb-3 hover:shadow-md transition-shadow">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-sm leading-tight">{task.title}</CardTitle>
+            {projectName && (
+              <CardDescription className="text-xs truncate">
+                {projectName}
+              </CardDescription>
+            )}
+          </div>
+          <div className="flex gap-1 flex-shrink-0">
+            <Button variant="ghost" size="sm" onClick={() => onEdit(task)}>
+              <Edit className="h-3 w-3" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => onDelete(task.id)}>
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="space-y-3">
+          {task.description && (
+            <p className="text-xs text-muted-foreground line-clamp-2">
+              {task.description}
+            </p>
+          )}
+
+          <div className="flex flex-wrap gap-1">
+            {task.priority && (
+              <Badge className={getPriorityColor(task.priority)}>
+                <Flag className="h-2 w-2 mr-1" />
+                {task.priority}
+              </Badge>
+            )}
+            {task.assignee && (
+              <Badge variant="outline" className="text-xs">
+                <Users className="h-2 w-2 mr-1" />
+                {assigneeEmojis[task.assignee]} {assigneeNames[task.assignee] ?? task.assignee}
+              </Badge>
+            )}
+            {task.dueDate && (
+              <Badge
+                variant={isOverdue(task.dueDate) ? "destructive" : "outline"}
+                className="text-xs"
+              >
+                <Calendar className="h-2 w-2 mr-1" />
+                {new Date(task.dueDate).toLocaleDateString()}
+              </Badge>
+            )}
+          </div>
+
+          <div className="flex gap-1">
+            {status !== 'todo' && (
+              <Button variant="outline" size="sm" className="text-xs h-6" onClick={() => onStatusChange(task.id, 'todo')}>
+                To Do
+              </Button>
+            )}
+            {status !== 'in-progress' && (
+              <Button variant="outline" size="sm" className="text-xs h-6" onClick={() => onStatusChange(task.id, 'in-progress')}>
+                In Progress
+              </Button>
+            )}
+            {status !== 'review' && (
+              <Button variant="outline" size="sm" className="text-xs h-6" onClick={() => onStatusChange(task.id, 'review')}>
+                Review
+              </Button>
+            )}
+            {status !== 'done' && (
+              <Button variant="outline" size="sm" className="text-xs h-6" onClick={() => onDone(task)}>
+                Done
+              </Button>
+            )}
+          </div>
+
+          <div className="text-xs text-muted-foreground">
+            {new Date(task.createdAt).toLocaleDateString()}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function KanbanColumn({
+  id,
+  label,
+  tasks,
+  colorClass,
+  textClass,
+  emptyText,
+  status,
+  isCollapsed,
+  onToggleCollapse,
+  getProjectName,
+  onEdit,
+  onDelete,
+  onStatusChange,
+  onDone,
+}: {
+  id: string
+  label: string
+  tasks: Task[]
+  colorClass: string
+  textClass: string
+  emptyText: string
+  status: Task['status']
+  isCollapsed: boolean
+  onToggleCollapse: (id: string) => void
+  getProjectName: (projectId?: string) => string | null
+  onEdit: (task: Task) => void
+  onDelete: (taskId: string) => void
+  onStatusChange: (taskId: string, status: Task['status']) => void
+  onDone: (task: Task) => void
+}) {
+  return (
+    <div className="space-y-3">
+      <button
+        onClick={() => onToggleCollapse(id)}
+        className={`w-full flex items-center justify-between p-4 rounded-lg ${colorClass} hover:opacity-90 transition-opacity`}
+      >
+        <h2 className={`text-lg font-semibold ${textClass} flex items-center gap-2`}>
+          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          {label}
+        </h2>
+        <Badge variant="secondary">{tasks.length}</Badge>
+      </button>
+      {!isCollapsed && (
+        <div className="min-h-[400px]">
+          {tasks.map((task) => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              status={status}
+              projectName={getProjectName(task.projectId)}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onStatusChange={onStatusChange}
+              onDone={onDone}
+            />
+          ))}
+          {tasks.length === 0 && (
+            <div className="text-center py-8 text-sm text-muted-foreground">
+              {emptyText}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [projects, setProjects] = useState<Project[]>([])
@@ -51,13 +236,9 @@ export default function TasksPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
-
-  // Filter state
   const [filterSite, setFilterSite] = useState("")
   const [filterAssignee, setFilterAssignee] = useState("")
   const [filterPriority, setFilterPriority] = useState("")
-
-  // Follow-up dialog state
   const [followUpDialogOpen, setFollowUpDialogOpen] = useState(false)
   const [followUpSourceTask, setFollowUpSourceTask] = useState<Task | null>(null)
   const [followUpForm, setFollowUpForm] = useState({
@@ -68,19 +249,13 @@ export default function TasksPage() {
     siteId: "",
     projectId: "",
   })
-
-  // Hide done tasks by default
   const [showDone, setShowDone] = useState(false)
-
-  // Collapsible columns
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
     todo: false,
     'in-progress': false,
     review: false,
     done: false,
   })
-
-  // Form state
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -103,7 +278,7 @@ export default function TasksPage() {
       setProjects(projectsData)
       setSites(sitesData)
     }
-    load()
+    void load()
   }, [])
 
   const filteredTasks = tasks.filter(task => {
@@ -130,6 +305,19 @@ export default function TasksPage() {
 
   const toggleCollapse = (col: string) => {
     setCollapsed(prev => ({ ...prev, [col]: !prev[col] }))
+  }
+
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      description: "",
+      status: "todo",
+      projectId: "",
+      siteId: "",
+      priority: "medium",
+      assignee: "",
+      dueDate: "",
+    })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -166,19 +354,6 @@ export default function TasksPage() {
     resetForm()
   }
 
-  const resetForm = () => {
-    setFormData({
-      title: "",
-      description: "",
-      status: "todo",
-      projectId: "",
-      siteId: "",
-      priority: "medium",
-      assignee: "",
-      dueDate: "",
-    })
-  }
-
   const handleEdit = (task: Task) => {
     setEditingTask(task)
     setFormData({
@@ -204,7 +379,6 @@ export default function TasksPage() {
 
   const handleStatusChange = async (taskId: string, newStatus: Task['status']) => {
     const updateData: Record<string, string> = { status: newStatus }
-    // Auto-assign to Bart when moving to review
     if (newStatus === 'review') {
       updateData.assignee = 'bart'
     }
@@ -279,176 +453,10 @@ export default function TasksPage() {
     setFollowUpSourceTask(null)
   }
 
-  const getPriorityColor = (priority?: Task['priority']) => {
-    switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200'
-      case 'medium': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-200'
-      case 'low': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200'
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200'
-    }
-  }
-
   const getProjectName = (projectId?: string) => {
     if (!projectId) return null
     const project = projects.find(p => p.id === projectId)
-    return project?.name
-  }
-
-  const isOverdue = (dueDate?: string) => {
-    if (!dueDate) return false
-    return new Date(dueDate) < new Date()
-  }
-
-  const TaskCard = ({ task, status }: { task: Task; status: Task['status'] }) => (
-    <Card className="mb-3 hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
-            <CardTitle className="text-sm leading-tight">{task.title}</CardTitle>
-            {getProjectName(task.projectId) && (
-              <CardDescription className="text-xs truncate">
-                {getProjectName(task.projectId)}
-              </CardDescription>
-            )}
-          </div>
-          <div className="flex gap-1 flex-shrink-0">
-            <Button variant="ghost" size="sm" onClick={() => handleEdit(task)}>
-              <Edit className="h-3 w-3" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => handleDelete(task.id)}>
-              <Trash2 className="h-3 w-3" />
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="space-y-3">
-          {task.description && (
-            <p className="text-xs text-muted-foreground line-clamp-2">
-              {task.description}
-            </p>
-          )}
-
-          <div className="flex flex-wrap gap-1">
-            {task.priority && (
-              <Badge className={getPriorityColor(task.priority)}>
-                <Flag className="h-2 w-2 mr-1" />
-                {task.priority}
-              </Badge>
-            )}
-            {task.assignee && (
-              <Badge variant="outline" className="text-xs">
-                <Users className="h-2 w-2 mr-1" />
-                {assigneeEmojis[task.assignee]} {assigneeNames[task.assignee] ?? task.assignee}
-              </Badge>
-            )}
-            {task.dueDate && (
-              <Badge
-                variant={isOverdue(task.dueDate) ? "destructive" : "outline"}
-                className="text-xs"
-              >
-                <Calendar className="h-2 w-2 mr-1" />
-                {new Date(task.dueDate).toLocaleDateString()}
-              </Badge>
-            )}
-          </div>
-
-          {/* Status change buttons */}
-          <div className="flex gap-1">
-            {status !== 'todo' && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs h-6"
-                onClick={() => handleStatusChange(task.id, 'todo')}
-              >
-                To Do
-              </Button>
-            )}
-            {status !== 'in-progress' && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs h-6"
-                onClick={() => handleStatusChange(task.id, 'in-progress')}
-              >
-                In Progress
-              </Button>
-            )}
-            {status !== 'review' && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs h-6"
-                onClick={() => handleStatusChange(task.id, 'review')}
-              >
-                Review
-              </Button>
-            )}
-            {status !== 'done' && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs h-6"
-                onClick={() => handleDoneClick(task)}
-              >
-                Done
-              </Button>
-            )}
-          </div>
-
-          <div className="text-xs text-muted-foreground">
-            {new Date(task.createdAt).toLocaleDateString()}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
-
-  const KanbanColumn = ({
-    id,
-    label,
-    tasks: colTasks,
-    colorClass,
-    textClass,
-    emptyText,
-    status,
-  }: {
-    id: string
-    label: string
-    tasks: Task[]
-    colorClass: string
-    textClass: string
-    emptyText: string
-    status: Task['status']
-  }) => {
-    const isCollapsed = collapsed[id]
-    return (
-      <div className="space-y-3">
-        <button
-          onClick={() => toggleCollapse(id)}
-          className={`w-full flex items-center justify-between p-4 rounded-lg ${colorClass} hover:opacity-90 transition-opacity`}
-        >
-          <h2 className={`text-lg font-semibold ${textClass} flex items-center gap-2`}>
-            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            {label}
-          </h2>
-          <Badge variant="secondary">{colTasks.length}</Badge>
-        </button>
-        {!isCollapsed && (
-          <div className="min-h-[400px]">
-            {colTasks.map((task) => (
-              <TaskCard key={task.id} task={task} status={status} />
-            ))}
-            {colTasks.length === 0 && (
-              <div className="text-center py-8 text-sm text-muted-foreground">
-                {emptyText}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    )
+    return project?.name ?? null
   }
 
   return (
@@ -612,7 +620,6 @@ export default function TasksPage() {
         </header>
 
         <div className="mt-6 space-y-4">
-          {/* Search + Filter Bar */}
           <div className="flex flex-wrap gap-2 items-center">
             <Input
               placeholder="Search tasks..."
@@ -662,7 +669,6 @@ export default function TasksPage() {
             )}
           </div>
 
-          {/* Kanban Board */}
           <div className={`grid gap-6 ${showDone ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
             <KanbanColumn
               id="todo"
@@ -672,6 +678,13 @@ export default function TasksPage() {
               textClass="text-blue-900 dark:text-blue-200"
               emptyText="No tasks in To Do"
               status="todo"
+              isCollapsed={collapsed.todo}
+              onToggleCollapse={toggleCollapse}
+              getProjectName={getProjectName}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onStatusChange={handleStatusChange}
+              onDone={handleDoneClick}
             />
             <KanbanColumn
               id="in-progress"
@@ -681,6 +694,13 @@ export default function TasksPage() {
               textClass="text-orange-900 dark:text-orange-200"
               emptyText="No tasks in progress"
               status="in-progress"
+              isCollapsed={collapsed['in-progress']}
+              onToggleCollapse={toggleCollapse}
+              getProjectName={getProjectName}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onStatusChange={handleStatusChange}
+              onDone={handleDoneClick}
             />
             <KanbanColumn
               id="review"
@@ -690,6 +710,13 @@ export default function TasksPage() {
               textClass="text-amber-900 dark:text-amber-200"
               emptyText="Nothing to review"
               status="review"
+              isCollapsed={collapsed.review}
+              onToggleCollapse={toggleCollapse}
+              getProjectName={getProjectName}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onStatusChange={handleStatusChange}
+              onDone={handleDoneClick}
             />
             {showDone && (
               <KanbanColumn
@@ -700,11 +727,17 @@ export default function TasksPage() {
                 textClass="text-green-900 dark:text-green-200"
                 emptyText="Geen afgeronde taken"
                 status="done"
+                isCollapsed={collapsed.done}
+                onToggleCollapse={toggleCollapse}
+                getProjectName={getProjectName}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onStatusChange={handleStatusChange}
+                onDone={handleDoneClick}
               />
             )}
           </div>
 
-          {/* Follow-up Task Dialog */}
           <Dialog open={followUpDialogOpen} onOpenChange={setFollowUpDialogOpen}>
             <DialogContent className="max-w-lg">
               <DialogHeader>
@@ -789,17 +822,10 @@ export default function TasksPage() {
                 </div>
 
                 <div className="flex gap-2 pt-2">
-                  <Button
-                    className="flex-1"
-                    onClick={handleConfirmWithFollowUp}
-                    disabled={!followUpForm.title.trim()}
-                  >
+                  <Button className="flex-1" onClick={handleConfirmWithFollowUp} disabled={!followUpForm.title.trim()}>
                     Afronden + Follow-up aanmaken
                   </Button>
-                  <Button
-                    variant="outline"
-                    onClick={handleConfirmWithoutFollowUp}
-                  >
+                  <Button variant="outline" onClick={handleConfirmWithoutFollowUp}>
                     Afronden zonder follow-up
                   </Button>
                 </div>

@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Plus, FileText, Search, Edit, Trash2, Eye, Tag, User, Filter, X } from "lucide-react"
+import { useState } from "react"
+import { Plus, FileText, Search, Edit, Trash2, Eye, Tag, User, X } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -28,7 +28,7 @@ const authorConfig = {
 }
 
 export default function DocsPage() {
-  const [docs, setDocs] = useState<Doc[]>([])
+  const [docs, setDocs] = useState<Doc[]>(() => docsStorage.getAll())
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingDoc, setEditingDoc] = useState<Doc | null>(null)
   const [viewingDoc, setViewingDoc] = useState<Doc | null>(null)
@@ -43,10 +43,6 @@ export default function DocsPage() {
     tags: [] as string[],
     newTag: '',
   })
-
-  useEffect(() => {
-    setDocs(docsStorage.getAll())
-  }, [])
 
   const reload = () => setDocs(docsStorage.getAll())
 

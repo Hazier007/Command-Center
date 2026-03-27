@@ -59,11 +59,19 @@ export default function PipelinePage() {
       setSites(sitesData)
 
       // Calculate stats
-      const newStats = phases.reduce((acc, phase) => {
+      const newStats = phases.reduce<PipelineStats>((acc, phase) => {
         const phaseProjects = projectsData.filter(p => p.phase === phase.id)
-        acc[phase.id as keyof PipelineStats] = phaseProjects.length
+        acc[phase.id] = phaseProjects.length
         return acc
-      }, {} as any)
+      }, {
+        idea: 0,
+        research: 0,
+        build: 0,
+        testing: 0,
+        live: 0,
+        optimizing: 0,
+        totalRevenue: 0,
+      })
 
       // Calculate total revenue from live and optimizing projects
       const liveAndOptimizingProjects = projectsData.filter(p => p.phase === 'live' || p.phase === 'optimizing')

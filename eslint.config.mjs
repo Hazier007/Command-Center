@@ -12,6 +12,13 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Project-specific ignores for non-active or generated material:
+    "archive/**",
+    "memory/**",
+    "research/**",
+    "ops/**",
+    "data/**",
+    "scripts/**",
   ]),
 ]);
 

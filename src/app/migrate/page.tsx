@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Upload, Check, AlertTriangle, Database } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -41,7 +41,7 @@ export default function MigratePage() {
     ]
 
     let totalItems = 0
-    const data: any = {}
+    const data: Record<string, unknown[]> = {}
 
     storageKeys.forEach(key => {
       try {
@@ -115,14 +115,14 @@ export default function MigratePage() {
     }
   }
 
-  // Check for localStorage data on mount
-  useState(() => {
+  useEffect(() => {
     if (typeof window !== 'undefined') {
-      setTimeout(() => {
+      const timer = window.setTimeout(() => {
         checkLocalStorageData()
       }, 100)
+      return () => window.clearTimeout(timer)
     }
-  })
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 via-background to-background dark:from-blue-950/25 dark:via-background dark:to-background">

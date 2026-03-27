@@ -36,7 +36,16 @@ export interface SEOOpportunity {
   hasOptimizationTask?: boolean;
 }
 
-async function getGSCData(siteUrl: string, auth: any, days: number = 28) {
+type GSCAuth = InstanceType<typeof google.auth.JWT>
+
+type GSCRow = {
+  keys?: string[]
+  position?: number | null
+  impressions?: number | null
+  ctr?: number | null
+}
+
+async function getGSCData(siteUrl: string, auth: GSCAuth, days: number = 28): Promise<GSCRow[]> {
   const webmasters = google.searchconsole({ version: 'v1', auth });
   
   const endDate = new Date();
@@ -83,7 +92,8 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const forceRefresh = searchParams.get('refresh') === 'true';
-    
+    void forceRefresh;
+
     // Get all live sites
     const sites = await prisma.site.findMany({
       where: { status: 'live' },

@@ -1,14 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Edit, Trash2, Lightbulb, Star, ArrowRight, CheckCircle } from "lucide-react"
+import { Plus, Edit, Trash2, Lightbulb, Star, ArrowRight } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Dialog,
   DialogContent,
@@ -17,7 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { ideasStorage, tasksStorage, projectsStorage, type Idea } from "@/lib/storage"
+import { ideasStorage, tasksStorage, projectsStorage, type Idea, type Project } from "@/lib/storage"
 
 const assigneeOptions = [
   { value: 'bart', label: 'Bart 👑' },
@@ -37,10 +37,15 @@ export default function IdeasPage() {
   const [editingIdea, setEditingIdea] = useState<Idea | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false)
-  const [projectFormData, setProjectFormData] = useState({
+  const [projectFormData, setProjectFormData] = useState<{
+    name: string
+    status: Project['status']
+    category: Project['category']
+    description: string
+  }>({
     name: "",
-    status: "planned" as const,
-    category: "tool" as const,
+    status: "planned",
+    category: "tool",
     description: "",
   })
 
@@ -171,7 +176,7 @@ export default function IdeasPage() {
     setProjectFormData({
       name: idea.title,
       status: "planned",
-      category: idea.category === 'feature' ? 'tool' : idea.category as any,
+      category: idea.category === 'feature' ? 'tool' : idea.category,
       description: idea.description,
     })
     setIsProjectDialogOpen(true)
@@ -385,7 +390,7 @@ export default function IdeasPage() {
                     <select
                       id="project-status"
                       value={projectFormData.status}
-                      onChange={(e) => setProjectFormData({ ...projectFormData, status: e.target.value as any })}
+                      onChange={(e) => setProjectFormData({ ...projectFormData, status: e.target.value as Project['status'] })}
                       className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     >
                       <option value="planned">Planned</option>
@@ -398,7 +403,7 @@ export default function IdeasPage() {
                     <select
                       id="project-category"
                       value={projectFormData.category}
-                      onChange={(e) => setProjectFormData({ ...projectFormData, category: e.target.value as any })}
+                      onChange={(e) => setProjectFormData({ ...projectFormData, category: e.target.value as Project['category'] })}
                       className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     >
                       <option value="business">Business</option>
