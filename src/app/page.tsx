@@ -81,6 +81,90 @@ const PRIORITY_ONE_ASSETS = [
   "loonberekening.be",
 ]
 
+const PRIORITY_ONE_WORKBENCH = [
+  {
+    asset: "Hazier",
+    type: "business",
+    status: "active",
+    owner: "Lisa",
+    upside: "high",
+    bottleneck: "geen compleet operating overzicht van services, sites en portfolio-rol",
+    nextAction: "maak een scherp Hazier operating snapshot in Command Center",
+  },
+  {
+    asset: "CollectPro",
+    type: "business",
+    status: "active",
+    owner: "Lisa",
+    upside: "high",
+    bottleneck: "acquisition pipeline is nog niet expliciet zichtbaar",
+    nextAction: "bouw een growth pipeline met funnel stages en blockers",
+  },
+  {
+    asset: "poxy.be",
+    type: "leadgen",
+    status: "live",
+    owner: "Lisa",
+    upside: "high",
+    bottleneck: "huidige performance en groeilevers zijn niet zichtbaar in de app",
+    nextAction: "valideer huidige performance en kies de snelste groeilever",
+  },
+  {
+    asset: "kinderopvangvlaanderen.be",
+    type: "directory",
+    status: "live",
+    owner: "Lisa",
+    upside: "medium-high",
+    bottleneck: "groei- en monetisatie-opties zijn niet scherp gedocumenteerd",
+    nextAction: "map huidige listings/revenue en definieer expansion options",
+  },
+  {
+    asset: "kluisverhuur.be",
+    type: "leadgen",
+    status: "live",
+    owner: "Lisa",
+    upside: "medium",
+    bottleneck: "onvoldoende zicht op huidige SEO/commerciële tractie",
+    nextAction: "bepaal 1 duidelijke commerciële of SEO next move",
+  },
+  {
+    asset: "huizenopkoper.be",
+    type: "leadgen",
+    status: "live",
+    owner: "Lisa",
+    upside: "medium-high",
+    bottleneck: "bestaande research is nog niet vertaald naar actief plan",
+    nextAction: "vertaal keyword research naar actieplan en tasks",
+  },
+  {
+    asset: "zwangerschapscalculator.be",
+    type: "tool",
+    status: "live",
+    owner: "Lisa",
+    upside: "medium",
+    bottleneck: "monetization path blijft onduidelijk/pending",
+    nextAction: "verifieer AdSense status en kies snelste unlock path",
+  },
+  {
+    asset: "btw-calculator.be",
+    type: "tool",
+    status: "known",
+    owner: "Lisa",
+    upside: "high",
+    bottleneck: "sterke potential maar geen expliciete command view",
+    nextAction: "verifieer status, traffic intent en monetization route",
+  },
+  {
+    asset: "loonberekening.be",
+    type: "tool",
+    status: "known",
+    owner: "Lisa",
+    upside: "high",
+    bottleneck: "research bestaat maar execution roadmap ontbreekt",
+    nextAction: "maak SEO research operationeel in roadmap en tasks",
+  },
+] as const
+
 function StatCard({
   label,
   count,
@@ -107,6 +191,20 @@ function StatCard({
         </CardContent>
       </Card>
     </Link>
+  )
+}
+
+function UpsideBadge({ upside }: { upside: string }) {
+  const styles: Record<string, string> = {
+    high: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+    "medium-high": "bg-teal-500/15 text-teal-400 border-teal-500/30",
+    medium: "bg-blue-500/15 text-blue-400 border-blue-500/30",
+  }
+
+  return (
+    <span className={`rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider ${styles[upside] ?? styles.medium}`}>
+      upside {upside}
+    </span>
   )
 }
 
@@ -357,6 +455,38 @@ export default function Home() {
               </CardContent>
             </Card>
           </div>
+
+          <Card className="border-zinc-800 bg-zinc-900/60">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold text-white">Priority 1 Asset Workbench</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {PRIORITY_ONE_WORKBENCH.map((item) => (
+                <div key={item.asset} className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-semibold text-white">{item.asset}</div>
+                      <div className="text-xs text-zinc-500">{item.type} · owner {item.owner}</div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <Badge className="border border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-900">{item.status}</Badge>
+                      <UpsideBadge upside={item.upside} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Bottleneck</div>
+                    <p className="text-xs text-zinc-300 leading-5">{item.bottleneck}</p>
+                  </div>
+
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Next action</div>
+                    <p className="text-xs text-[#F5B15C] leading-5">{item.nextAction}</p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
 
           <div className="grid gap-6 md:grid-cols-2">
             <Card className="border-zinc-800 bg-zinc-900/60">
