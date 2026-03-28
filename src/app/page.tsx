@@ -210,6 +210,31 @@ function UpsideBadge({ upside }: { upside: string }) {
   )
 }
 
+function SectionShell({
+  title,
+  icon,
+  description,
+  children,
+}: {
+  title: string
+  icon?: React.ReactNode
+  description?: string
+  children: React.ReactNode
+}) {
+  return (
+    <Card className="overflow-hidden border-zinc-800/80 bg-gradient-to-br from-zinc-900/95 via-zinc-900/80 to-zinc-950/95 shadow-lg shadow-black/15">
+      <CardHeader className="border-b border-white/5 pb-4">
+        <CardTitle className="flex items-center gap-2 text-base font-semibold text-white">
+          {icon}
+          {title}
+        </CardTitle>
+        {description ? <p className="text-sm leading-6 text-zinc-400">{description}</p> : null}
+      </CardHeader>
+      <CardContent className="pt-5">{children}</CardContent>
+    </Card>
+  )
+}
+
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [ideas, setIdeas] = useState<Idea[]>([])
@@ -407,16 +432,14 @@ export default function Home() {
           </div>
 
           <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
-            <Card className="border-zinc-800 bg-zinc-900/60">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
-                  <Target className="h-4 w-4 text-[#F5911E]" />
-                  Topprioriteiten
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
+            <SectionShell
+              title="Topprioriteiten"
+              icon={<Target className="h-4 w-4 text-[#F5911E]" />}
+              description="De drie execution lanes die nu de meeste leverage hebben."
+            >
+              <div className="space-y-3">
                 {EXECUTIVE_PRIORITIES.map((priority, index) => (
-                  <Link key={priority.title} href={priority.href} className="block rounded-xl border border-zinc-800 bg-zinc-950/70 p-4 hover:bg-zinc-900 transition-colors">
+                  <Link key={priority.title} href={priority.href} className="block rounded-2xl border border-zinc-800 bg-zinc-950/80 p-4 transition-all hover:-translate-y-0.5 hover:border-[#F5911E]/30 hover:bg-zinc-900">
                     <div className="flex items-start justify-between gap-4">
                       <div className="space-y-1.5">
                         <div className="text-xs uppercase tracking-wider text-zinc-500">Prioriteit {index + 1}</div>
@@ -424,28 +447,26 @@ export default function Home() {
                         <div className="text-xs text-zinc-400">Owner: {priority.owner}</div>
                         <div className="text-xs text-zinc-500">Next: {priority.next}</div>
                       </div>
-                      <ArrowRight className="h-4 w-4 text-zinc-600 shrink-0 mt-1" />
+                      <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-zinc-600" />
                     </div>
                   </Link>
                 ))}
-              </CardContent>
-            </Card>
+              </div>
+            </SectionShell>
 
-            <Card className="border-zinc-800 bg-zinc-900/60">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-amber-400" />
-                  Current blockers
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
+            <SectionShell
+              title="Current blockers"
+              icon={<AlertTriangle className="h-4 w-4 text-amber-400" />}
+              description="Wat de snelheid uit het systeem haalt en expliciet bewaakt moet worden."
+            >
+              <div className="space-y-3">
                 {currentBlockers.map((blocker) => (
-                  <div key={blocker} className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-sm text-zinc-300">
+                  <div key={blocker} className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-3 text-sm text-zinc-300">
                     {blocker}
                   </div>
                 ))}
-              </CardContent>
-            </Card>
+              </div>
+            </SectionShell>
           </div>
 
           <div className="grid gap-6 xl:grid-cols-[1.3fr_1fr_1fr]">
@@ -529,13 +550,13 @@ export default function Home() {
             </Card>
           </div>
 
-          <Card className="border-zinc-800 bg-zinc-900/60">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-semibold text-white">Priority 1 Asset Workbench</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <SectionShell
+            title="Priority 1 Asset Workbench"
+            description="De assets die het snelst naar omzet, leverage of duidelijkheid kunnen bewegen."
+          >
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {PRIORITY_ONE_WORKBENCH.map((item) => (
-                <div key={item.asset} className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-4 space-y-3">
+                <div key={item.asset} className="rounded-2xl border border-zinc-800 bg-gradient-to-br from-zinc-950 via-zinc-950 to-zinc-900 p-4 shadow-lg shadow-black/10 transition-all hover:-translate-y-0.5 hover:border-[#F5911E]/25">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="text-sm font-semibold text-white">{item.asset}</div>
@@ -547,19 +568,21 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Bottleneck</div>
-                    <p className="text-xs text-zinc-300 leading-5">{item.bottleneck}</p>
-                  </div>
+                  <div className="mt-4 space-y-3">
+                    <div>
+                      <div className="mb-1 text-[10px] uppercase tracking-wider text-zinc-500">Bottleneck</div>
+                      <p className="text-xs leading-5 text-zinc-300">{item.bottleneck}</p>
+                    </div>
 
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Next action</div>
-                    <p className="text-xs text-[#F5B15C] leading-5">{item.nextAction}</p>
+                    <div className="rounded-xl border border-[#F5911E]/15 bg-[#F5911E]/6 p-3">
+                      <div className="mb-1 text-[10px] uppercase tracking-wider text-zinc-500">Next action</div>
+                      <p className="text-xs leading-5 text-[#F5B15C]">{item.nextAction}</p>
+                    </div>
                   </div>
                 </div>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </SectionShell>
 
           <div className="grid gap-6 xl:grid-cols-[1.15fr_1fr]">
             <Card className="border-zinc-800 bg-zinc-900/60">
