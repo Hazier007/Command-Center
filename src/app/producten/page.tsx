@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo, useTransition } from 'react'
 import { Plus, X, Trash2, ChevronRight, Package, Search } from 'lucide-react'
 
 interface Product {
@@ -240,6 +240,7 @@ export default function ProductenPage() {
   const [creating, setCreating] = useState(false)
   const [form, setForm] = useState(empty)
   const [loading, setLoading] = useState(true)
+  const [, startTransition] = useTransition()
 
   const allSites = useMemo(() => {
     const set = new Set(KNOWN_SITES)
@@ -267,8 +268,10 @@ export default function ProductenPage() {
   }, [siteFilter, contentTypeFilter])
 
   useEffect(() => {
-    void fetchProducts()
-  }, [fetchProducts])
+    startTransition(() => {
+      void fetchProducts()
+    })
+  }, [fetchProducts, startTransition])
 
   const openCreate = () => { setForm({ ...empty }); setCreating(true); setEditing(null) }
   const openEdit = (p: Product) => {

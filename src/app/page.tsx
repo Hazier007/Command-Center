@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { AlertTriangle, ArrowRight, CheckCircle2, Lightbulb, Send, Target, TrendingUp } from "lucide-react"
+import { AlertTriangle, ArrowRight, CheckCircle2, Lightbulb, Send, Sparkles, Target, TrendingUp } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -179,15 +179,17 @@ function StatCard({
   return (
     <Link href={href} className="block">
       <Card
-        className={`cursor-pointer transition-all hover:scale-[1.02] hover:shadow-lg border ${
+        className={`group relative overflow-hidden cursor-pointer border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-2xl ${
           accent
-            ? "border-[#F5911E]/40 bg-[#F5911E]/5 hover:bg-[#F5911E]/10"
-            : "border-zinc-800 hover:border-zinc-700 bg-zinc-900/60"
+            ? "border-[#F5911E]/40 bg-gradient-to-br from-[#F5911E]/12 via-zinc-900 to-zinc-950 shadow-[#F5911E]/10"
+            : "border-zinc-800/80 bg-gradient-to-br from-zinc-900 via-zinc-900/90 to-zinc-950 hover:border-zinc-700"
         }`}
       >
-        <CardContent className="p-5">
-          <div className={`text-3xl font-bold tabular-nums ${accent ? "text-[#F5911E]" : "text-white"}`}>{count}</div>
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(245,145,30,0.18),transparent_35%)] opacity-80" />
+        <CardContent className="relative p-5">
+          <div className={`text-3xl font-bold tabular-nums ${accent ? "text-[#F5B15C]" : "text-white"}`}>{count}</div>
           <div className="mt-1 text-sm text-zinc-400">{label}</div>
+          <div className="mt-4 h-px w-full bg-gradient-to-r from-[#F5911E]/30 via-zinc-700/40 to-transparent" />
         </CardContent>
       </Card>
     </Link>
@@ -323,15 +325,76 @@ export default function Home() {
     <>
       <DataInitializer />
       <div className="min-h-screen bg-zinc-950 text-white">
-        <div className="mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-10 flex flex-col gap-8">
-          <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-[#F5911E]">Executive Overview</p>
-              <h1 className="text-3xl font-bold tracking-tight">Command Center · Obie</h1>
-              <p className="mt-1 text-sm text-zinc-500 capitalize">{today}</p>
-            </div>
-            <div className="rounded-xl border border-[#F5911E]/20 bg-[#F5911E]/5 px-4 py-3 text-sm text-zinc-300 max-w-xl">
-              <span className="font-semibold text-white">Mission:</span> reduce chaos to a plan, force focus, and make progress visible.
+        <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-6 md:px-6 md:py-10">
+          <section className="grid gap-4 xl:grid-cols-[1.3fr_0.7fr]">
+            <Card className="overflow-hidden border-[#F5911E]/15 bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-950 shadow-xl shadow-black/20">
+              <CardContent className="grid gap-6 p-6 md:grid-cols-[1.1fr_0.9fr] md:p-7">
+                <div>
+                  <div className="text-[11px] uppercase tracking-[0.24em] text-zinc-500">Control signal</div>
+                  <h2 className="mt-2 text-2xl font-semibold text-white">Wat vraagt nu aandacht?</h2>
+                  <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-400">
+                    De home moet in één blik tonen wat vastzit, waar momentum zit en wat jij als volgende moet beslissen.
+                  </p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-3 md:grid-cols-1 xl:grid-cols-3">
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <div className="text-[11px] uppercase tracking-[0.2em] text-zinc-500">Review queue</div>
+                    <div className="mt-2 text-2xl font-semibold text-white">{reviewQueue.length}</div>
+                    <div className="mt-1 text-xs text-zinc-500">Taken die op jouw beslissing wachten</div>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <div className="text-[11px] uppercase tracking-[0.2em] text-zinc-500">Urgent</div>
+                    <div className="mt-2 text-2xl font-semibold text-white">{urgentTasks.length}</div>
+                    <div className="mt-1 text-xs text-zinc-500">Open taken met hoge prioriteit</div>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <div className="text-[11px] uppercase tracking-[0.2em] text-zinc-500">Live assets</div>
+                    <div className="mt-2 text-2xl font-semibold text-white">{liveSites.length}</div>
+                    <div className="mt-1 text-xs text-zinc-500">Sites die al actief draaien</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-zinc-800/80 bg-zinc-900/60 shadow-xl shadow-black/20">
+              <CardContent className="p-6">
+                <div className="text-[11px] uppercase tracking-[0.24em] text-zinc-500">Focus rule</div>
+                <h2 className="mt-2 text-lg font-semibold text-white">Default operating mode</h2>
+                <ul className="mt-4 space-y-3 text-sm text-zinc-300">
+                  <li className="rounded-xl border border-white/10 bg-zinc-950/70 px-4 py-3">Outcome first, dan execution.</li>
+                  <li className="rounded-xl border border-white/10 bg-zinc-950/70 px-4 py-3">Geen unlabeled assumptions.</li>
+                  <li className="rounded-xl border border-white/10 bg-zinc-950/70 px-4 py-3">Done = working en getest.</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </section>
+          <header className="relative overflow-hidden rounded-[28px] border border-[#F5911E]/20 bg-gradient-to-br from-zinc-900 via-zinc-950 to-black px-5 py-6 shadow-2xl shadow-black/20 md:px-7 md:py-8">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(245,145,30,0.22),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.07),transparent_25%)]" />
+            <div className="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+              <div className="max-w-3xl space-y-4">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#F5911E]/25 bg-[#F5911E]/10 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.24em] text-[#F5B15C]">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Executive Overview
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold tracking-tight text-white md:text-4xl">Command Center · Obie</h1>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400 md:text-base">
+                    Eén command view voor focus, blockers en de snelste route naar resultaat.
+                  </p>
+                  <p className="mt-3 text-sm text-zinc-500 capitalize">{today}</p>
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 xl:w-[430px]">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+                  <div className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Mission</div>
+                  <div className="mt-2 text-sm text-zinc-200">Reduce chaos to a plan, force focus, and make progress visible.</div>
+                </div>
+                <div className="rounded-2xl border border-[#F5911E]/20 bg-[#F5911E]/10 p-4 backdrop-blur-sm">
+                  <div className="text-[11px] uppercase tracking-[0.22em] text-[#F5B15C]">Today’s stance</div>
+                  <div className="mt-2 text-sm font-medium text-white">Outcome first. Small batches. No floating tasks.</div>
+                </div>
+              </div>
             </div>
           </header>
 
