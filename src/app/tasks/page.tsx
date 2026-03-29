@@ -464,10 +464,10 @@ export default function TasksPage() {
       <div className="mx-auto max-w-7xl px-4 py-6 md:px-6">
         <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Taken</h1>
             <p className="text-muted-foreground">
-              {todoTasks.length} to do · {inProgressTasks.length} in progress · {reviewTasks.length} review
-              {hasActiveFilters && <span className="text-[#F5911E] ml-1">(filtered)</span>}
+              {todoTasks.length} te doen · {inProgressTasks.length} bezig · {reviewTasks.length} review
+              {hasActiveFilters && <span className="text-[#F5911E] ml-1">(gefilterd)</span>}
             </p>
           </div>
 
@@ -487,36 +487,36 @@ export default function TasksPage() {
                   resetForm()
                 }}>
                   <Plus className="mr-2 h-4 w-4" />
-                  Add Task
+                  Taak toevoegen
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>{editingTask ? 'Edit Task' : 'Create New Task'}</DialogTitle>
+                  <DialogTitle>{editingTask ? 'Taak bewerken' : 'Nieuwe taak'}</DialogTitle>
                   <DialogDescription>
-                    {editingTask ? 'Update task details' : 'Add a new task to track'}
+                    {editingTask ? 'Pas de taakdetails aan' : 'Voeg een nieuwe taak toe aan de execution lane'}
                   </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label htmlFor="title" className="text-sm font-medium">Title</label>
+                    <label htmlFor="title" className="text-sm font-medium">Titel</label>
                     <Input
                       id="title"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      placeholder="Task title"
+                      placeholder="Titel van de taak"
                       required
                       autoFocus
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="description" className="text-sm font-medium">Description</label>
+                    <label htmlFor="description" className="text-sm font-medium">Omschrijving</label>
                     <Textarea
                       id="description"
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      placeholder="Task description (optional)"
+                      placeholder="Omschrijving van de taak (optioneel)"
                       className="min-h-[80px]"
                     />
                   </div>
@@ -530,10 +530,10 @@ export default function TasksPage() {
                         onChange={(e) => setFormData({ ...formData, status: e.target.value as Task['status'] })}
                         className={selectClass}
                       >
-                        <option value="todo">To Do</option>
-                        <option value="in-progress">In Progress</option>
-                        <option value="review">Ready for Review</option>
-                        <option value="done">Done</option>
+                        <option value="todo">Te doen</option>
+                        <option value="in-progress">Bezig</option>
+                        <option value="review">Klaar voor review</option>
+                        <option value="done">Afgerond</option>
                       </select>
                     </div>
                     <div>
@@ -574,7 +574,7 @@ export default function TasksPage() {
                         onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
                         className={selectClass}
                       >
-                        <option value="">No project</option>
+                        <option value="">Geen project</option>
                         {projects.map((project) => (
                           <option key={project.id} value={project.id}>{project.name}</option>
                         ))}
@@ -595,7 +595,7 @@ export default function TasksPage() {
                       </select>
                     </div>
                     <div>
-                      <label htmlFor="dueDate" className="text-sm font-medium">Due Date</label>
+                      <label htmlFor="dueDate" className="text-sm font-medium">Deadline</label>
                       <Input
                         id="dueDate"
                         type="date"
@@ -607,10 +607,10 @@ export default function TasksPage() {
 
                   <div className="flex gap-2 pt-4">
                     <Button type="submit" className="flex-1">
-                      {editingTask ? 'Update' : 'Create'} Task
+                      {editingTask ? 'Bijwerken' : 'Aanmaken'}
                     </Button>
                     <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                      Cancel
+                      Annuleren
                     </Button>
                   </div>
                 </form>
@@ -622,7 +622,7 @@ export default function TasksPage() {
         <div className="mt-6 space-y-4">
           <div className="flex flex-wrap gap-2 items-center">
             <Input
-              placeholder="Search tasks..."
+              placeholder="Zoek taken..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="md:max-w-xs"
@@ -633,7 +633,7 @@ export default function TasksPage() {
               onChange={(e) => setFilterSite(e.target.value)}
               className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
-              <option value="">All sites</option>
+              <option value="">Alle sites</option>
               {sites.sort((a, b) => a.domain.localeCompare(b.domain)).map((site) => (
                 <option key={site.id} value={site.id}>{site.domain}</option>
               ))}
@@ -644,7 +644,7 @@ export default function TasksPage() {
               onChange={(e) => setFilterAssignee(e.target.value)}
               className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
-              <option value="">All assignees</option>
+              <option value="">Alle verantwoordelijken</option>
               {assigneeOptions.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}
@@ -655,16 +655,16 @@ export default function TasksPage() {
               onChange={(e) => setFilterPriority(e.target.value)}
               className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
-              <option value="">All priorities</option>
-              <option value="high">High</option>
+              <option value="">Alle prioriteiten</option>
+              <option value="high">Hoog</option>
               <option value="medium">Medium</option>
-              <option value="low">Low</option>
+              <option value="low">Laag</option>
             </select>
 
             {hasActiveFilters && (
               <Button variant="ghost" size="sm" onClick={clearFilters} className="text-[#F5911E] hover:text-[#F5911E] hover:bg-orange-50 dark:hover:bg-orange-950/20">
                 <X className="h-3 w-3 mr-1" />
-                Clear filters
+                Filters wissen
               </Button>
             )}
           </div>
@@ -672,11 +672,11 @@ export default function TasksPage() {
           <div className={`grid gap-6 ${showDone ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
             <KanbanColumn
               id="todo"
-              label="To Do"
+              label="Te doen"
               tasks={todoTasks}
               colorClass="bg-blue-50 dark:bg-blue-950/20"
               textClass="text-blue-900 dark:text-blue-200"
-              emptyText="No tasks in To Do"
+              emptyText="Geen taken in te doen"
               status="todo"
               isCollapsed={collapsed.todo}
               onToggleCollapse={toggleCollapse}
@@ -688,11 +688,11 @@ export default function TasksPage() {
             />
             <KanbanColumn
               id="in-progress"
-              label="In Progress"
+              label="Bezig"
               tasks={inProgressTasks}
               colorClass="bg-orange-50 dark:bg-orange-950/20"
               textClass="text-orange-900 dark:text-orange-200"
-              emptyText="No tasks in progress"
+              emptyText="Geen taken bezig"
               status="in-progress"
               isCollapsed={collapsed['in-progress']}
               onToggleCollapse={toggleCollapse}
@@ -708,7 +708,7 @@ export default function TasksPage() {
               tasks={reviewTasks}
               colorClass="bg-amber-50 dark:bg-amber-950/20"
               textClass="text-amber-900 dark:text-amber-200"
-              emptyText="Nothing to review"
+              emptyText="Niets te reviewen"
               status="review"
               isCollapsed={collapsed.review}
               onToggleCollapse={toggleCollapse}
@@ -835,9 +835,9 @@ export default function TasksPage() {
 
           {tasks.length === 0 && (
             <div className="text-center py-12">
-              <h3 className="text-lg font-medium text-muted-foreground">No tasks yet</h3>
+              <h3 className="text-lg font-medium text-muted-foreground">Nog geen taken</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Create your first task to get organized
+                Maak je eerste taak aan om de execution lane te starten
               </p>
               <Button
                 className="mt-4"
@@ -848,7 +848,7 @@ export default function TasksPage() {
                 }}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Create Your First Task
+                Maak je eerste taak
               </Button>
             </div>
           )}

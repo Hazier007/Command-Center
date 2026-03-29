@@ -30,12 +30,12 @@ const navGroups = [
     ],
   },
   {
-    label: "Projecten",
+    label: "Execution",
     items: [
-      { href: "/projects", label: "Projects", icon: FolderOpen },
+      { href: "/projects", label: "Projecten", icon: FolderOpen },
       { href: "/pipeline", label: "Pipeline", icon: Workflow },
       { href: "/sites", label: "Sites", icon: Globe },
-      { href: "/tasks", label: "Tasks", icon: CheckSquare },
+      { href: "/tasks", label: "Taken", icon: CheckSquare },
       { href: "/team", label: "Team", icon: Users },
       { href: "/producten", label: "Producten", icon: ShoppingBag },
     ],

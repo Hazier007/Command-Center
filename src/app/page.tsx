@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { AlertTriangle, ArrowRight, CheckCircle2, Lightbulb, Send, Sparkles, Target, TrendingUp } from "lucide-react"
+import { AlertTriangle, ArrowRight, CheckCircle2, Clock3, Lightbulb, PauseCircle, PlayCircle, Send, Sparkles, Target, TrendingUp } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -235,6 +235,90 @@ function SectionShell({
   )
 }
 
+function AgentStatusCard({
+  emoji,
+  label,
+  state,
+  currentTask,
+  nextTask,
+  activeCount,
+}: {
+  emoji: string
+  label: string
+  state: "active" | "queued" | "waiting"
+  currentTask?: Task
+  nextTask?: Task
+  activeCount: number
+}) {
+  const stateMeta = {
+    active: {
+      label: "Actief",
+      className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
+      dot: "bg-emerald-400",
+      icon: <PlayCircle className="h-3.5 w-3.5" />,
+    },
+    queued: {
+      label: "Klaar om te starten",
+      className: "border-amber-500/30 bg-amber-500/10 text-amber-200",
+      dot: "bg-amber-400",
+      icon: <Clock3 className="h-3.5 w-3.5" />,
+    },
+    waiting: {
+      label: "Wacht op taak",
+      className: "border-zinc-700 bg-zinc-800/70 text-zinc-300",
+      dot: "bg-zinc-500",
+      icon: <PauseCircle className="h-3.5 w-3.5" />,
+    },
+  } as const
+
+  const meta = stateMeta[state]
+
+  return (
+    <div className="rounded-[24px] border border-zinc-800 bg-gradient-to-br from-zinc-900 via-zinc-950 to-black p-4 shadow-lg shadow-black/20 transition-all hover:-translate-y-0.5 hover:border-[#F5911E]/20">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-2xl">
+            {emoji}
+          </div>
+          <div>
+            <div className="text-sm font-semibold text-white">{label}</div>
+            <div className="mt-1 flex items-center gap-2 text-xs text-zinc-500">
+              <span className={`h-2.5 w-2.5 rounded-full ${meta.dot}`} />
+              {activeCount} actieve taken
+            </div>
+          </div>
+        </div>
+        <div className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium ${meta.className}`}>
+          {meta.icon}
+          {meta.label}
+        </div>
+      </div>
+
+      <div className="mt-4 space-y-3">
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+          <div className="text-[10px] uppercase tracking-wider text-zinc-500">Huidige taak</div>
+          <div className="mt-1 text-sm font-medium text-white">
+            {currentTask?.title ?? "Geen actieve taak"}
+          </div>
+          <div className="mt-1 text-xs text-zinc-500">
+            {currentTask ? `Status: ${currentTask.status}` : "Agent staat klaar voor assignment"}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-dashed border-zinc-700 bg-zinc-950/70 p-3">
+          <div className="text-[10px] uppercase tracking-wider text-zinc-500">Volgende taak</div>
+          <div className="mt-1 text-sm text-zinc-300">
+            {nextTask?.title ?? "Nog geen volgende taak in queue"}
+          </div>
+          <div className="mt-1 text-xs text-zinc-500">
+            {nextTask ? `Priority: ${PRIORITY_LABEL[nextTask.priority ?? "medium"] ?? nextTask.priority}` : "Geen queued taak gevonden"}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [ideas, setIdeas] = useState<Idea[]>([])
@@ -296,9 +380,38 @@ export default function Home() {
   })
   const collectProOpenTasks = collectProTasks.filter((t) => t.status === "todo" || t.status === "in-progress")
   const collectProReviewTasks = collectProTasks.filter((t) => t.status === "review")
+  const collectProDoneTasks = collectProTasks.filter((t) => t.status === "done")
+  const collectProHasLane = collectProTasks.length > 0
+  const collectProHighPriority = collectProOpenTasks.filter((t) => t.priority === "high")
+
+  const agentSnapshot = AGENTS.map((agent) => {
+    const active = tasks
+      .filter((task) => task.assignee === agent.key && task.status === "in-progress")
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+
+    const queued = tasks
+      .filter((task) => task.assignee === agent.key && task.status === "todo")
+      .sort((a, b) => {
+        const priorityWeight = { high: 3, medium: 2, low: 1 }
+        const aWeight = priorityWeight[a.priority as keyof typeof priorityWeight] ?? 0
+        const bWeight = priorityWeight[b.priority as keyof typeof priorityWeight] ?? 0
+        if (aWeight !== bWeight) return bWeight - aWeight
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      })
+
+    const state = active.length > 0 ? "active" : queued.length > 0 ? "queued" : "waiting"
+
+    return {
+      ...agent,
+      state,
+      currentTask: active[0],
+      nextTask: queued[0],
+      activeCount: active.length,
+    }
+  })
 
   const currentBlockers = [
-    "CollectPro growth pipeline is nog niet expliciet zichtbaar in de app",
+    ...(collectProHasLane ? [] : ["CollectPro growth pipeline is nog niet expliciet zichtbaar in de app"]),
     "GA / GSC access is nog niet volledig geoperationaliseerd",
     "Niet alle Priority 1 assets hebben al een actieve execution lane",
   ]
@@ -430,6 +543,26 @@ export default function Home() {
             <StatCard label="Live sites" count={liveSites.length} href="/sites" />
             <StatCard label="Nieuwe ideeën" count={ideas.length} href="/ideas" />
           </div>
+
+          <SectionShell
+            title="OpenClaw Instantie Monitor"
+            icon={<TrendingUp className="h-4 w-4 text-[#F5911E]" />}
+            description="Zie in één oogopslag welke agent actief is, wat er nu loopt en wat als volgende klaarstaat."
+          >
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {agentSnapshot.map((agent) => (
+                <AgentStatusCard
+                  key={agent.key}
+                  emoji={agent.emoji}
+                  label={agent.label}
+                  state={agent.state}
+                  currentTask={agent.currentTask}
+                  nextTask={agent.nextTask}
+                  activeCount={agent.activeCount}
+                />
+              ))}
+            </div>
+          </SectionShell>
 
           <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
             <SectionShell
@@ -590,9 +723,9 @@ export default function Home() {
                 <CardTitle className="text-base font-semibold text-white">CollectPro Growth Lane</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-4 gap-3">
                   <div className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
-                    <div className="text-xs text-zinc-500">Open tasks</div>
+                    <div className="text-xs text-zinc-500">Open taken</div>
                     <div className="text-2xl font-bold text-white mt-1">{collectProOpenTasks.length}</div>
                   </div>
                   <div className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
@@ -600,26 +733,49 @@ export default function Home() {
                     <div className="text-2xl font-bold text-white mt-1">{collectProReviewTasks.length}</div>
                   </div>
                   <div className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
+                    <div className="text-xs text-zinc-500">Afgerond</div>
+                    <div className="text-2xl font-bold text-white mt-1">{collectProDoneTasks.length}</div>
+                  </div>
+                  <div className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
                     <div className="text-xs text-zinc-500">State</div>
-                    <div className="text-sm font-semibold text-[#F5B15C] mt-2">active</div>
+                    <div className="text-sm font-semibold text-[#F5B15C] mt-2">{collectProHasLane ? "tracked" : "missing"}</div>
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+                <div className={`rounded-xl p-4 ${collectProHasLane ? "border border-emerald-500/20 bg-emerald-500/5" : "border border-amber-500/20 bg-amber-500/5"}`}>
                   <div className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Current bottleneck</div>
-                  <p className="text-sm text-zinc-200">Acquisition pipeline is nog niet expliciet genoeg zichtbaar of bestuurbaar in de app.</p>
+                  <p className="text-sm text-zinc-200">
+                    {collectProHasLane
+                      ? "CollectPro is nu zichtbaar als workstream, maar funnel stages, blockers en commerciële volgende zetten moeten nog strakker worden gemaakt."
+                      : "Acquisition pipeline is nog niet expliciet genoeg zichtbaar of bestuurbaar in de app."}
+                  </p>
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-2">
                   <div className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-4">
                     <div className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Next action</div>
-                    <p className="text-sm text-[#F5B15C]">Maak funnel stages en blockers expliciet voor CollectPro growth.</p>
+                    <p className="text-sm text-[#F5B15C]">
+                      {collectProHasLane
+                        ? "Gebruik de open CollectPro taken om ICP, offer, outreach assets en funnel visibility af te werken."
+                        : "Maak funnel stages en blockers expliciet voor CollectPro growth."}
+                    </p>
                   </div>
                   <div className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-4">
                     <div className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Recommended focus</div>
                     <p className="text-sm text-zinc-300">Pipeline visibility → current leads → blockers → next commercial step.</p>
                   </div>
                 </div>
+
+                {collectProHighPriority.length > 0 && (
+                  <div className="rounded-xl border border-[#F5911E]/20 bg-[#F5911E]/5 p-4">
+                    <div className="text-[10px] uppercase tracking-wider text-zinc-500 mb-2">High-priority now</div>
+                    <div className="space-y-2">
+                      {collectProHighPriority.slice(0, 3).map((task) => (
+                        <div key={task.id} className="text-sm text-zinc-200">• {task.title}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <Link href="/projects" className="text-xs text-[#F5911E] hover:underline inline-flex items-center gap-1">
                   Open CollectPro workstream <ArrowRight className="h-3 w-3" />

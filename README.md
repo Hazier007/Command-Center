@@ -2,7 +2,15 @@
 
 ## Repository structure note
 
-This repo now separates app code, operations, research, data, and archive material to keep the Command Center usable as a single source of truth.
+This repo separates app code, operations, research, data, and archive material so the Command Center can stay usable as a single source of truth.
+
+## Current cleanup status
+
+The repo structure is largely in place, but the next cleanup layer is operational clarity:
+- reduce mixed Dutch/English UI labels where they create drift
+- keep `ops/` as the canonical operating layer
+- keep `archive/` as the only home for temp/historical noise
+- treat app pages as execution views, not as a dumping ground for vague ideas
 
 **Persoonlijk operating systeem voor Hazier — projects, pipeline, team, finance en knowledge management.**
 
