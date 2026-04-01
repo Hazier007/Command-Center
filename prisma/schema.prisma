@@ -117,6 +117,7 @@ model Site {
   monthlyRevenue  Float?
   seoStatus       String?    // 'growing' | 'stable' | 'declining' | 'unknown'
   nextAction      String?
+  hosting         String?    // 'vercel' | 'cloudflare' | 'hostinger' | 'vps' | 'other'
   ownerType       String     @default("own")  // 'client' | 'own'
   clientName      String?
   clientEmail     String?

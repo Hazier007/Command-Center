@@ -40,6 +40,7 @@ export async function POST(request: Request) {
         monthlyRevenue: data.monthlyRevenue,
         seoStatus: data.seoStatus,
         nextAction: data.nextAction,
+        hosting: data.hosting,
       },
       include: {
         project: true,

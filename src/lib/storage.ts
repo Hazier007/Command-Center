@@ -40,6 +40,7 @@ export interface Site {
   monthlyRevenue?: number;
   seoStatus?: 'growing' | 'stable' | 'declining' | 'unknown';
   nextAction?: string;
+  hosting?: string;
   createdAt: string;
   updatedAt: string;
 }

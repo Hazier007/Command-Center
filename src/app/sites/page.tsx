@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Edit, Trash2, ExternalLink, Globe, TrendingUp, TrendingDown, AlertTriangle, FileText, Activity } from "lucide-react"
+import { Plus, Edit, Trash2, ExternalLink, Globe, TrendingUp, TrendingDown, AlertTriangle, FileText, Activity, Server } from "lucide-react"
 import Link from "next/link"
 
 import { Badge } from "@/components/ui/badge"
@@ -58,6 +58,7 @@ export default function SitesPage() {
     notes: "",
     seoStatus: "" as string,
     nextAction: "",
+    hosting: "",
   })
 
   useEffect(() => {
@@ -93,6 +94,7 @@ export default function SitesPage() {
       notes: formData.notes || undefined,
       seoStatus: formData.seoStatus || undefined,
       nextAction: formData.nextAction || undefined,
+      hosting: formData.hosting || undefined,
     }
 
     if (editingSite) {
@@ -120,6 +122,7 @@ export default function SitesPage() {
       notes: "",
       seoStatus: "",
       nextAction: "",
+      hosting: "",
     })
   }
 
@@ -136,6 +139,7 @@ export default function SitesPage() {
       notes: site.notes || "",
       seoStatus: site.seoStatus || "",
       nextAction: site.nextAction || "",
+      hosting: site.hosting || "",
     })
     setIsDialogOpen(true)
   }
@@ -250,6 +254,27 @@ export default function SitesPage() {
                     placeholder="Next.js, TypeScript, etc."
                   />
                   <p className="text-xs text-muted-foreground mt-1">Scheid met komma&apos;s</p>
+                </div>
+
+                <div>
+                  <label htmlFor="hosting" className="text-sm font-medium">Hosting</label>
+                  <select
+                    id="hosting"
+                    value={formData.hosting}
+                    onChange={(e) => setFormData({ ...formData, hosting: e.target.value })}
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  >
+                    <option value="">Niet ingesteld</option>
+                    <option value="vercel">Vercel</option>
+                    <option value="cloudflare">Cloudflare Pages</option>
+                    <option value="hostinger">Hostinger</option>
+                    <option value="combell">Combell</option>
+                    <option value="digitalocean">DigitalOcean</option>
+                    <option value="vps">VPS</option>
+                    <option value="netlify">Netlify</option>
+                    <option value="aws">AWS</option>
+                    <option value="other">Anders</option>
+                  </select>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3">
@@ -460,20 +485,24 @@ export default function SitesPage() {
                         )}
                       </div>
 
-                      {site.techStack.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {site.techStack.slice(0, 3).map((tech, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
-                              {tech}
-                            </Badge>
-                          ))}
-                          {site.techStack.length > 3 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{site.techStack.length - 3}
-                            </Badge>
-                          )}
-                        </div>
-                      )}
+                      <div className="flex flex-wrap gap-1">
+                        {site.hosting && (
+                          <Badge variant="outline" className="text-xs bg-violet-500/10 text-violet-400 border-violet-500/30">
+                            <Server className="h-3 w-3 mr-1" />
+                            {site.hosting.charAt(0).toUpperCase() + site.hosting.slice(1)}
+                          </Badge>
+                        )}
+                        {site.techStack.slice(0, 3).map((tech, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {tech}
+                          </Badge>
+                        ))}
+                        {site.techStack.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{site.techStack.length - 3}
+                          </Badge>
+                        )}
+                      </div>
 
                       <div className="grid grid-cols-3 gap-2 text-xs">
                         {rev > 0 && (

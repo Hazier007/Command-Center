@@ -25,6 +25,7 @@ export async function PATCH(
         ...(data.monthlyRevenue !== undefined && { monthlyRevenue: data.monthlyRevenue }),
         ...(data.seoStatus !== undefined && { seoStatus: data.seoStatus }),
         ...(data.nextAction !== undefined && { nextAction: data.nextAction }),
+        ...(data.hosting !== undefined && { hosting: data.hosting }),
       },
       include: {
         project: true,
