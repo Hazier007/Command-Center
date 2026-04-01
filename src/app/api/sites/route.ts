@@ -36,6 +36,10 @@ export async function POST(request: Request) {
         listings: data.listings,
         pages: data.pages,
         notes: data.notes,
+        lastContentDate: data.lastContentDate ? new Date(data.lastContentDate) : undefined,
+        monthlyRevenue: data.monthlyRevenue,
+        seoStatus: data.seoStatus,
+        nextAction: data.nextAction,
       },
       include: {
         project: true,

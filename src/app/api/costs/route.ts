@@ -30,6 +30,7 @@ export async function POST(request: Request) {
         category: data.category,
         recurring: data.recurring,
         notes: data.notes,
+        billingDay: data.billingDay,
       },
     })
     

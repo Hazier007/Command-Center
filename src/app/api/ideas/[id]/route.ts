@@ -13,10 +13,14 @@ export async function PATCH(
     const idea = await prisma.idea.update({
       where: { id },
       data: {
-        title: data.title,
-        description: data.description,
-        category: data.category,
-        priority: data.priority,
+        ...(data.title !== undefined && { title: data.title }),
+        ...(data.description !== undefined && { description: data.description }),
+        ...(data.category !== undefined && { category: data.category }),
+        ...(data.priority !== undefined && { priority: data.priority }),
+        ...(data.status !== undefined && { status: data.status }),
+        ...(data.businessUnit !== undefined && { businessUnit: data.businessUnit }),
+        ...(data.revenueEstimate !== undefined && { revenueEstimate: data.revenueEstimate }),
+        ...(data.assignedTo !== undefined && { assignedTo: data.assignedTo }),
       },
     })
     

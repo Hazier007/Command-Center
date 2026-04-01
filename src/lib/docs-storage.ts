@@ -7,7 +7,7 @@ export interface Doc {
   id: string;
   title: string;
   content: string;
-  author: 'lisa' | 'jc' | 'wout' | 'bart';
+  author: 'bart' | 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark' | 'cowork';
   tags: string[];
   createdAt: string;
   updatedAt: string;

@@ -20,26 +20,35 @@ import { tasksStorage, projectsStorage, sitesStorage, type Task, type Project, t
 
 const assigneeOptions = [
   { value: 'bart', label: 'Bart 👑' },
-  { value: 'lisa', label: 'Lisa 📋' },
-  { value: 'jc', label: 'JC 🥊' },
-  { value: 'wout', label: 'Wout 🔭' },
-  { value: 'copycat', label: 'Copycat ✍️' },
+  { value: 'atlas', label: 'Atlas 🗺️' },
+  { value: 'forge', label: 'Forge 🔨' },
+  { value: 'radar', label: 'Radar 📡' },
+  { value: 'ink', label: 'Ink ✍️' },
+  { value: 'ledger', label: 'Ledger 📊' },
+  { value: 'spark', label: 'Spark ⚡' },
+  { value: 'cowork', label: 'Cowork 🤝' },
 ]
 
 const assigneeEmojis: Record<string, string> = {
   bart: '👑',
-  lisa: '📋',
-  jc: '🥊',
-  wout: '🔭',
-  copycat: '✍️',
+  atlas: '🗺️',
+  forge: '🔨',
+  radar: '📡',
+  ink: '✍️',
+  ledger: '📊',
+  spark: '⚡',
+  cowork: '🤝',
 }
 
 const assigneeNames: Record<string, string> = {
   bart: 'Bart',
-  lisa: 'Lisa',
-  jc: 'JC',
-  wout: 'Wout',
-  copycat: 'Copycat',
+  atlas: 'Atlas',
+  forge: 'Forge',
+  radar: 'Radar',
+  ink: 'Ink',
+  ledger: 'Ledger',
+  spark: 'Spark',
+  cowork: 'Cowork',
 }
 
 const selectClass = "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
@@ -389,23 +398,23 @@ export default function TasksPage() {
 
   const getFollowUpSuggestion = (task: Task): { suggestedTitle: string; suggestedAssignee: string } => {
     const titleLower = task.title.toLowerCase()
-    if (task.assignee === 'wout') {
-      return { suggestedTitle: `Content schrijven: ${task.title}`, suggestedAssignee: 'copycat' }
+    if (task.assignee === 'radar') {
+      return { suggestedTitle: `Content schrijven: ${task.title}`, suggestedAssignee: 'ink' }
     }
-    if (task.assignee === 'copycat') {
-      return { suggestedTitle: `Implementeren: ${task.title}`, suggestedAssignee: 'lisa' }
+    if (task.assignee === 'ink') {
+      return { suggestedTitle: `Implementeren: ${task.title}`, suggestedAssignee: 'forge' }
     }
-    if (task.assignee === 'lisa') {
-      return { suggestedTitle: `QA Review: ${task.title}`, suggestedAssignee: 'jc' }
+    if (task.assignee === 'forge') {
+      return { suggestedTitle: `QA Review: ${task.title}`, suggestedAssignee: 'atlas' }
     }
-    if (task.assignee === 'jc') {
-      return { suggestedTitle: `Deploy: ${task.title}`, suggestedAssignee: 'lisa' }
+    if (task.assignee === 'atlas') {
+      return { suggestedTitle: `Deploy: ${task.title}`, suggestedAssignee: 'forge' }
     }
     if (titleLower.includes('keyword') || titleLower.includes('research')) {
-      return { suggestedTitle: `Content schrijven: ${task.title}`, suggestedAssignee: 'copycat' }
+      return { suggestedTitle: `Content schrijven: ${task.title}`, suggestedAssignee: 'ink' }
     }
     if (titleLower.includes('content') || titleLower.includes('blog') || titleLower.includes('tekst')) {
-      return { suggestedTitle: `Implementeren: ${task.title}`, suggestedAssignee: 'lisa' }
+      return { suggestedTitle: `Implementeren: ${task.title}`, suggestedAssignee: 'forge' }
     }
     return { suggestedTitle: '', suggestedAssignee: '' }
   }

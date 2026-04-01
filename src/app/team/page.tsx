@@ -21,23 +21,35 @@ import { tasksStorage, projectsStorage, type Task, type Project } from "@/lib/st
 
 const assigneeOptions = [
   { value: 'bart', label: 'Bart 👑' },
-  { value: 'lisa', label: 'Lisa 📋' },
-  { value: 'jc', label: 'JC 🥊' },
-  { value: 'wout', label: 'Wout 🔭' },
+  { value: 'atlas', label: 'Atlas 🗺️' },
+  { value: 'forge', label: 'Forge 🔨' },
+  { value: 'radar', label: 'Radar 📡' },
+  { value: 'ink', label: 'Ink ✍️' },
+  { value: 'ledger', label: 'Ledger 📊' },
+  { value: 'spark', label: 'Spark ⚡' },
+  { value: 'cowork', label: 'Cowork 🤝' },
 ]
 
 const assigneeEmojis = {
   bart: "👑",
-  lisa: "📋", 
-  jc: "🥊",
-  wout: "🔭"
+  atlas: "🗺️",
+  forge: "🔨",
+  radar: "📡",
+  ink: "✍️",
+  ledger: "📊",
+  spark: "⚡",
+  cowork: "🤝",
 };
 
 const assigneeNames = {
   bart: "Bart",
-  lisa: "Lisa",
-  jc: "JC", 
-  wout: "Wout"
+  atlas: "Atlas",
+  forge: "Forge",
+  radar: "Radar",
+  ink: "Ink",
+  ledger: "Ledger",
+  spark: "Spark",
+  cowork: "Cowork",
 };
 
 const statusColumns = [

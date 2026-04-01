@@ -40,7 +40,7 @@ export async function POST(request: Request) {
         }
       });
 
-      // Create Research Task (assigned to Wout)
+      // Create Research Task (assigned to Radar)
       if (!existingResearchTask) {
         const researchTask = await prisma.task.create({
           data: {
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
             description: `Site: ${opportunity.siteDomain}\nHuidige positie: ${opportunity.currentPosition}\nVertoningen: ${opportunity.impressions}\nHuidige CTR: ${opportunity.currentCTR}%\n\nOnderzoek:\n- Top 5 concurrenten voor dit keyword\n- Related keywords en long-tail varianten\n- Content gaps vs concurrentie\n- Aanbevolen optimalisaties`,
             status: 'todo',
             priority: 'high',
-            assignee: 'wout'
+            assignee: 'radar'
           },
           include: {
             project: true,
@@ -58,17 +58,17 @@ export async function POST(request: Request) {
         createdTasks.push(researchTask);
       }
 
-      // Create Optimization Task (assigned to Lisa)
+      // Create Optimization Task (assigned to Forge)
       if (!existingOptimizationTask) {
         const pagePath = opportunity.targetPage.replace(`https://${opportunity.siteDomain}`, '') || '/';
-        
+
         const optimizationTask = await prisma.task.create({
           data: {
             title: `📋 Optimaliseer: ${pagePath} voor ${opportunity.keyword}`,
-            description: `Wacht op Wout's keyword research.\nDan: optimaliseer content, meta tags, interne links.\nResultaat → Content Review voor Bart's goedkeuring.\n\nKeyword: ${opportunity.keyword}\nHuidige positie: ${opportunity.currentPosition}\nPotentieel: +${opportunity.potentialClicks} clicks/maand`,
+            description: `Wacht op Radar's keyword research.\nDan: optimaliseer content, meta tags, interne links.\nResultaat → Content Review voor Bart's goedkeuring.\n\nKeyword: ${opportunity.keyword}\nHuidige positie: ${opportunity.currentPosition}\nPotentieel: +${opportunity.potentialClicks} clicks/maand`,
             status: 'todo',
             priority: 'medium',
-            assignee: 'lisa'
+            assignee: 'forge'
           },
           include: {
             project: true,

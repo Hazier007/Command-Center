@@ -21,6 +21,10 @@ export async function PATCH(
         listings: data.listings,
         pages: data.pages,
         notes: data.notes,
+        ...(data.lastContentDate !== undefined && { lastContentDate: data.lastContentDate ? new Date(data.lastContentDate) : null }),
+        ...(data.monthlyRevenue !== undefined && { monthlyRevenue: data.monthlyRevenue }),
+        ...(data.seoStatus !== undefined && { seoStatus: data.seoStatus }),
+        ...(data.nextAction !== undefined && { nextAction: data.nextAction }),
       },
       include: {
         project: true,

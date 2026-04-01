@@ -4,9 +4,12 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState, useRef, useEffect } from "react"
 import {
-  Menu, Users, DollarSign, Bell, Wallet, FileText, BarChart3, Brain,
-  LayoutDashboard, Globe, Lightbulb, CheckSquare, FolderOpen, StickyNote,
-  ChevronDown, Zap, Workflow, Activity, Search, TrendingUp, ShoppingBag
+  Menu, Users, Bell, FileText, Brain,
+  LayoutDashboard, Globe, CheckSquare, StickyNote,
+  ChevronDown, Zap, Activity, Search, Rocket,
+  Inbox, FolderKanban, Receipt, Workflow,
+  GlobeLock, Wrench, Link2, Layers,
+  PenTool, BookOpen, Settings, Bot, DollarSign,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -27,37 +30,46 @@ const navGroups = [
       { href: "/", label: "Dashboard", icon: LayoutDashboard },
       { href: "/activity", label: "Activiteit", icon: Activity },
       { href: "/alerts", label: "Alerts", icon: Bell },
+      { href: "/inbox", label: "Inbox", icon: Inbox },
     ],
   },
   {
-    label: "Execution",
+    label: "Klanten",
     items: [
-      { href: "/projects", label: "Projecten", icon: FolderOpen },
+      { href: "/clients", label: "Overzicht", icon: Users },
+      { href: "/clients/sites", label: "Actieve Sites", icon: Globe },
+      { href: "/clients/projects", label: "Projecten", icon: FolderKanban },
       { href: "/pipeline", label: "Pipeline", icon: Workflow },
-      { href: "/sites", label: "Sites", icon: Globe },
+      { href: "/clients/quotes", label: "Offertes", icon: Receipt },
+    ],
+  },
+  {
+    label: "Eigen",
+    items: [
+      { href: "/projects", label: "Overzicht", icon: Rocket },
+      { href: "/projects?type=rankrent", label: "Rank & Rent", icon: GlobeLock },
+      { href: "/domains", label: "Domeinen", icon: Layers },
+      { href: "/projects?type=tools", label: "Tools", icon: Wrench },
+      { href: "/projects?type=affiliate", label: "Affiliate", icon: Link2 },
+      { href: "/projects?type=pseo", label: "pSEO", icon: Search },
+    ],
+  },
+  {
+    label: "Werk",
+    items: [
       { href: "/tasks", label: "Taken", icon: CheckSquare },
-      { href: "/team", label: "Team", icon: Users },
-      { href: "/producten", label: "Producten", icon: ShoppingBag },
-    ],
-  },
-  {
-    label: "Finance",
-    items: [
-      { href: "/budget", label: "Budget", icon: Wallet },
-      { href: "/adsense", label: "AdSense", icon: DollarSign },
-      { href: "/analytics", label: "Analytics", icon: BarChart3 },
-      { href: "/seo", label: "SEO", icon: TrendingUp },
-    ],
-  },
-  {
-    label: "Kennis",
-    items: [
-      { href: "/ideas", label: "Ideas", icon: Lightbulb },
-      { href: "/research", label: "Research", icon: Search },
-      { href: "/content", label: "Content", icon: FileText },
-      { href: "/docs", label: "Docs", icon: FileText },
+      { href: "/content", label: "Content", icon: PenTool },
+      { href: "/research", label: "Research", icon: BookOpen },
+      { href: "/oracle", label: "Oracle", icon: Brain },
       { href: "/notes", label: "Notes", icon: StickyNote },
-      { href: "/oracle", label: "Oracle 🔮", icon: Brain },
+    ],
+  },
+  {
+    label: "Business",
+    items: [
+      { href: "/finance", label: "Finance", icon: DollarSign },
+      { href: "/agents", label: "Agents", icon: Bot },
+      { href: "/settings", label: "Instellingen", icon: Settings },
     ],
   },
 ]

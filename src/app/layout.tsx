@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Navigation } from "@/components/navigation";
+import { BottomNav } from "@/components/bottom-nav";
+import { QuickCapture } from "@/components/quick-capture";
+import { CommandSearch } from "@/components/command-search";
+import { SessionProvider } from "next-auth/react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,10 +30,15 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased pb-16 md:pb-0`}
       >
-        <Navigation />
-        {children}
+        <SessionProvider>
+          <Navigation />
+          {children}
+          <BottomNav />
+          <QuickCapture />
+          <CommandSearch />
+        </SessionProvider>
       </body>
     </html>
   );

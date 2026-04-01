@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Edit, Trash2, ExternalLink, Globe, TrendingUp } from "lucide-react"
+import { Plus, Edit, Trash2, ExternalLink, Globe, TrendingUp, TrendingDown, AlertTriangle, FileText, Activity } from "lucide-react"
 import Link from "next/link"
 
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +18,25 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { sitesStorage, projectsStorage, type Site, type Project } from "@/lib/storage"
+
+const seoStatusConfig: Record<string, { label: string; cls: string }> = {
+  growing: { label: "Growing", cls: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
+  stable: { label: "Stable", cls: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
+  declining: { label: "Declining", cls: "bg-red-500/20 text-red-400 border-red-500/30" },
+  unknown: { label: "Unknown", cls: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30" },
+}
+
+function isContentOutdated(lastContentDate?: string): boolean {
+  if (!lastContentDate) return false
+  const diff = Date.now() - new Date(lastContentDate).getTime()
+  return diff > 21 * 24 * 60 * 60 * 1000 // 21 days
+}
+
+function daysSince(dateStr?: string): number | null {
+  if (!dateStr) return null
+  const diff = Date.now() - new Date(dateStr).getTime()
+  return Math.floor(diff / (24 * 60 * 60 * 1000))
+}
 
 export default function SitesPage() {
   const [sites, setSites] = useState<Site[]>([])
@@ -37,6 +56,8 @@ export default function SitesPage() {
     listings: "",
     pages: "",
     notes: "",
+    seoStatus: "" as string,
+    nextAction: "",
   })
 
   useEffect(() => {
@@ -60,29 +81,24 @@ export default function SitesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
+    const payload = {
+      domain: formData.domain,
+      status: formData.status,
+      projectId: formData.projectId || undefined,
+      techStack: formData.techStack.split(',').map(t => t.trim()).filter(Boolean),
+      revenue: formData.revenue ? parseFloat(formData.revenue) : undefined,
+      listings: formData.listings ? parseInt(formData.listings) : undefined,
+      pages: formData.pages ? parseInt(formData.pages) : undefined,
+      notes: formData.notes || undefined,
+      seoStatus: formData.seoStatus || undefined,
+      nextAction: formData.nextAction || undefined,
+    }
+
     if (editingSite) {
-      await sitesStorage.update(editingSite.id, {
-        domain: formData.domain,
-        status: formData.status,
-        projectId: formData.projectId || undefined,
-        techStack: formData.techStack.split(',').map(t => t.trim()).filter(Boolean),
-        revenue: formData.revenue ? parseFloat(formData.revenue) : undefined,
-        listings: formData.listings ? parseInt(formData.listings) : undefined,
-        pages: formData.pages ? parseInt(formData.pages) : undefined,
-        notes: formData.notes || undefined,
-      })
+      await sitesStorage.update(editingSite.id, payload)
     } else {
-      await sitesStorage.create({
-        domain: formData.domain,
-        status: formData.status,
-        projectId: formData.projectId || undefined,
-        techStack: formData.techStack.split(',').map(t => t.trim()).filter(Boolean),
-        revenue: formData.revenue ? parseFloat(formData.revenue) : undefined,
-        listings: formData.listings ? parseInt(formData.listings) : undefined,
-        pages: formData.pages ? parseInt(formData.pages) : undefined,
-        notes: formData.notes || undefined,
-      })
+      await sitesStorage.create(payload as Omit<Site, 'id' | 'createdAt' | 'updatedAt'>)
     }
 
     const allSites = await sitesStorage.getAll()
@@ -102,6 +118,8 @@ export default function SitesPage() {
       listings: "",
       pages: "",
       notes: "",
+      seoStatus: "",
+      nextAction: "",
     })
   }
 
@@ -116,6 +134,8 @@ export default function SitesPage() {
       listings: site.listings?.toString() || "",
       pages: site.pages?.toString() || "",
       notes: site.notes || "",
+      seoStatus: site.seoStatus || "",
+      nextAction: site.nextAction || "",
     })
     setIsDialogOpen(true)
   }
@@ -143,8 +163,13 @@ export default function SitesPage() {
     return project?.name
   }
 
-  const totalRevenue = sites.reduce((sum, s) => sum + (s.revenue || 0), 0)
+  const totalRevenue = sites.reduce((sum, s) => sum + (s.monthlyRevenue || s.revenue || 0), 0)
   const liveSites = sites.filter(s => s.status === 'live')
+
+  // SEO Pulse metrics
+  const growingCount = sites.filter(s => s.seoStatus === 'growing').length
+  const decliningCount = sites.filter(s => s.seoStatus === 'declining').length
+  const needsContentCount = sites.filter(s => isContentOutdated(s.lastContentDate)).length
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 via-background to-background dark:from-orange-950/25 dark:via-background dark:to-background">
@@ -153,7 +178,7 @@ export default function SitesPage() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Sites</h1>
             <p className="text-muted-foreground">
-              €{totalRevenue.toLocaleString()}/maand · {liveSites.length} live · {sites.length} totaal
+              &euro;{totalRevenue.toLocaleString()}/maand &middot; {liveSites.length} live &middot; {sites.length} totaal
             </p>
           </div>
 
@@ -185,7 +210,7 @@ export default function SitesPage() {
                     required
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="status" className="text-sm font-medium">Status</label>
@@ -264,6 +289,33 @@ export default function SitesPage() {
                   </div>
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="seoStatus" className="text-sm font-medium">SEO Status</label>
+                    <select
+                      id="seoStatus"
+                      value={formData.seoStatus}
+                      onChange={(e) => setFormData({ ...formData, seoStatus: e.target.value })}
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                    >
+                      <option value="">Niet ingesteld</option>
+                      <option value="growing">Growing</option>
+                      <option value="stable">Stable</option>
+                      <option value="declining">Declining</option>
+                      <option value="unknown">Unknown</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="nextAction" className="text-sm font-medium">Volgende actie</label>
+                    <Input
+                      id="nextAction"
+                      value={formData.nextAction}
+                      onChange={(e) => setFormData({ ...formData, nextAction: e.target.value })}
+                      placeholder="bv. Content schrijven, links bouwen"
+                    />
+                  </div>
+                </div>
+
                 <div>
                   <label htmlFor="notes" className="text-sm font-medium">Notities</label>
                   <Input
@@ -287,6 +339,45 @@ export default function SitesPage() {
           </Dialog>
         </header>
 
+        {/* SEO Pulse Summary */}
+        {sites.length > 0 && (
+          <div className="mt-6">
+            <Card className="border-[#F5911E]/20 bg-[#F5911E]/5">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-[#F5911E]" />
+                  SEO Pulse
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-emerald-500" />
+                    <div>
+                      <div className="text-xl font-bold text-emerald-500">{growingCount}</div>
+                      <div className="text-xs text-muted-foreground">Growing</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <TrendingDown className="h-5 w-5 text-red-400" />
+                    <div>
+                      <div className="text-xl font-bold text-red-400">{decliningCount}</div>
+                      <div className="text-xs text-muted-foreground">Declining</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-yellow-400" />
+                    <div>
+                      <div className="text-xl font-bold text-yellow-400">{needsContentCount}</div>
+                      <div className="text-xs text-muted-foreground">Needs content</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         <div className="mt-6 space-y-4">
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
             <Input
@@ -306,102 +397,132 @@ export default function SitesPage() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredSites.map((site) => (
-              <Card key={site.id}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <div className="min-w-0 flex-1">
-                        <CardTitle className="text-base truncate">{site.domain}</CardTitle>
-                        {getProjectName(site.projectId) && (
-                          <CardDescription className="truncate">
-                            <Link href={`/projects/${site.projectId}`} className="hover:text-[#F5911E] transition-colors">
-                              {getProjectName(site.projectId)}
+            {filteredSites.map((site) => {
+              const outdated = isContentOutdated(site.lastContentDate)
+              const days = daysSince(site.lastContentDate)
+              const rev = site.monthlyRevenue || site.revenue || 0
+
+              return (
+                <Card key={site.id}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <CardTitle className="text-base truncate">{site.domain}</CardTitle>
+                          {getProjectName(site.projectId) && (
+                            <CardDescription className="truncate">
+                              <Link href={`/projects/${site.projectId}`} className="hover:text-[#F5911E] transition-colors">
+                                {getProjectName(site.projectId)}
+                              </Link>
+                            </CardDescription>
+                          )}
+                          {site.nextAction && (
+                            <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                              &rarr; {site.nextAction}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-1 flex-shrink-0">
+                        {site.status === 'live' && (
+                          <Button variant="ghost" size="sm" asChild>
+                            <Link href={`https://${site.domain}`} target="_blank">
+                              <ExternalLink className="h-4 w-4" />
                             </Link>
-                          </CardDescription>
+                          </Button>
                         )}
-                      </div>
-                    </div>
-                    <div className="flex gap-1 flex-shrink-0">
-                      {site.status === 'live' && (
-                        <Button variant="ghost" size="sm" asChild>
-                          <Link href={`https://${site.domain}`} target="_blank">
-                            <ExternalLink className="h-4 w-4" />
-                          </Link>
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(site)}>
+                          <Edit className="h-4 w-4" />
                         </Button>
-                      )}
-                      <Button variant="ghost" size="sm" onClick={() => handleEdit(site)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(site.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(site.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="space-y-3">
-                    <Badge className={getStatusColor(site.status)}>
-                      {site.status}
-                    </Badge>
-                    
-                    {site.techStack.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {site.techStack.slice(0, 3).map((tech, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {tech}
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap gap-1.5">
+                        <Badge className={getStatusColor(site.status)}>
+                          {site.status}
+                        </Badge>
+                        {site.seoStatus && (
+                          <Badge variant="outline" className={seoStatusConfig[site.seoStatus]?.cls || ""}>
+                            {seoStatusConfig[site.seoStatus]?.label || site.seoStatus}
                           </Badge>
-                        ))}
-                        {site.techStack.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{site.techStack.length - 3}
+                        )}
+                        {outdated && (
+                          <Badge variant="outline" className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                            <AlertTriangle className="h-3 w-3 mr-1" />
+                            Content verouderd
                           </Badge>
                         )}
                       </div>
-                    )}
-                    
-                    <div className="grid grid-cols-3 gap-2 text-xs">
-                      {site.revenue && (
-                        <div className="flex items-center gap-1">
-                          <TrendingUp className="h-3 w-3 text-green-600" />
-                          <span>€{site.revenue}/mo</span>
+
+                      {site.techStack.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {site.techStack.slice(0, 3).map((tech, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {tech}
+                            </Badge>
+                          ))}
+                          {site.techStack.length > 3 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{site.techStack.length - 3}
+                            </Badge>
+                          )}
                         </div>
                       )}
-                      {site.listings && (
-                        <div className="text-center">
-                          <div className="font-medium">{site.listings.toLocaleString()}</div>
-                          <div className="text-muted-foreground">listings</div>
+
+                      <div className="grid grid-cols-3 gap-2 text-xs">
+                        {rev > 0 && (
+                          <div className="flex items-center gap-1">
+                            <TrendingUp className="h-3 w-3 text-green-600" />
+                            <span>&euro;{rev}/mo</span>
+                          </div>
+                        )}
+                        {site.listings && (
+                          <div className="text-center">
+                            <div className="font-medium">{site.listings.toLocaleString()}</div>
+                            <div className="text-muted-foreground">listings</div>
+                          </div>
+                        )}
+                        {site.pages && (
+                          <div className="text-center">
+                            <div className="font-medium">{site.pages.toLocaleString()}</div>
+                            <div className="text-muted-foreground">pages</div>
+                          </div>
+                        )}
+                      </div>
+
+                      {days !== null && (
+                        <div className="text-xs text-muted-foreground">
+                          Laatste content: {days === 0 ? "vandaag" : `${days} dagen geleden`}
                         </div>
                       )}
-                      {site.pages && (
-                        <div className="text-center">
-                          <div className="font-medium">{site.pages.toLocaleString()}</div>
-                          <div className="text-muted-foreground">pages</div>
-                        </div>
+
+                      {site.notes && (
+                        <p className="text-xs text-muted-foreground line-clamp-2">
+                          {site.notes}
+                        </p>
                       )}
+
+                      <div className="text-xs text-muted-foreground">
+                        Toegevoegd {new Date(site.createdAt).toLocaleDateString('nl-BE')}
+                      </div>
                     </div>
-                    
-                    {site.notes && (
-                      <p className="text-xs text-muted-foreground line-clamp-2">
-                        {site.notes}
-                      </p>
-                    )}
-                    
-                    <div className="text-xs text-muted-foreground">
-                      Toegevoegd {new Date(site.createdAt).toLocaleDateString('nl-BE')}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
 
           {filteredSites.length === 0 && (
             <div className="text-center py-12">
               <h3 className="text-lg font-medium text-muted-foreground">Geen sites gevonden</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                {searchTerm || selectedStatus !== "all" 
+                {searchTerm || selectedStatus !== "all"
                   ? "Pas je zoekopdracht of filter aan"
                   : "Voeg je eerste site toe om te beginnen"
                 }

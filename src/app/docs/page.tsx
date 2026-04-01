@@ -21,10 +21,14 @@ import { docsStorage, type Doc } from "@/lib/docs-storage"
 type AuthorFilter = Doc['author'] | 'all'
 
 const authorConfig = {
-  lisa: { name: 'Lisa', emoji: '📋', color: 'bg-pink-500/20 text-pink-400 border-pink-500/30' },
-  jc: { name: 'JC', emoji: '🥊', color: 'bg-red-500/20 text-red-400 border-red-500/30' },
-  wout: { name: 'Wout', emoji: '🔭', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
   bart: { name: 'Bart', emoji: '👑', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
+  atlas: { name: 'Atlas', emoji: '🗺️', color: 'bg-violet-500/20 text-violet-400 border-violet-500/30' },
+  forge: { name: 'Forge', emoji: '🔨', color: 'bg-pink-500/20 text-pink-400 border-pink-500/30' },
+  radar: { name: 'Radar', emoji: '📡', color: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' },
+  ink: { name: 'Ink', emoji: '✍️', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
+  ledger: { name: 'Ledger', emoji: '📊', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
+  spark: { name: 'Spark', emoji: '⚡', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
+  cowork: { name: 'Cowork', emoji: '🤝', color: 'bg-red-500/20 text-red-400 border-red-500/30' },
 }
 
 export default function DocsPage() {

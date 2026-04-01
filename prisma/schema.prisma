@@ -8,6 +8,63 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// ─── NextAuth Models ────────────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  accounts Account[]
+  sessions Session[]
+
+  @@map("users")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ─── Core Models ────────────────────────────────────────────────────
+
 model Project {
   id          String   @id @default(cuid())
   name        String
@@ -18,6 +75,18 @@ model Project {
   revenue     Float?   // monthly estimate
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // New fields
+  scratchPad    String?    // rich text scratch pad content
+  businessUnit  String?    // 'agency' | 'rankrent' | 'affiliate' | 'tools' | 'leadgen' | 'festival'
+  ownerType     String     @default("own")  // 'client' | 'own'
+  clientName    String?
+  clientEmail   String?
+  contractType  String?    // 'retainer' | 'eenmalig' | 'mixed'
+  monthlyFee    Float?
+  contractStart DateTime?
+  contractEnd   DateTime?
+  hoursPerMonth Int?
 
   // Relations
   sites      Site[]
@@ -43,6 +112,20 @@ model Site {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // New fields
+  lastContentDate DateTime?
+  monthlyRevenue  Float?
+  seoStatus       String?    // 'growing' | 'stable' | 'declining' | 'unknown'
+  nextAction      String?
+  ownerType       String     @default("own")  // 'client' | 'own'
+  clientName      String?
+  clientEmail     String?
+  contractType    String?    // 'retainer' | 'eenmalig' | 'mixed'
+  monthlyFee      Float?
+  contractStart   DateTime?
+  contractEnd     DateTime?
+  hoursPerMonth   Int?
+
   // Relations
   project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
   tasks   Task[]
@@ -59,6 +142,12 @@ model Idea {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  // New fields
+  status          String   @default("raw")  // 'raw' | 'evaluating' | 'promising' | 'active' | 'archived'
+  businessUnit    String?
+  revenueEstimate Float?
+  assignedTo      String?  // agent name
+
   @@map("ideas")
 }
 
@@ -70,12 +159,18 @@ model Task {
   projectId   String?
   siteId      String?
   priority    String?   // 'low' | 'medium' | 'high'
-  assignee    String?   // 'bart' | 'lisa' | 'jc' | 'wout'
+  assignee    String?   // 'bart' | 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark' | 'cowork'
   dueDate     DateTime?
   notified    Boolean?
   notifiedAt  DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  // New fields
+  needsApproval   Boolean  @default(false)
+  approvalSource  String?  // which agent requested approval
+  source          String?  // 'manual' | 'agent' | 'cron'
+  agentAssignee   String?  // 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark'
 
   // Relations
   project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
@@ -134,6 +229,9 @@ model Cost {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // New fields
+  billingDay Int?    // day of month when billed
+
   @@map("costs")
 }
 
@@ -143,13 +241,17 @@ model Content {
   body       String   // the actual content (markdown)
   type       String   // 'article' | 'product-review' | 'buyers-guide' | 'page' | 'other'
   status     String   // 'draft' | 'review' | 'approved' | 'rejected' | 'live'
-  author     String   // 'wout' | 'copycat' | 'lisa' | 'jc' | 'bart'
+  author     String   // 'bart' | 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark' | 'cowork'
   targetSite String?  // e.g. 'preppedia.com', 'btw-calculator.be'
   targetPath String?  // e.g. '/guide/best-water-filters'
   projectId  String?
   feedback   String?  // Bart's review notes
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  // New fields
+  needsApproval   Boolean  @default(false)
+  approvalSource  String?  // which agent requested approval
 
   // Relations
   project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
@@ -162,7 +264,7 @@ model Research {
   title     String
   body      String   // full markdown content
   type      String   // 'keyword-research' | 'market-analysis' | 'api-research' | 'oracle' | 'competitor' | 'technical' | 'other'
-  author    String   // 'wout' | 'lisa' | 'jc' | 'copycat' | 'bart'
+  author    String   // 'bart' | 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark' | 'cowork'
   projectId String?
   tags      String?  // comma-separated
   status    String   // 'draft' | 'final' | 'outdated'
@@ -210,7 +312,7 @@ model Product {
 model Activity {
   id          String   @id @default(cuid())
   type        String   // 'commit' | 'deploy' | 'task' | 'content' | 'research' | 'alert' | 'system'
-  actor       String   // 'bart' | 'lisa' | 'jc' | 'wout' | 'copycat' | 'system'
+  actor       String   // 'bart' | 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark' | 'cowork' | 'system'
   title       String
   description String?
   url         String?  // link to commit, deploy, etc
@@ -222,4 +324,46 @@ model Activity {
   project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
 
   @@map("activities")
+}
+
+// ─── New Agent & Revenue Models ─────────────────────────────────────
+
+model AgentLog {
+  id        String   @id @default(cuid())
+  source    String   // agent name: atlas, forge, radar, ink, ledger, spark, cowork
+  action    String   // task, idea, alert, note, context
+  payload   String   // JSON string
+  createdAt DateTime @default(now())
+
+  @@map("agent_logs")
+}
+
+model RevenueEntry {
+  id           String   @id @default(cuid())
+  source       String   // 'adsense' | 'agency' | 'affiliate' | 'domain' | 'leadgen'
+  description  String
+  amount       Float
+  month        String   // '2026-01' format
+  projectId    String?
+  siteDomain   String?
+  recurring    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("revenue_entries")
+}
+
+model DomainOpportunity {
+  id             String   @id @default(cuid())
+  domain         String
+  status         String   // 'parking' | 'developing' | 'forsale' | 'expired-watching' | 'acquired'
+  estimatedValue Float?
+  niche          String?
+  priority       String?  // 'low' | 'medium' | 'high'
+  notes          String?
+  radarNotes     String?  // notes from RADAR agent
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("domain_opportunities")
 }

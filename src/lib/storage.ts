@@ -12,6 +12,16 @@ export interface Project {
   category: 'directory' | 'leadgen' | 'tool' | 'client' | 'business' | 'event';
   description?: string;
   revenue?: number; // monthly estimate
+  scratchPad?: string;
+  businessUnit?: string;
+  ownerType?: string; // 'client' | 'own'
+  clientName?: string;
+  clientEmail?: string;
+  contractType?: string; // 'retainer' | 'eenmalig' | 'mixed'
+  monthlyFee?: number;
+  contractStart?: string;
+  contractEnd?: string;
+  hoursPerMonth?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -26,6 +36,10 @@ export interface Site {
   listings?: number; // for directories
   pages?: number; // for content sites
   notes?: string;
+  lastContentDate?: string;
+  monthlyRevenue?: number;
+  seoStatus?: 'growing' | 'stable' | 'declining' | 'unknown';
+  nextAction?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -36,6 +50,10 @@ export interface Idea {
   description: string;
   category: 'directory' | 'leadgen' | 'tool' | 'client' | 'business' | 'feature';
   priority: 'low' | 'medium' | 'high';
+  status: 'raw' | 'evaluating' | 'promising' | 'active' | 'archived';
+  businessUnit?: string;
+  revenueEstimate?: number;
+  assignedTo?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -48,7 +66,7 @@ export interface Task {
   projectId?: string;
   siteId?: string; // linked site
   priority?: 'low' | 'medium' | 'high';
-  assignee?: string; // 'bart' | 'lisa' | 'jc' | 'wout' | 'copycat'
+  assignee?: string; // 'bart' | 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark' | 'cowork'
   dueDate?: string;
   notified?: boolean; // Track if assignee has been notified
   notifiedAt?: string; // When the notification was sent
@@ -94,6 +112,7 @@ export interface Cost {
   category: string; // AI, Hosting, Database, Domains, Infrastructure, Tools, Other
   recurring: boolean; // monthly recurring or one-time
   notes?: string;
+  billingDay?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -104,7 +123,7 @@ export interface ContentItem {
   body: string // the actual content (markdown)
   type: 'article' | 'product-review' | 'buyers-guide' | 'page' | 'other'
   status: 'draft' | 'review' | 'approved' | 'rejected' | 'live'
-  author: string // 'wout' | 'copycat' | 'lisa' | 'jc' | 'bart'
+  author: string // 'bart' | 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark' | 'cowork'
   targetSite?: string // e.g. 'preppedia.com', 'btw-calculator.be'
   targetPath?: string // e.g. '/guide/best-water-filters'
   projectId?: string
@@ -118,7 +137,7 @@ export interface ResearchItem {
   title: string
   body: string // full markdown content
   type: 'keyword-research' | 'market-analysis' | 'api-research' | 'oracle' | 'competitor' | 'technical' | 'other'
-  author: string // 'wout' | 'lisa' | 'jc' | 'copycat' | 'bart'
+  author: string // 'bart' | 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark' | 'cowork'
   projectId?: string
   tags?: string // comma-separated
   status: 'draft' | 'final' | 'outdated'
@@ -129,13 +148,39 @@ export interface ResearchItem {
 export interface ActivityItem {
   id: string
   type: 'commit' | 'deploy' | 'task' | 'content' | 'research' | 'alert' | 'system'
-  actor: string // 'bart' | 'lisa' | 'jc' | 'wout' | 'copycat' | 'system'
+  actor: string // 'bart' | 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark' | 'cowork' | 'system'
   title: string
   description?: string
   url?: string // link to commit, deploy, etc
   projectId?: string
   metadata?: string // JSON string for extra data
   createdAt: string
+}
+
+export interface DomainOpportunity {
+  id: string
+  domain: string
+  status: string // 'parking' | 'developing' | 'forsale' | 'expired-watching' | 'acquired'
+  estimatedValue?: number
+  niche?: string
+  priority?: string // 'low' | 'medium' | 'high'
+  notes?: string
+  radarNotes?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface RevenueEntry {
+  id: string
+  source: string // 'adsense' | 'agency' | 'affiliate' | 'domain' | 'leadgen'
+  description: string
+  amount: number
+  month: string // '2026-01' format
+  projectId?: string
+  siteDomain?: string
+  recurring: boolean
+  createdAt: string
+  updatedAt: string
 }
 
 // Generic API functions
@@ -541,5 +586,88 @@ export const activityStorage = {
       method: 'POST',
       body: JSON.stringify(activity),
     })
+  },
+};
+
+export const domainsStorage = {
+  getAll: async (params?: { status?: string }): Promise<DomainOpportunity[]> => {
+    const searchParams = new URLSearchParams()
+    if (params?.status) searchParams.set('status', params.status)
+
+    const url = `/api/domains${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
+    return apiCall(url)
+  },
+
+  create: async (domain: Omit<DomainOpportunity, 'id' | 'createdAt' | 'updatedAt'>): Promise<DomainOpportunity> => {
+    return apiCall('/api/domains', {
+      method: 'POST',
+      body: JSON.stringify(domain),
+    })
+  },
+
+  update: async (id: string, updates: Partial<Omit<DomainOpportunity, 'id' | 'createdAt'>>): Promise<DomainOpportunity | null> => {
+    try {
+      return await apiCall(`/api/domains/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(updates),
+      })
+    } catch (error) {
+      console.error('Error updating domain:', error)
+      return null
+    }
+  },
+
+  delete: async (id: string): Promise<boolean> => {
+    try {
+      await apiCall(`/api/domains/${id}`, {
+        method: 'DELETE',
+      })
+      return true
+    } catch (error) {
+      console.error('Error deleting domain:', error)
+      return false
+    }
+  },
+};
+
+export const revenueStorage = {
+  getAll: async (params?: { source?: string; month?: string }): Promise<RevenueEntry[]> => {
+    const searchParams = new URLSearchParams()
+    if (params?.source) searchParams.set('source', params.source)
+    if (params?.month) searchParams.set('month', params.month)
+
+    const url = `/api/revenue${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
+    return apiCall(url)
+  },
+
+  create: async (entry: Omit<RevenueEntry, 'id' | 'createdAt' | 'updatedAt'>): Promise<RevenueEntry> => {
+    return apiCall('/api/revenue', {
+      method: 'POST',
+      body: JSON.stringify(entry),
+    })
+  },
+
+  update: async (id: string, updates: Partial<Omit<RevenueEntry, 'id' | 'createdAt'>>): Promise<RevenueEntry | null> => {
+    try {
+      return await apiCall(`/api/revenue/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(updates),
+      })
+    } catch (error) {
+      console.error('Error updating revenue entry:', error)
+      return null
+    }
+  },
+
+  delete: async (id: string): Promise<boolean> => {
+    try {
+      await apiCall(`/api/revenue/${id}`, {
+        method: 'DELETE',
+      })
+      return true
+    } catch (error) {
+      console.error('Error deleting revenue entry:', error)
+      return false
+    }
   },
 };

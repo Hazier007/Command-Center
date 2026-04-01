@@ -38,7 +38,7 @@ export default function ResearchPage() {
     title: "",
     body: "",
     type: "keyword-research" as ResearchItem['type'],
-    author: "wout" as ResearchItem['author'],
+    author: "radar" as ResearchItem['author'],
     projectId: "",
     tags: "",
     status: "draft" as ResearchItem['status'],
@@ -116,7 +116,7 @@ export default function ResearchPage() {
       // Reset form
       setIsDialogOpen(false)
       setEditingResearch(null)
-      setFormData({ title: "", body: "", type: "keyword-research", author: "wout", projectId: "", tags: "", status: "draft" })
+      setFormData({ title: "", body: "", type: "keyword-research", author: "radar", projectId: "", tags: "", status: "draft" })
     } catch (error) {
       console.error('Failed to save research:', error)
     } finally {
@@ -185,22 +185,28 @@ export default function ResearchPage() {
 
   const getAuthorColor = (author: string) => {
     switch (author) {
-      case 'wout': return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-200'
-      case 'copycat': return 'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-200'
-      case 'lisa': return 'bg-rose-100 text-rose-800 dark:bg-rose-900/20 dark:text-rose-200'
-      case 'jc': return 'bg-violet-100 text-violet-800 dark:bg-violet-900/20 dark:text-violet-200'
       case 'bart': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-200'
+      case 'atlas': return 'bg-violet-100 text-violet-800 dark:bg-violet-900/20 dark:text-violet-200'
+      case 'forge': return 'bg-rose-100 text-rose-800 dark:bg-rose-900/20 dark:text-rose-200'
+      case 'radar': return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-200'
+      case 'ink': return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-200'
+      case 'ledger': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200'
+      case 'spark': return 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-200'
+      case 'cowork': return 'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-200'
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200'
     }
   }
 
   const getAuthorEmoji = (author: string) => {
     switch (author) {
-      case 'wout': return '🔭'
-      case 'copycat': return '✍️'
-      case 'lisa': return '📊'
-      case 'jc': return '🥊'
-      case 'bart': return '⚡'
+      case 'bart': return '👑'
+      case 'atlas': return '🗺️'
+      case 'forge': return '🔨'
+      case 'radar': return '📡'
+      case 'ink': return '✍️'
+      case 'ledger': return '📊'
+      case 'spark': return '⚡'
+      case 'cowork': return '🤝'
       default: return '👤'
     }
   }
@@ -241,7 +247,7 @@ export default function ResearchPage() {
             <DialogTrigger asChild>
               <Button className="bg-[#F5911E] hover:bg-[#e07d0a] text-white" onClick={() => {
                 setEditingResearch(null)
-                setFormData({ title: "", body: "", type: "keyword-research", author: "wout", projectId: "", tags: "", status: "draft" })
+                setFormData({ title: "", body: "", type: "keyword-research", author: "radar", projectId: "", tags: "", status: "draft" })
               }}>
                 <Plus className="mr-2 h-4 w-4" />
                 Onderzoek toevoegen
@@ -291,11 +297,14 @@ export default function ResearchPage() {
                       onChange={(e) => setFormData({ ...formData, author: e.target.value as ResearchItem['author'] })}
                       className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     >
-                      <option value="wout">Wout 🔭</option>
-                      <option value="copycat">Copycat ✍️</option>
-                      <option value="lisa">Lisa 📊</option>
-                      <option value="jc">JC 🥊</option>
-                      <option value="bart">Bart ⚡</option>
+                      <option value="bart">Bart 👑</option>
+                      <option value="atlas">Atlas 🗺️</option>
+                      <option value="forge">Forge 🔨</option>
+                      <option value="radar">Radar 📡</option>
+                      <option value="ink">Ink ✍️</option>
+                      <option value="ledger">Ledger 📊</option>
+                      <option value="spark">Spark ⚡</option>
+                      <option value="cowork">Cowork 🤝</option>
                     </select>
                   </div>
                 </div>
@@ -376,11 +385,14 @@ export default function ResearchPage() {
                 className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
                 <option value="all">Alle auteurs</option>
-                <option value="wout">Wout 🔭</option>
-                <option value="copycat">Copycat ✍️</option>
-                <option value="lisa">Lisa 📊</option>
-                <option value="jc">JC 🥊</option>
-                <option value="bart">Bart ⚡</option>
+                <option value="bart">Bart 👑</option>
+                <option value="atlas">Atlas 🗺️</option>
+                <option value="forge">Forge 🔨</option>
+                <option value="radar">Radar 📡</option>
+                <option value="ink">Ink ✍️</option>
+                <option value="ledger">Ledger 📊</option>
+                <option value="spark">Spark ⚡</option>
+                <option value="cowork">Cowork 🤝</option>
               </select>
             </div>
           </div>

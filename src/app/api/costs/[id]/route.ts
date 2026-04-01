@@ -13,11 +13,12 @@ export async function PATCH(
     const cost = await prisma.cost.update({
       where: { id },
       data: {
-        name: data.name,
-        amount: data.amount,
-        category: data.category,
-        recurring: data.recurring,
-        notes: data.notes,
+        ...(data.name !== undefined && { name: data.name }),
+        ...(data.amount !== undefined && { amount: data.amount }),
+        ...(data.category !== undefined && { category: data.category }),
+        ...(data.recurring !== undefined && { recurring: data.recurring }),
+        ...(data.notes !== undefined && { notes: data.notes }),
+        ...(data.billingDay !== undefined && { billingDay: data.billingDay }),
       },
     })
     

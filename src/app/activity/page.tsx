@@ -18,10 +18,13 @@ import { activityStorage, type ActivityItem } from "@/lib/storage"
 const actorOptions = [
   { value: 'all', label: 'Iedereen' },
   { value: 'bart', label: 'Bart 👑', emoji: '👑' },
-  { value: 'lisa', label: 'Lisa 📋', emoji: '📋' },
-  { value: 'jc', label: 'JC 🥊', emoji: '🥊' },
-  { value: 'wout', label: 'Wout 🔭', emoji: '🔭' },
-  { value: 'copycat', label: 'Copycat ✍️', emoji: '✍️' },
+  { value: 'atlas', label: 'Atlas 🗺️', emoji: '🗺️' },
+  { value: 'forge', label: 'Forge 🔨', emoji: '🔨' },
+  { value: 'radar', label: 'Radar 📡', emoji: '📡' },
+  { value: 'ink', label: 'Ink ✍️', emoji: '✍️' },
+  { value: 'ledger', label: 'Ledger 📊', emoji: '📊' },
+  { value: 'spark', label: 'Spark ⚡', emoji: '⚡' },
+  { value: 'cowork', label: 'Cowork 🤝', emoji: '🤝' },
   { value: 'system', label: 'Systeem', emoji: '⚙️' },
 ]
 
@@ -48,10 +51,13 @@ const activityIcons = {
 
 const actorEmojis = {
   bart: '👑',
-  lisa: '📋',
-  jc: '🥊',
-  wout: '🔭',
-  copycat: '✍️',
+  atlas: '🗺️',
+  forge: '🔨',
+  radar: '📡',
+  ink: '✍️',
+  ledger: '📊',
+  spark: '⚡',
+  cowork: '🤝',
   system: '⚙️',
 }
 

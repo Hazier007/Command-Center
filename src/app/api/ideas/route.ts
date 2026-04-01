@@ -29,6 +29,10 @@ export async function POST(request: Request) {
         description: data.description,
         category: data.category,
         priority: data.priority,
+        status: data.status || 'raw',
+        businessUnit: data.businessUnit,
+        revenueEstimate: data.revenueEstimate,
+        assignedTo: data.assignedTo,
       },
     })
     

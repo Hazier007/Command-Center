@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-// GET /api/tasks - list all tasks (supports ?assignee=wout&status=todo filters)
+// GET /api/tasks - list all tasks (supports ?assignee=radar&status=todo filters)
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
