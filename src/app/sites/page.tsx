@@ -268,6 +268,8 @@ export default function SitesPage() {
                     <option value="vercel">Vercel</option>
                     <option value="cloudflare">Cloudflare Pages</option>
                     <option value="hostinger">Hostinger</option>
+                    <option value="siteground">SiteGround</option>
+                    <option value="hazier">Hazier</option>
                     <option value="combell">Combell</option>
                     <option value="digitalocean">DigitalOcean</option>
                     <option value="vps">VPS</option>
