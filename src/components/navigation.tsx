@@ -10,6 +10,7 @@ import {
   Inbox, FolderKanban, Receipt, UserPlus,
   GlobeLock, Wrench, Link2, Layers,
   PenTool, BookOpen, Settings, Bot, DollarSign,
+  Landmark, PartyPopper,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -47,11 +48,10 @@ const navGroups = [
     label: "Eigen",
     items: [
       { href: "/projects", label: "Overzicht", icon: Rocket },
-      { href: "/projects?type=rankrent", label: "Rank & Rent", icon: GlobeLock },
+      { href: "/sites", label: "Websites", icon: Globe },
+      { href: "/projects/collectpro", label: "CollectPro", icon: Landmark },
+      { href: "/projects/infinite-events", label: "Infinite Events", icon: PartyPopper },
       { href: "/domains", label: "Domeinen", icon: Layers },
-      { href: "/projects?type=tools", label: "Tools", icon: Wrench },
-      { href: "/projects?type=affiliate", label: "Affiliate", icon: Link2 },
-      { href: "/projects?type=pseo", label: "pSEO", icon: Search },
     ],
   },
   {
