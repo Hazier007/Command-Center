@@ -367,3 +367,23 @@ model DomainOpportunity {
 
   @@map("domain_opportunities")
 }
+
+model Lead {
+  id           String    @id @default(cuid())
+  name         String    // contact person name
+  company      String?   // company name
+  email        String?
+  phone        String?
+  website      String?
+  source       String?   // 'website' | 'referral' | 'cold' | 'linkedin' | 'other'
+  status       String    @default("nieuw") // 'nieuw' | 'contact' | 'proposal' | 'onderhandeling' | 'gewonnen' | 'verloren'
+  notes        String?
+  proposal     String?   // proposal/offerte details or link
+  estimatedValue Float?  // estimated deal value
+  service      String?   // what service they need: 'website' | 'seo' | 'both' | 'other'
+  nextFollowUp DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("leads")
+}

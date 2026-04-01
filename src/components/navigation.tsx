@@ -7,7 +7,7 @@ import {
   Menu, Users, Bell, FileText, Brain,
   LayoutDashboard, Globe, CheckSquare, StickyNote,
   ChevronDown, Zap, Activity, Search, Rocket,
-  Inbox, FolderKanban, Receipt, Workflow,
+  Inbox, FolderKanban, Receipt, UserPlus,
   GlobeLock, Wrench, Link2, Layers,
   PenTool, BookOpen, Settings, Bot, DollarSign,
 } from "lucide-react"
@@ -39,7 +39,7 @@ const navGroups = [
       { href: "/clients", label: "Overzicht", icon: Users },
       { href: "/clients/sites", label: "Actieve Sites", icon: Globe },
       { href: "/clients/projects", label: "Projecten", icon: FolderKanban },
-      { href: "/pipeline", label: "Pipeline", icon: Workflow },
+      { href: "/clients/leads", label: "Leads", icon: UserPlus },
       { href: "/clients/quotes", label: "Offertes", icon: Receipt },
     ],
   },

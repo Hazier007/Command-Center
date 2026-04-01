@@ -671,3 +671,58 @@ export const revenueStorage = {
     }
   },
 };
+
+export interface Lead {
+  id: string;
+  name: string;
+  company?: string;
+  email?: string;
+  phone?: string;
+  website?: string;
+  source?: string;
+  status: string;
+  notes?: string;
+  proposal?: string;
+  estimatedValue?: number;
+  service?: string;
+  nextFollowUp?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const leadsStorage = {
+  getAll: async (): Promise<Lead[]> => {
+    return apiCall('/api/leads')
+  },
+
+  create: async (data: Partial<Lead>): Promise<Lead> => {
+    return apiCall('/api/leads', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  update: async (id: string, data: Partial<Lead>): Promise<Lead | null> => {
+    try {
+      return await apiCall(`/api/leads/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      })
+    } catch (error) {
+      console.error('Error updating lead:', error)
+      return null
+    }
+  },
+
+  delete: async (id: string): Promise<boolean> => {
+    try {
+      await apiCall(`/api/leads/${id}`, {
+        method: 'DELETE',
+      })
+      return true
+    } catch (error) {
+      console.error('Error deleting lead:', error)
+      return false
+    }
+  },
+};
