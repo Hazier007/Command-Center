@@ -2,8 +2,8 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
 export async function middleware(request: NextRequest) {
-  // Skip auth entirely if NextAuth is not configured
-  if (!process.env.NEXTAUTH_SECRET) {
+  // Skip auth unless explicitly enabled (set AUTH_ENABLED=true in Vercel)
+  if (process.env.AUTH_ENABLED !== "true") {
     return NextResponse.next()
   }
 
