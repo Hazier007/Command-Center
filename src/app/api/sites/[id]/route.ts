@@ -1,6 +1,38 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+// GET /api/sites/[id] - get single site with relations
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+
+    const site = await prisma.site.findUnique({
+      where: { id },
+      include: {
+        project: true,
+      },
+    })
+
+    if (!site) {
+      return NextResponse.json(
+        { error: 'Site not found' },
+        { status: 404 }
+      )
+    }
+
+    return NextResponse.json(site)
+  } catch (error) {
+    console.error('Error fetching site:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch site' },
+      { status: 500 }
+    )
+  }
+}
+
 // PATCH /api/sites/[id] - update site
 export async function PATCH(
   request: Request,

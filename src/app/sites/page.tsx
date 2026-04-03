@@ -571,7 +571,11 @@ export default function SitesPage() {
                           <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                         )}
                         <div className="min-w-0 flex-1">
-                          <CardTitle className="text-base truncate">{site.domain}</CardTitle>
+                          <CardTitle className="text-base truncate">
+                            <Link href={`/sites/${site.id}`} className="hover:text-[#F5911E] transition-colors">
+                              {site.domain}
+                            </Link>
+                          </CardTitle>
                           {getProjectName(site.projectId) && (
                             <CardDescription className="truncate">
                               <Link href={`/projects/${site.projectId}`} className="hover:text-[#F5911E] transition-colors">
