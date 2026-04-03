@@ -420,6 +420,19 @@ model FinanceSnapshot {
   @@map("finance_snapshots")
 }
 
+model Sprint {
+  id        String   @id @default(cuid())
+  week      String   @unique // '2026-W14' format
+  status    String   @default("active") // 'planning' | 'active' | 'completed' | 'cancelled'
+  goals     String?  // JSON array of sprint goals
+  summary   String?  // ATLAS end-of-week summary
+  createdBy String   @default("atlas")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("sprints")
+}
+
 model Lead {
   id           String    @id @default(cuid())
   name         String    // contact person name

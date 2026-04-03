@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 
-const prisma = new PrismaClient()
-
+// GET /api/agent-logs?source=radar&action=task&since=2026-04-01&limit=50
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const limit = parseInt(searchParams.get('limit') || '50')
   const source = searchParams.get('source')
+  const action = searchParams.get('action')
+  const since = searchParams.get('since')
 
-  const where = source ? { source } : {}
+  const where: Record<string, unknown> = {}
+  if (source) where.source = source
+  if (action) where.action = action
+  if (since) where.createdAt = { gte: new Date(since) }
 
   const logs = await prisma.agentLog.findMany({
     where,

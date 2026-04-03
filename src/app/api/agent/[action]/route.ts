@@ -18,7 +18,7 @@ async function logAgentAction(source: string, action: string, payload: unknown) 
 
 // POST /api/agent/task — Create a task
 async function handleTask(body: Record<string, unknown>) {
-  const { source, title, description, projectId, priority, assignee, needsApproval } = body
+  const { source, title, description, projectId, siteId, priority, assignee, needsApproval, dueDate } = body
 
   const task = await prisma.task.create({
     data: {
@@ -26,16 +26,22 @@ async function handleTask(body: Record<string, unknown>) {
       description: description as string | undefined,
       status: 'todo',
       projectId: projectId as string | undefined,
+      siteId: siteId as string | undefined,
       priority: (priority as string) || 'medium',
-      assignee: assignee as string | undefined,
-      agentAssignee: assignee as string | undefined,
+      assignee: (assignee as string) || (source as string) || undefined,
+      agentAssignee: (assignee as string) || (source as string) || undefined,
       source: 'agent',
       needsApproval: (needsApproval as boolean) || false,
       approvalSource: source as string | undefined,
+      dueDate: dueDate ? new Date(dueDate as string) : undefined,
+    },
+    include: {
+      project: true,
+      site: true,
     },
   })
 
-  await logAgentAction(source as string, 'task', { taskId: task.id, title })
+  await logAgentAction(source as string, 'task', { taskId: task.id, title, assignee, projectId, siteId })
   return task
 }
 
@@ -172,7 +178,7 @@ async function handleDomainEval(body: Record<string, unknown>) {
 async function handleContext() {
   const [projects, tasks, sites, alerts, nowItems, ideas, recentActivity, costs, kpis] = await Promise.all([
     prisma.project.findMany({ where: { status: 'active' }, orderBy: { updatedAt: 'desc' } }),
-    prisma.task.findMany({ where: { status: { not: 'done' } }, orderBy: { createdAt: 'desc' }, take: 50 }),
+    prisma.task.findMany({ where: { status: { notIn: ['done', 'cancelled'] } }, orderBy: { createdAt: 'desc' }, take: 50, include: { project: true, site: true } }),
     prisma.site.findMany({ orderBy: { domain: 'asc' } }),
     prisma.alert.findMany({ where: { resolved: false }, orderBy: { createdAt: 'desc' } }),
     prisma.nowItem.findMany({ orderBy: { createdAt: 'desc' }, take: 3 }),

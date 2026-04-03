@@ -1,16 +1,20 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-// GET /api/tasks - list all tasks (supports ?assignee=radar&status=todo filters)
+// GET /api/tasks - list all tasks (supports ?assignee=radar&status=todo&projectId=xxx&siteId=xxx filters)
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const assignee = searchParams.get('assignee')
     const status = searchParams.get('status')
+    const projectId = searchParams.get('projectId')
+    const siteId = searchParams.get('siteId')
 
     const where: Record<string, string> = {}
     if (assignee) where.assignee = assignee
     if (status) where.status = status
+    if (projectId) where.projectId = projectId
+    if (siteId) where.siteId = siteId
 
     const tasks = await prisma.task.findMany({
       where,
