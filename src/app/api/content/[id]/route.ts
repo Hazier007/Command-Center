@@ -12,12 +12,8 @@ export async function GET(
     const content = await prisma.content.findUnique({
       where: { id },
       include: {
-        project: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
+        project: { select: { id: true, name: true } },
+        task: { select: { id: true, title: true, status: true } },
       },
     })
     
@@ -47,26 +43,30 @@ export async function PATCH(
     const { id } = await params
     const data = await request.json()
     
+    // Auto-calculate word count if body is updated
+    const wordCount = data.body ? data.body.trim().split(/\s+/).length : undefined
+
     const content = await prisma.content.update({
       where: { id },
       data: {
-        title: data.title,
-        body: data.body,
-        type: data.type,
-        status: data.status,
-        author: data.author,
-        targetSite: data.targetSite,
-        targetPath: data.targetPath,
-        projectId: data.projectId,
-        feedback: data.feedback,
+        ...(data.title !== undefined && { title: data.title }),
+        ...(data.body !== undefined && { body: data.body }),
+        ...(data.type !== undefined && { type: data.type }),
+        ...(data.status !== undefined && { status: data.status }),
+        ...(data.author !== undefined && { author: data.author }),
+        ...(data.targetSite !== undefined && { targetSite: data.targetSite }),
+        ...(data.targetPath !== undefined && { targetPath: data.targetPath }),
+        ...(data.projectId !== undefined && { projectId: data.projectId }),
+        ...(data.feedback !== undefined && { feedback: data.feedback }),
+        ...(data.needsApproval !== undefined && { needsApproval: data.needsApproval }),
+        ...(data.approvalSource !== undefined && { approvalSource: data.approvalSource }),
+        ...(data.linkedKeyword !== undefined && { linkedKeyword: data.linkedKeyword }),
+        ...(data.linkedTaskId !== undefined && { linkedTaskId: data.linkedTaskId }),
+        ...(wordCount !== undefined && { wordCount }),
       },
       include: {
-        project: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
+        project: { select: { id: true, name: true } },
+        task: { select: { id: true, title: true, status: true } },
       },
     })
     

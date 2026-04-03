@@ -194,8 +194,9 @@ model Task {
   agentAssignee   String?  // 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark'
 
   // Relations
-  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  site    Site?    @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  project  Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  site     Site?     @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  content  Content[]
 
   @@map("tasks")
 }
@@ -262,7 +263,7 @@ model Content {
   id         String   @id @default(cuid())
   title      String
   body       String   // the actual content (markdown)
-  type       String   // 'article' | 'product-review' | 'buyers-guide' | 'page' | 'other'
+  type       String   // 'meta' | 'blogpost' | 'landingpage' | 'review' | 'faq' | 'social' | 'article' | 'product-review' | 'buyers-guide' | 'page' | 'other'
   status     String   // 'draft' | 'review' | 'approved' | 'rejected' | 'live'
   author     String   // 'bart' | 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark' | 'cowork'
   targetSite String?  // e.g. 'preppedia.com', 'btw-calculator.be'
@@ -272,12 +273,18 @@ model Content {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  // New fields
-  needsApproval   Boolean  @default(false)
+  // Approval
+  needsApproval   Boolean  @default(true)
   approvalSource  String?  // which agent requested approval
+
+  // INK fields
+  linkedKeyword   String?  // primary target keyword
+  linkedTaskId    String?  // task that triggered this content
+  wordCount       Int?     // auto-calculated on save
 
   // Relations
   project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  task    Task?    @relation(fields: [linkedTaskId], references: [id], onDelete: SetNull)
 
   @@map("content")
 }
