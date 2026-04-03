@@ -562,6 +562,31 @@ export default function TasksPage() {
 
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
+                      <label htmlFor="projectId" className="text-sm font-medium">Project</label>
+                      <select
+                        id="projectId"
+                        value={formData.projectId}
+                        onChange={(e) => setFormData({ ...formData, projectId: e.target.value, siteId: "" })}
+                        className={selectClass}
+                      >
+                        <option value="">Geen project</option>
+                        {Object.entries(
+                          projects.reduce((groups, project) => {
+                            const cat = project.category || project.ownerType || 'overig'
+                            if (!groups[cat]) groups[cat] = []
+                            groups[cat].push(project)
+                            return groups
+                          }, {} as Record<string, Project[]>)
+                        ).map(([category, categoryProjects]) => (
+                          <optgroup key={category} label={category.charAt(0).toUpperCase() + category.slice(1)}>
+                            {categoryProjects.map((project) => (
+                              <option key={project.id} value={project.id}>{project.name}</option>
+                            ))}
+                          </optgroup>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
                       <label htmlFor="siteId" className="text-sm font-medium">Site</label>
                       <select
                         id="siteId"
@@ -569,23 +594,14 @@ export default function TasksPage() {
                         onChange={(e) => setFormData({ ...formData, siteId: e.target.value })}
                         className={selectClass}
                       >
-                        <option value="">Geen site</option>
-                        {sites.sort((a, b) => a.domain.localeCompare(b.domain)).map((site) => (
+                        <option value="">
+                          {formData.projectId ? 'Kies site...' : 'Kies eerst een project'}
+                        </option>
+                        {(formData.projectId
+                          ? sites.filter(s => s.projectId === formData.projectId)
+                          : sites
+                        ).sort((a, b) => a.domain.localeCompare(b.domain)).map((site) => (
                           <option key={site.id} value={site.id}>{site.domain}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label htmlFor="projectId" className="text-sm font-medium">Project</label>
-                      <select
-                        id="projectId"
-                        value={formData.projectId}
-                        onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
-                        className={selectClass}
-                      >
-                        <option value="">Geen project</option>
-                        {projects.map((project) => (
-                          <option key={project.id} value={project.id}>{project.name}</option>
                         ))}
                       </select>
                     </div>
@@ -803,28 +819,44 @@ export default function TasksPage() {
                     </select>
                   </div>
                   <div>
+                    <label className="text-sm font-medium">Project</label>
+                    <select
+                      value={followUpForm.projectId}
+                      onChange={(e) => setFollowUpForm({ ...followUpForm, projectId: e.target.value, siteId: "" })}
+                      className={selectClass}
+                    >
+                      <option value="">Geen project</option>
+                      {Object.entries(
+                        projects.reduce((groups, project) => {
+                          const cat = project.category || project.ownerType || 'overig'
+                          if (!groups[cat]) groups[cat] = []
+                          groups[cat].push(project)
+                          return groups
+                        }, {} as Record<string, Project[]>)
+                      ).map(([category, categoryProjects]) => (
+                        <optgroup key={category} label={category.charAt(0).toUpperCase() + category.slice(1)}>
+                          {categoryProjects.map((project) => (
+                            <option key={project.id} value={project.id}>{project.name}</option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
                     <label className="text-sm font-medium">Site</label>
                     <select
                       value={followUpForm.siteId}
                       onChange={(e) => setFollowUpForm({ ...followUpForm, siteId: e.target.value })}
                       className={selectClass}
                     >
-                      <option value="">Geen site</option>
-                      {sites.sort((a, b) => a.domain.localeCompare(b.domain)).map((site) => (
+                      <option value="">
+                        {followUpForm.projectId ? 'Kies site...' : 'Kies eerst een project'}
+                      </option>
+                      {(followUpForm.projectId
+                        ? sites.filter(s => s.projectId === followUpForm.projectId)
+                        : sites
+                      ).sort((a, b) => a.domain.localeCompare(b.domain)).map((site) => (
                         <option key={site.id} value={site.id}>{site.domain}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Project</label>
-                    <select
-                      value={followUpForm.projectId}
-                      onChange={(e) => setFollowUpForm({ ...followUpForm, projectId: e.target.value })}
-                      className={selectClass}
-                    >
-                      <option value="">Geen project</option>
-                      {projects.map((project) => (
-                        <option key={project.id} value={project.id}>{project.name}</option>
                       ))}
                     </select>
                   </div>
