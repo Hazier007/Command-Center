@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
 import { prisma } from '@/lib/prisma';
+import { findSEOOpportunities, getGSCDomains } from '@/lib/windsor';
 
 function getAuth() {
   try {
@@ -94,6 +95,10 @@ export async function GET(request: Request) {
     const forceRefresh = searchParams.get('refresh') === 'true';
     void forceRefresh;
 
+    // Determine data source: windsor (default) or google
+    const sourceParam = searchParams.get('source') || 'windsor';
+    const useWindsor = sourceParam === 'windsor' && !!process.env.WINDSOR_API_KEY;
+
     // Get all live sites
     const sites = await prisma.site.findMany({
       where: { status: 'live' },
@@ -110,9 +115,6 @@ export async function GET(request: Request) {
         }
       });
     }
-
-    const auth = getAuth();
-    const allOpportunities: SEOOpportunity[] = [];
 
     // Check existing tasks to mark opportunities that already have tasks
     const researchTasks = await prisma.task.findMany({
@@ -131,43 +133,37 @@ export async function GET(request: Request) {
       select: { title: true, status: true }
     });
 
-    for (const site of sites) {
-      try {
-        console.log(`Analyzing site: ${site.domain}`);
-        
-        const gscData = await getGSCData(`https://${site.domain}`, auth);
-        
-        // Process each query-page combination
-        for (const row of gscData) {
-          const [keyword, page] = row.keys || [];
-          const position = row.position || 0;
-          const impressions = row.impressions || 0;
-          const ctr = (row.ctr || 0) * 100; // Convert to percentage
-          
-          // Identify low hanging fruit: position 4-20, impressions > 50, CTR < 5%
-          if (
-            position >= 4 && 
-            position <= 20 && 
-            impressions > 50 && 
-            ctr < 5
-          ) {
-            const potentialClicks = calculatePotentialClicks(impressions, ctr, position);
-            
-            if (potentialClicks > 5) { // Only include if potential is worth it
-              const opportunityId = `${site.domain}-${keyword.replace(/\s+/g, '-').toLowerCase()}`;
-              
-              // Check if tasks exist for this keyword
-              const hasResearchTask = researchTasks.some(task => 
-                task.title.includes(keyword) && task.title.includes(site.domain)
+    const allOpportunities: SEOOpportunity[] = [];
+
+    if (useWindsor) {
+      // ── Windsor.ai data source ──────────────────────────────────────
+      const windsorDomains = getGSCDomains();
+
+      for (const site of sites) {
+        // Only query Windsor for domains that have a GSC account mapped
+        if (!windsorDomains.includes(site.domain)) continue;
+
+        try {
+          console.log(`[Windsor] Analyzing site: ${site.domain}`);
+          const opportunities = await findSEOOpportunities(site.domain);
+
+          for (const opp of opportunities) {
+            const potentialClicks = calculatePotentialClicks(opp.impressions, opp.ctr, opp.position);
+
+            if (potentialClicks > 5) {
+              const opportunityId = `${opp.siteDomain}-${opp.keyword.replace(/\s+/g, '-').toLowerCase()}`;
+
+              const hasResearchTask = researchTasks.some(task =>
+                task.title.includes(opp.keyword) && task.title.includes(opp.siteDomain)
               );
-              const hasOptimizationTask = optimizationTasks.some(task => 
-                task.title.includes(keyword) || task.title.includes(page)
+              const hasOptimizationTask = optimizationTasks.some(task =>
+                task.title.includes(opp.keyword) || task.title.includes(opp.page)
               );
-              
+
               let status: SEOOpportunity['status'] = 'nieuw';
               if (hasResearchTask) {
-                const researchTask = researchTasks.find(task => 
-                  task.title.includes(keyword) && task.title.includes(site.domain)
+                const researchTask = researchTasks.find(task =>
+                  task.title.includes(opp.keyword) && task.title.includes(opp.siteDomain)
                 );
                 if (researchTask?.status === 'done') {
                   status = hasOptimizationTask ? 'optimalisatie' : 'review';
@@ -175,28 +171,99 @@ export async function GET(request: Request) {
                   status = 'research';
                 }
               }
-              
+
               allOpportunities.push({
                 id: opportunityId,
-                keyword,
-                currentPosition: Math.round(position),
-                impressions: Math.round(impressions),
-                currentCTR: Math.round(ctr * 10) / 10, // Round to 1 decimal
-                targetPage: page,
-                siteDomain: site.domain,
+                keyword: opp.keyword,
+                currentPosition: Math.round(opp.position),
+                impressions: opp.impressions,
+                currentCTR: Math.round(opp.ctr * 10) / 10,
+                targetPage: opp.page,
+                siteDomain: opp.siteDomain,
                 potentialClicks,
                 status,
                 createdAt: new Date().toISOString(),
                 lastUpdated: new Date().toISOString(),
                 hasResearchTask,
-                hasOptimizationTask
+                hasOptimizationTask,
               });
             }
           }
+        } catch (error) {
+          console.error(`[Windsor] Error analyzing ${site.domain}:`, error);
         }
-      } catch (error) {
-        console.error(`Error analyzing ${site.domain}:`, error);
-        // Continue with other sites even if one fails
+      }
+    } else {
+      // ── Google API data source (fallback) ───────────────────────────
+      const auth = getAuth();
+
+      for (const site of sites) {
+        try {
+          console.log(`[Google] Analyzing site: ${site.domain}`);
+
+          const gscData = await getGSCData(`https://${site.domain}`, auth);
+
+          // Process each query-page combination
+          for (const row of gscData) {
+            const [keyword, page] = row.keys || [];
+            const position = row.position || 0;
+            const impressions = row.impressions || 0;
+            const ctr = (row.ctr || 0) * 100; // Convert to percentage
+
+            // Identify low hanging fruit: position 4-20, impressions > 50, CTR < 5%
+            if (
+              position >= 4 &&
+              position <= 20 &&
+              impressions > 50 &&
+              ctr < 5
+            ) {
+              const potentialClicks = calculatePotentialClicks(impressions, ctr, position);
+
+              if (potentialClicks > 5) { // Only include if potential is worth it
+                const opportunityId = `${site.domain}-${keyword.replace(/\s+/g, '-').toLowerCase()}`;
+
+                // Check if tasks exist for this keyword
+                const hasResearchTask = researchTasks.some(task =>
+                  task.title.includes(keyword) && task.title.includes(site.domain)
+                );
+                const hasOptimizationTask = optimizationTasks.some(task =>
+                  task.title.includes(keyword) || task.title.includes(page)
+                );
+
+                let status: SEOOpportunity['status'] = 'nieuw';
+                if (hasResearchTask) {
+                  const researchTask = researchTasks.find(task =>
+                    task.title.includes(keyword) && task.title.includes(site.domain)
+                  );
+                  if (researchTask?.status === 'done') {
+                    status = hasOptimizationTask ? 'optimalisatie' : 'review';
+                  } else {
+                    status = 'research';
+                  }
+                }
+
+                allOpportunities.push({
+                  id: opportunityId,
+                  keyword,
+                  currentPosition: Math.round(position),
+                  impressions: Math.round(impressions),
+                  currentCTR: Math.round(ctr * 10) / 10, // Round to 1 decimal
+                  targetPage: page,
+                  siteDomain: site.domain,
+                  potentialClicks,
+                  status,
+                  createdAt: new Date().toISOString(),
+                  lastUpdated: new Date().toISOString(),
+                  hasResearchTask,
+                  hasOptimizationTask
+                });
+              }
+            }
+          }
+        } catch (error) {
+          console.error(`[Google] Error analyzing ${site.domain}:`, error);
+          // Continue with other sites even if one fails
+        }
       }
     }
 
@@ -206,7 +273,8 @@ export async function GET(request: Request) {
     const stats = {
       totalOpportunities: allOpportunities.length,
       estimatedClicks: allOpportunities.reduce((sum, opp) => sum + opp.potentialClicks, 0),
-      sitesAnalyzed: sites.length
+      sitesAnalyzed: sites.length,
+      dataSource: useWindsor ? 'windsor' : 'google',
     };
 
     return NextResponse.json({
@@ -218,9 +286,9 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('SEO Opportunities API Error:', error);
     return NextResponse.json(
-      { 
-        error: 'Failed to fetch SEO opportunities', 
-        details: error instanceof Error ? error.message : 'Unknown error' 
+      {
+        error: 'Failed to fetch SEO opportunities',
+        details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
     );
