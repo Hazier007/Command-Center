@@ -172,7 +172,7 @@ export default function Analytics() {
 
   if (loading) {
     return (
-      <div className="p-8">
+      <div className="mx-auto max-w-6xl px-4 py-6 md:px-6">
         <div className="flex items-center gap-3 mb-8">
           <BarChart3 className="w-8 h-8 text-[#F5911E]" />
           <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
@@ -184,7 +184,7 @@ export default function Analytics() {
 
   if (error) {
     return (
-      <div className="p-8">
+      <div className="mx-auto max-w-6xl px-4 py-6 md:px-6">
         <div className="flex items-center gap-3 mb-8">
           <BarChart3 className="w-8 h-8 text-[#F5911E]" />
           <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
@@ -205,7 +205,7 @@ export default function Analytics() {
 
   if (selectedSite && selectedSiteData) {
     return (
-      <div className="p-8">
+      <div className="mx-auto max-w-6xl px-4 py-6 md:px-6">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <BarChart3 className="w-8 h-8 text-[#F5911E]" />
@@ -366,7 +366,7 @@ export default function Analytics() {
   const avgPosition = totalMetrics.sitesCount > 0 ? totalMetrics.avgPosition / totalMetrics.sitesCount : 0;
 
   return (
-    <div className="p-8">
+    <div className="mx-auto max-w-6xl px-4 py-6 md:px-6">
       <div className="flex items-center gap-3 mb-8">
         <BarChart3 className="w-8 h-8 text-[#F5911E]" />
         <h1 className="text-3xl font-bold">Analytics Dashboard</h1>

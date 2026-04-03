@@ -261,7 +261,7 @@ export default function OraclePage() {
 
   if (loading) {
     return (
-      <div className="space-y-8">
+      <div className="mx-auto max-w-6xl px-4 py-6 md:px-6">
         <div className="flex justify-center items-center h-64">
           <div className="text-lg text-muted-foreground">Oracle laden...</div>
         </div>
@@ -270,7 +270,7 @@ export default function OraclePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-6xl px-4 py-6 md:px-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
