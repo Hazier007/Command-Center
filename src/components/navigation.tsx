@@ -10,7 +10,7 @@ import {
   Inbox, FolderKanban, Receipt, UserPlus,
   GlobeLock, Wrench, Link2, Layers,
   PenTool, BookOpen, Settings, Bot, DollarSign,
-  Landmark, PartyPopper,
+  Landmark, PartyPopper, TrendingUp, BarChart3, CircleDollarSign,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -60,6 +60,7 @@ const navGroups = [
       { href: "/tasks", label: "Taken", icon: CheckSquare },
       { href: "/content", label: "Content", icon: PenTool },
       { href: "/research", label: "Research", icon: BookOpen },
+      { href: "/seo", label: "SEO", icon: TrendingUp },
       { href: "/oracle", label: "Oracle", icon: Brain },
       { href: "/notes", label: "Notes", icon: StickyNote },
     ],
@@ -68,6 +69,8 @@ const navGroups = [
     label: "Business",
     items: [
       { href: "/finance", label: "Finance", icon: DollarSign },
+      { href: "/adsense", label: "AdSense", icon: CircleDollarSign },
+      { href: "/analytics", label: "Analytics", icon: BarChart3 },
       { href: "/agents", label: "Agents", icon: Bot },
       { href: "/settings", label: "Instellingen", icon: Settings },
     ],

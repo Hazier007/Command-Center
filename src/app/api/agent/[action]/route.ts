@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 import { validateAgentToken, unauthorizedResponse } from '@/lib/agent-auth'
-
-const prisma = new PrismaClient()
 
 type AgentAction = 'task' | 'idea' | 'alert' | 'note' | 'context' | 'domain-eval'
 
@@ -180,7 +178,10 @@ async function handleDomainEval(body: Record<string, unknown>) {
 
 // GET /api/agent/context — Get full CC context
 async function handleContext() {
-  const [projects, tasks, sites, alerts, nowItems, ideas, recentActivity, costs, kpis] = await Promise.all([
+  const last7Days = new Date()
+  last7Days.setDate(last7Days.getDate() - 7)
+
+  const [projects, tasks, sites, alerts, nowItems, ideas, recentActivity, costs, kpis, recentKeywords, unreadMessages, latestSnapshot, activeDomains, sprints] = await Promise.all([
     prisma.project.findMany({ where: { status: 'active' }, orderBy: { updatedAt: 'desc' } }),
     prisma.task.findMany({ where: { status: { notIn: ['done', 'cancelled'] } }, orderBy: { createdAt: 'desc' }, take: 50, include: { project: true, site: true } }),
     prisma.site.findMany({ orderBy: { domain: 'asc' } }),
@@ -190,6 +191,11 @@ async function handleContext() {
     prisma.activity.findMany({ orderBy: { createdAt: 'desc' }, take: 20 }),
     prisma.cost.findMany({ where: { recurring: true }, orderBy: { category: 'asc' } }),
     prisma.kPI.findMany({ orderBy: { measuredAt: 'desc' }, take: 10 }),
+    prisma.keywordHistory.findMany({ where: { date: { gte: last7Days } }, orderBy: { date: 'desc' }, take: 50 }),
+    prisma.agentMessage.findMany({ where: { read: false }, orderBy: { createdAt: 'desc' }, take: 20 }),
+    prisma.financeSnapshot.findFirst({ orderBy: { period: 'desc' } }),
+    prisma.domainOpportunity.findMany({ where: { status: { in: ['evaluating', 'active', 'developing'] } }, orderBy: { createdAt: 'desc' }, take: 10 }),
+    prisma.sprint.findMany({ orderBy: { week: 'desc' }, take: 2 }),
   ])
 
   // Finance summary for context
@@ -210,6 +216,11 @@ async function handleContext() {
     nowItems,
     activeIdeas: ideas,
     recentActivity,
+    recentKeywords,
+    unreadMessages,
+    latestSnapshot,
+    activeDomains,
+    sprints,
     finance: {
       totalMRR: Math.round((clientMRR + siteMRR) * 100) / 100,
       clientMRR: Math.round(clientMRR * 100) / 100,
