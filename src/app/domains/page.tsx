@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Search, Globe, Edit, Trash2, LayoutGrid, List, DollarSign, Tag, Star } from "lucide-react"
+import { Plus, Search, Globe, Edit, Trash2, LayoutGrid, List, DollarSign, Tag, Star, ExternalLink, Server } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -16,13 +16,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { domainsStorage, type DomainOpportunity } from "@/lib/storage"
+import { domainsStorage, sitesStorage, type DomainOpportunity, type Site } from "@/lib/storage"
 
 export default function DomainsPage() {
   const [domains, setDomains] = useState<DomainOpportunity[]>([])
+  const [sites, setSites] = useState<Site[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedStatus, setSelectedStatus] = useState<string>("all")
+  const [activeTab, setActiveTab] = useState<'managed' | 'portfolio'>('managed')
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingDomain, setEditingDomain] = useState<DomainOpportunity | null>(null)
@@ -39,21 +41,33 @@ export default function DomainsPage() {
   })
 
   useEffect(() => {
-    loadDomains()
+    loadData()
   }, [])
 
-  const loadDomains = async () => {
+  const loadData = async () => {
     try {
       setLoading(true)
-      const data = await domainsStorage.getAll()
-      setDomains(data)
+      const [domainsData, sitesData] = await Promise.all([
+        domainsStorage.getAll(),
+        sitesStorage.getAll(),
+      ])
+      setDomains(domainsData)
+      setSites(sitesData)
     } catch (error) {
-      console.error('Failed to load domains:', error)
+      console.error('Failed to load data:', error)
     } finally {
       setLoading(false)
     }
   }
 
+  // Managed sites filter
+  const filteredSites = sites.filter(site => {
+    const matchesSearch = site.domain.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = selectedStatus === "all" || site.status === selectedStatus
+    return matchesSearch && matchesStatus
+  })
+
+  // Portfolio domains filter
   const filteredDomains = domains.filter(domain => {
     const matchesSearch = domain.domain.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          domain.niche?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -82,7 +96,7 @@ export default function DomainsPage() {
         await domainsStorage.create(payload as Omit<DomainOpportunity, 'id' | 'createdAt' | 'updatedAt'>)
       }
 
-      await loadDomains()
+      await loadData()
       setIsDialogOpen(false)
       setEditingDomain(null)
       resetForm()
@@ -115,10 +129,22 @@ export default function DomainsPage() {
     if (confirm("Weet je zeker dat je dit domein wilt verwijderen?")) {
       try {
         await domainsStorage.delete(domainId)
-        await loadDomains()
+        await loadData()
       } catch (error) {
         console.error('Failed to delete domain:', error)
       }
+    }
+  }
+
+  const getSiteStatusColor = (status: string) => {
+    switch (status) {
+      case 'live': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200'
+      case 'dev': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-200'
+      case 'staging': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200'
+      case 'planned': return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200'
+      case 'paused': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200'
+      case 'archived': return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200'
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200'
     }
   }
 
@@ -142,38 +168,31 @@ export default function DomainsPage() {
     }
   }
 
-  const statusCounts = {
-    parking: domains.filter(d => d.status === 'parking').length,
-    developing: domains.filter(d => d.status === 'developing').length,
-    forsale: domains.filter(d => d.status === 'forsale').length,
-    'expired-watching': domains.filter(d => d.status === 'expired-watching').length,
-    acquired: domains.filter(d => d.status === 'acquired').length,
-  }
+  const liveSites = sites.filter(s => s.status === 'live').length
+  const totalMRR = sites.reduce((sum, s) => sum + (s.monthlyRevenue || s.revenue || 0), 0)
   const totalValue = domains.reduce((sum, d) => sum + (d.estimatedValue || 0), 0)
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 via-background to-background dark:from-orange-950/25 dark:via-background dark:to-background">
-        <div className="mx-auto max-w-6xl px-4 py-6 md:px-6">
-          <div className="flex justify-center items-center h-64">
-            <div className="text-lg">Loading domeinen...</div>
-          </div>
+      <div className="mx-auto max-w-6xl px-4 py-6 md:px-6">
+        <div className="flex justify-center items-center h-64">
+          <div className="text-lg">Loading domeinen...</div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 via-background to-background dark:from-orange-950/25 dark:via-background dark:to-background">
-      <div className="mx-auto max-w-6xl px-4 py-6 md:px-6">
-        <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Domein Portfolio</h1>
-            <p className="text-muted-foreground">
-              {domains.length} domeinen · Geschatte waarde: {totalValue.toLocaleString('nl-BE', { style: 'currency', currency: 'EUR' })}
-            </p>
-          </div>
+    <div className="mx-auto max-w-6xl px-4 py-6 md:px-6">
+      <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Domeinen</h1>
+          <p className="text-muted-foreground">
+            {sites.length} beheerde sites · {domains.length} portfolio domeinen
+          </p>
+        </div>
 
+        {activeTab === 'portfolio' && (
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-[#F5911E] hover:bg-[#e07d0a] text-white" onClick={() => {
@@ -284,44 +303,141 @@ export default function DomainsPage() {
               </form>
             </DialogContent>
           </Dialog>
-        </header>
+        )}
+      </header>
 
-        {/* Stats Row */}
-        <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-5">
-          <Card>
-            <CardContent className="pt-4 pb-4">
-              <p className="text-xs text-muted-foreground">Totaal</p>
-              <p className="text-xl font-bold">{domains.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 pb-4">
-              <p className="text-xs text-muted-foreground">Parking</p>
-              <p className="text-xl font-bold">{statusCounts.parking}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 pb-4">
-              <p className="text-xs text-muted-foreground">In ontwikkeling</p>
-              <p className="text-xl font-bold text-orange-600">{statusCounts.developing}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 pb-4">
-              <p className="text-xs text-muted-foreground">Te koop</p>
-              <p className="text-xl font-bold text-green-600">{statusCounts.forsale}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 pb-4">
-              <p className="text-xs text-muted-foreground">Watching</p>
-              <p className="text-xl font-bold text-red-600">{statusCounts['expired-watching']}</p>
-            </CardContent>
-          </Card>
+      {/* Stats Row */}
+      <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+        <Card>
+          <CardContent className="pt-4 pb-4">
+            <p className="text-xs text-muted-foreground">Beheerde sites</p>
+            <p className="text-xl font-bold">{sites.length}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-4">
+            <p className="text-xs text-muted-foreground">Live</p>
+            <p className="text-xl font-bold text-green-600">{liveSites}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-4">
+            <p className="text-xs text-muted-foreground">MRR (sites)</p>
+            <p className="text-xl font-bold text-green-600">{totalMRR.toLocaleString('nl-BE', { style: 'currency', currency: 'EUR' })}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-4">
+            <p className="text-xs text-muted-foreground">Portfolio waarde</p>
+            <p className="text-xl font-bold">{totalValue.toLocaleString('nl-BE', { style: 'currency', currency: 'EUR' })}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Tab Toggle */}
+      <div className="mt-6">
+        <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as 'managed' | 'portfolio'); setSelectedStatus('all'); setSearchTerm('') }}>
+          <TabsList>
+            <TabsTrigger value="managed" className="gap-2">
+              <Server className="h-4 w-4" />
+              Beheerde sites ({sites.length})
+            </TabsTrigger>
+            <TabsTrigger value="portfolio" className="gap-2">
+              <Globe className="h-4 w-4" />
+              Portfolio ({domains.length})
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
+      {/* ========== MANAGED SITES TAB ========== */}
+      {activeTab === 'managed' && (
+        <div className="mt-4 space-y-4">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center">
+            <Input
+              placeholder="Zoek sites..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="md:max-w-sm"
+            />
+            <Tabs value={selectedStatus} onValueChange={setSelectedStatus}>
+              <TabsList>
+                <TabsTrigger value="all">Alle</TabsTrigger>
+                <TabsTrigger value="live">Live</TabsTrigger>
+                <TabsTrigger value="dev">Dev</TabsTrigger>
+                <TabsTrigger value="staging">Staging</TabsTrigger>
+                <TabsTrigger value="paused">Paused</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {filteredSites.map(site => (
+              <Card key={site.id} className="hover:border-[#F5911E]/50 transition-colors">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      <CardTitle className="text-base truncate">{site.domain}</CardTitle>
+                    </div>
+                    <Badge className={getSiteStatusColor(site.status)}>{site.status}</Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-2">
+                    {site.project && (
+                      <div className="text-xs text-muted-foreground">
+                        Klant: <span className="font-medium text-foreground">{(site.project as { clientName?: string; name: string }).clientName || (site.project as { name: string }).name}</span>
+                      </div>
+                    )}
+                    {site.techStack && site.techStack.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {site.techStack.slice(0, 4).map(tech => (
+                          <Badge key={tech} variant="outline" className="text-[10px] px-1.5 py-0">{tech}</Badge>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between text-xs">
+                      {(site.monthlyRevenue || site.revenue) ? (
+                        <span className="text-green-600 font-medium">
+                          {(site.monthlyRevenue || site.revenue || 0).toLocaleString('nl-BE', { style: 'currency', currency: 'EUR' })}/mo
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">Geen revenue</span>
+                      )}
+                      {site.hosting && (
+                        <span className="text-muted-foreground">{site.hosting}</span>
+                      )}
+                    </div>
+                    {site.status === 'live' && (
+                      <a href={`https://${site.domain}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-[#F5911E] hover:underline">
+                        <ExternalLink className="h-3 w-3" />
+                        Bezoek site
+                      </a>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {filteredSites.length === 0 && (
+            <div className="text-center py-12">
+              <h3 className="text-lg font-medium text-muted-foreground">Geen sites gevonden</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                {searchTerm || selectedStatus !== "all"
+                  ? "Pas je zoekopdracht of filter aan"
+                  : "Er zijn nog geen sites aangemaakt"
+                }
+              </p>
+            </div>
+          )}
         </div>
+      )}
 
-        {/* Filters & View Toggle */}
-        <div className="mt-6 space-y-4">
+      {/* ========== PORTFOLIO TAB ========== */}
+      {activeTab === 'portfolio' && (
+        <div className="mt-4 space-y-4">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-col gap-4 md:flex-row md:items-center flex-1">
               <Input
@@ -463,7 +579,7 @@ export default function DomainsPage() {
             </div>
           )}
 
-          {filteredDomains.length === 0 && !loading && (
+          {filteredDomains.length === 0 && (
             <div className="text-center py-12">
               <h3 className="text-lg font-medium text-muted-foreground">Geen domeinen gevonden</h3>
               <p className="text-sm text-muted-foreground mt-1">
@@ -475,7 +591,7 @@ export default function DomainsPage() {
             </div>
           )}
         </div>
-      </div>
+      )}
     </div>
   )
 }
