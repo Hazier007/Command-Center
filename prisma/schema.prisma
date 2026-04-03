@@ -107,7 +107,7 @@ model Site {
   id        String   @id @default(cuid())
   domain    String
   projectId String?
-  status    String   // 'live' | 'dev' | 'planned'
+  status    String   // 'planned' | 'dev' | 'staging' | 'live' | 'paused' | 'archived'
   techStack String[] // Array of tech stack items
   revenue   Float?   // monthly estimate
   listings  Int?     // for directories
@@ -124,6 +124,21 @@ model Site {
   seoStatus         String?    // 'growing' | 'stable' | 'declining' | 'unknown'
   nextAction        String?
   hosting           String?    // 'vercel' | 'cloudflare' | 'hostinger' | 'vps' | 'other'
+
+  // FORGE: deployment & build tracking
+  deployUrl         String?    // Vercel preview URL
+  productionUrl     String?    // Live URL (e.g. https://datumberekenen.be)
+  lastDeployAt      DateTime?  // Last successful deploy
+  deployStatus      String?    // 'success' | 'failed' | 'building'
+  vercelProjectId   String?    // Vercel project ID for API integration
+  githubRepo        String?    // e.g. "Hazier007/spaarinteresten-be"
+  defaultBranch     String?    @default("main")
+  lastCommitAt      DateTime?
+  buildStatus       String?    // 'passing' | 'failing' | 'unknown'
+  lastBuildAt       DateTime?
+  lighthouse        String?    // JSON: { performance: 95, seo: 100, accessibility: 92 }
+  devPhase          String?    // 'design' | 'build' | 'testing' | 'deploy'
+
   ownerType         String     @default("own")  // 'client' | 'own'
   clientName        String?
   clientEmail       String?
@@ -193,6 +208,11 @@ model Task {
   source          String?  // 'manual' | 'agent' | 'cron'
   agentAssignee   String?  // 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark'
 
+  // Subtasks
+  parentTaskId    String?
+  parentTask      Task?    @relation("Subtasks", fields: [parentTaskId], references: [id], onDelete: SetNull)
+  subtasks        Task[]   @relation("Subtasks")
+
   // Relations
   project  Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
   site     Site?     @relation(fields: [siteId], references: [id], onDelete: SetNull)
@@ -208,6 +228,12 @@ model Note {
   tags      String[] // Array of tags
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Agent context
+  agentId       String?  // 'forge' | 'radar' | 'atlas' | etc.
+  noteType      String?  // 'progress' | 'decision' | 'blocker' | 'review' | 'general'
+  linkedTaskId  String?
+  linkedSiteId  String?
 
   @@map("notes")
 }

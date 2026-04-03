@@ -95,7 +95,7 @@ async function handleAlert(body: Record<string, unknown>) {
   return alert
 }
 
-// POST /api/agent/note — Add a note
+// POST /api/agent/note — Add a note (with optional agent context)
 async function handleNote(body: Record<string, unknown>) {
   const { source, title, content, tags } = body
 
@@ -104,6 +104,10 @@ async function handleNote(body: Record<string, unknown>) {
       title: title as string,
       content: (content as string) || '',
       tags: (tags as string[]) || [],
+      agentId: source as string,
+      noteType: (body.noteType as string) || 'general',
+      linkedTaskId: body.linkedTaskId as string | undefined,
+      linkedSiteId: body.linkedSiteId as string | undefined,
     },
   })
 

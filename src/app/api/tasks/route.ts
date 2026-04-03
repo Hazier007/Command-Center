@@ -50,10 +50,12 @@ export async function POST(request: Request) {
         priority: data.priority,
         assignee: data.assignee,
         dueDate: data.dueDate ? new Date(data.dueDate) : null,
+        parentTaskId: data.parentTaskId,
       },
       include: {
         project: true,
         site: true,
+        subtasks: { select: { id: true, title: true, status: true, assignee: true } },
       },
     })
     
