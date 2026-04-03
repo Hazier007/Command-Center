@@ -129,7 +129,10 @@ export async function findSEOOpportunities(
       const pos = row.position || 0;
       const imp = row.impressions || 0;
       const ctr = (row.ctr || 0) * (row.ctr > 1 ? 1 : 100); // Handle both 0.05 and 5% formats
-      return pos >= 4 && pos <= 30 && imp >= 20 && ctr < 5;
+      // Filter out results from other domains (sc-domain properties include all subdomains)
+      const page = row.page || '';
+      const belongsToDomain = page.includes(domain);
+      return belongsToDomain && pos >= 4 && pos <= 30 && imp >= 20 && ctr < 5;
     })
     .map(row => ({
       keyword: row.query,
