@@ -38,9 +38,8 @@ const navGroups = [
     label: "Klanten",
     items: [
       { href: "/clients", label: "Overzicht", icon: Users },
-      { href: "/clients/sites", label: "Actieve Sites", icon: Globe },
-      { href: "/clients/projects", label: "Projecten", icon: FolderKanban },
       { href: "/clients/leads", label: "Leads", icon: UserPlus },
+      { href: "/clients/pipeline", label: "Pipeline", icon: FolderKanban },
       { href: "/clients/quotes", label: "Offertes", icon: Receipt },
     ],
   },
