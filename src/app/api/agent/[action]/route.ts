@@ -16,7 +16,8 @@ async function logAgentAction(source: string, action: string, payload: unknown) 
 
 // POST /api/agent/task — Create a task
 async function handleTask(body: Record<string, unknown>) {
-  const { source, title, description, projectId, siteId, priority, assignee, needsApproval, dueDate } = body
+  const { source, title, description, projectId, siteId, priority, assignee, assignedTo, needsApproval, dueDate } = body
+  const resolvedAssignee = (assignedTo as string) || (assignee as string) || (source as string) || undefined
 
   const task = await prisma.task.create({
     data: {
@@ -26,8 +27,8 @@ async function handleTask(body: Record<string, unknown>) {
       projectId: projectId as string | undefined,
       siteId: siteId as string | undefined,
       priority: (priority as string) || 'medium',
-      assignee: (assignee as string) || (source as string) || undefined,
-      agentAssignee: (assignee as string) || (source as string) || undefined,
+      assignee: resolvedAssignee,
+      agentAssignee: resolvedAssignee,
       source: 'agent',
       needsApproval: (needsApproval as boolean) || false,
       approvalSource: source as string | undefined,
