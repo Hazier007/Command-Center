@@ -139,6 +139,17 @@ model Site {
   lighthouse        String?    // JSON: { performance: 95, seo: 100, accessibility: 92 }
   devPhase          String?    // 'design' | 'build' | 'testing' | 'deploy'
 
+  // RADAR: SEO & domain fields
+  seoScore          Int?       // 0-100 overall SEO health
+  lastSeoAudit      DateTime?  // when last scanned by RADAR
+  topKeyword        String?    // primary ranking keyword
+  topPosition       Float?     // position on top keyword
+  monthlyTraffic    Int?       // estimated sessions/month
+  indexedPages       Int?       // pages in Google index
+  domainAuthority   Int?       // DR/DA score
+  expirationDate    DateTime?  // domain expiry date (critical for monitoring)
+  registrar         String?    // DNS.be, Combell, etc.
+
   ownerType         String     @default("own")  // 'client' | 'own'
   clientName        String?
   clientEmail       String?
@@ -451,6 +462,37 @@ model FinanceSnapshot {
 
   @@unique([period])
   @@map("finance_snapshots")
+}
+
+model KeywordHistory {
+  id          String   @id @default(cuid())
+  siteId      String?
+  domain      String   // site domain for easy querying
+  keyword     String
+  page        String?  // URL of ranking page
+  position    Float
+  impressions Int      @default(0)
+  clicks      Int      @default(0)
+  ctr         Float    @default(0)
+  date        DateTime @default(now()) // measurement date
+  source      String   @default("radar") // 'radar' | 'cron' | 'windsor'
+
+  @@index([domain, keyword, date])
+  @@index([domain, date])
+  @@map("keyword_history")
+}
+
+model AgentMessage {
+  id        String   @id @default(cuid())
+  fromAgent String   // 'radar' | 'ink' | 'forge' | etc.
+  toAgent   String   // 'radar' | 'ink' | 'forge' | 'bart' | etc.
+  message   String
+  taskId    String?  // optional linked task
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([toAgent, read])
+  @@map("agent_messages")
 }
 
 model Sprint {

@@ -42,6 +42,16 @@ export async function POST(request: Request) {
         seoStatus: data.seoStatus,
         nextAction: data.nextAction,
         hosting: data.hosting,
+        // RADAR fields
+        seoScore: data.seoScore,
+        lastSeoAudit: data.lastSeoAudit ? new Date(data.lastSeoAudit) : undefined,
+        topKeyword: data.topKeyword,
+        topPosition: data.topPosition,
+        monthlyTraffic: data.monthlyTraffic,
+        indexedPages: data.indexedPages,
+        domainAuthority: data.domainAuthority,
+        expirationDate: data.expirationDate ? new Date(data.expirationDate) : undefined,
+        registrar: data.registrar,
         // FORGE fields
         deployUrl: data.deployUrl,
         productionUrl: data.productionUrl,

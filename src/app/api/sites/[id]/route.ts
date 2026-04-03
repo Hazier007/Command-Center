@@ -40,6 +40,16 @@ export async function PATCH(
         ...(data.lastBuildAt !== undefined && { lastBuildAt: data.lastBuildAt ? new Date(data.lastBuildAt) : null }),
         ...(data.lighthouse !== undefined && { lighthouse: data.lighthouse }),
         ...(data.devPhase !== undefined && { devPhase: data.devPhase }),
+        // RADAR fields
+        ...(data.seoScore !== undefined && { seoScore: data.seoScore }),
+        ...(data.lastSeoAudit !== undefined && { lastSeoAudit: data.lastSeoAudit ? new Date(data.lastSeoAudit) : null }),
+        ...(data.topKeyword !== undefined && { topKeyword: data.topKeyword }),
+        ...(data.topPosition !== undefined && { topPosition: data.topPosition }),
+        ...(data.monthlyTraffic !== undefined && { monthlyTraffic: data.monthlyTraffic }),
+        ...(data.indexedPages !== undefined && { indexedPages: data.indexedPages }),
+        ...(data.domainAuthority !== undefined && { domainAuthority: data.domainAuthority }),
+        ...(data.expirationDate !== undefined && { expirationDate: data.expirationDate ? new Date(data.expirationDate) : null }),
+        ...(data.registrar !== undefined && { registrar: data.registrar }),
       },
       include: {
         project: true,
