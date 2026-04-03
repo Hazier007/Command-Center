@@ -18,6 +18,8 @@ export async function PATCH(
         ...(data.category !== undefined && { category: data.category }),
         ...(data.recurring !== undefined && { recurring: data.recurring }),
         ...(data.notes !== undefined && { notes: data.notes }),
+        ...(data.billingCycle !== undefined && { billingCycle: data.billingCycle }),
+        ...(data.projectId !== undefined && { projectId: data.projectId }),
         ...(data.billingDay !== undefined && { billingDay: data.billingDay }),
       },
     })

@@ -82,11 +82,15 @@ model Project {
   ownerType     String     @default("own")  // 'client' | 'own'
   clientName    String?
   clientEmail   String?
-  contractType  String?    // 'retainer' | 'eenmalig' | 'mixed'
-  monthlyFee    Float?
-  contractStart DateTime?
-  contractEnd   DateTime?
-  hoursPerMonth Int?
+  contractType    String?    // 'retainer' | 'eenmalig' | 'mixed'
+  monthlyFee      Float?
+  contractStart   DateTime?
+  contractEnd     DateTime?
+  hoursPerMonth   Int?
+  autoRenew       Boolean    @default(false)
+  paymentStatus   String?    // 'current' | 'late' | 'overdue'
+  lastInvoiceDate DateTime?
+  nextInvoiceDate DateTime?
 
   // Relations
   sites      Site[]
@@ -113,19 +117,21 @@ model Site {
   updatedAt DateTime @updatedAt
 
   // New fields
-  lastContentDate DateTime?
-  monthlyRevenue  Float?
-  seoStatus       String?    // 'growing' | 'stable' | 'declining' | 'unknown'
-  nextAction      String?
-  hosting         String?    // 'vercel' | 'cloudflare' | 'hostinger' | 'vps' | 'other'
-  ownerType       String     @default("own")  // 'client' | 'own'
-  clientName      String?
-  clientEmail     String?
-  contractType    String?    // 'retainer' | 'eenmalig' | 'mixed'
-  monthlyFee      Float?
-  contractStart   DateTime?
-  contractEnd     DateTime?
-  hoursPerMonth   Int?
+  lastContentDate   DateTime?
+  monthlyRevenue    Float?
+  revenueType       String?    // 'recurring' | 'one_time' | 'affiliate' | 'adsense' | 'leadgen' | 'rank_rent'
+  lastRevenueUpdate DateTime?  // when revenue was last verified/updated
+  seoStatus         String?    // 'growing' | 'stable' | 'declining' | 'unknown'
+  nextAction        String?
+  hosting           String?    // 'vercel' | 'cloudflare' | 'hostinger' | 'vps' | 'other'
+  ownerType         String     @default("own")  // 'client' | 'own'
+  clientName        String?
+  clientEmail       String?
+  contractType      String?    // 'retainer' | 'eenmalig' | 'mixed'
+  monthlyFee        Float?
+  contractStart     DateTime?
+  contractEnd       DateTime?
+  hoursPerMonth     Int?
 
   // Relations
   project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
@@ -221,14 +227,16 @@ model Alert {
 }
 
 model Cost {
-  id        String   @id @default(cuid())
-  name      String
-  amount    Float    // monthly amount in EUR
-  category  String   // AI, Hosting, Database, Domains, Infrastructure, Tools, Other
-  recurring Boolean  // monthly recurring or one-time
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  name         String
+  amount       Float    // amount in EUR
+  category     String   // AI, Hosting, Database, Domains, Infrastructure, Tools, Other
+  recurring    Boolean  // monthly recurring or one-time
+  billingCycle String?  // 'monthly' | 'yearly' | 'one_time'
+  notes        String?
+  projectId    String?  // link cost to specific project (null = overhead)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // New fields
   billingDay Int?    // day of month when billed
@@ -367,6 +375,35 @@ model DomainOpportunity {
   updatedAt      DateTime @updatedAt
 
   @@map("domain_opportunities")
+}
+
+model KPI {
+  id         String   @id @default(cuid())
+  name       String   // 'MRR' | 'Actieve sites' | 'Leads per maand' etc.
+  value      Float
+  unit       String   // '€' | '%' | 'aantal' | 'leads'
+  target     Float?   // target value
+  measuredAt DateTime @default(now())
+  measuredBy String?  // 'ledger' | 'system' | 'bart'
+
+  @@map("kpis")
+}
+
+model FinanceSnapshot {
+  id              String   @id @default(cuid())
+  period          String   // '2026-04' format
+  totalMRR        Float    // total monthly recurring revenue
+  totalCosts      Float    // total monthly costs
+  netProfit       Float    // MRR - costs
+  activeClients   Int      // number of paying clients
+  liveSites       Int      // number of live sites with revenue
+  domainCount     Int?     // total domains in portfolio
+  notes           String?  // LEDGER's commentary
+  createdBy       String   @default("ledger")
+  createdAt       DateTime @default(now())
+
+  @@unique([period])
+  @@map("finance_snapshots")
 }
 
 model Lead {

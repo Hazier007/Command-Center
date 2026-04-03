@@ -29,7 +29,9 @@ export async function POST(request: Request) {
         amount: data.amount,
         category: data.category,
         recurring: data.recurring,
+        billingCycle: data.billingCycle,
         notes: data.notes,
+        projectId: data.projectId,
         billingDay: data.billingDay,
       },
     })

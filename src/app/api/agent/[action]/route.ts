@@ -92,7 +92,7 @@ async function handleNote(body: Record<string, unknown>) {
 
 // GET /api/agent/context — Get full CC context
 async function handleContext() {
-  const [projects, tasks, sites, alerts, nowItems, ideas, recentActivity] = await Promise.all([
+  const [projects, tasks, sites, alerts, nowItems, ideas, recentActivity, costs, kpis] = await Promise.all([
     prisma.project.findMany({ where: { status: 'active' }, orderBy: { updatedAt: 'desc' } }),
     prisma.task.findMany({ where: { status: { not: 'done' } }, orderBy: { createdAt: 'desc' }, take: 50 }),
     prisma.site.findMany({ orderBy: { domain: 'asc' } }),
@@ -100,7 +100,19 @@ async function handleContext() {
     prisma.nowItem.findMany({ orderBy: { createdAt: 'desc' }, take: 3 }),
     prisma.idea.findMany({ where: { status: { in: ['raw', 'evaluating', 'promising'] } }, orderBy: { createdAt: 'desc' }, take: 20 }),
     prisma.activity.findMany({ orderBy: { createdAt: 'desc' }, take: 20 }),
+    prisma.cost.findMany({ where: { recurring: true }, orderBy: { category: 'asc' } }),
+    prisma.kPI.findMany({ orderBy: { measuredAt: 'desc' }, take: 10 }),
   ])
+
+  // Finance summary for context
+  const monthlyCosts = costs.reduce((sum, c) => {
+    if (c.billingCycle === 'yearly') return sum + c.amount / 12
+    return sum + c.amount
+  }, 0)
+  const clientMRR = projects
+    .filter(p => p.ownerType === 'client')
+    .reduce((sum, p) => sum + (p.monthlyFee || 0), 0)
+  const siteMRR = sites.reduce((sum, s) => sum + (s.monthlyRevenue || 0), 0)
 
   return {
     projects,
@@ -110,6 +122,14 @@ async function handleContext() {
     nowItems,
     activeIdeas: ideas,
     recentActivity,
+    finance: {
+      totalMRR: Math.round((clientMRR + siteMRR) * 100) / 100,
+      clientMRR: Math.round(clientMRR * 100) / 100,
+      siteMRR: Math.round(siteMRR * 100) / 100,
+      monthlyCosts: Math.round(monthlyCosts * 100) / 100,
+      netProfit: Math.round((clientMRR + siteMRR - monthlyCosts) * 100) / 100,
+      kpis,
+    },
     timestamp: new Date().toISOString(),
   }
 }
