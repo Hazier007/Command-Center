@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dialog"
 
 interface SiteData {
-  id: string; domain: string; status: string; projectId?: string;
+  id: string; domain: string; status: string; category?: string; projectId?: string;
   techStack: string[]; revenue?: number; monthlyRevenue?: number;
   listings?: number; pages?: number; notes?: string; hosting?: string;
   seoStatus?: string; nextAction?: string; lastContentDate?: string;
@@ -190,10 +190,13 @@ export default function SiteDetailPage() {
               <Globe className="h-6 w-6 text-[#F5911E]" />
               <h1 className="text-3xl font-bold">{site.domain}</h1>
               <Badge variant="outline" className={getStatusColor(site.status)}>{site.status}</Badge>
+              {site.category && (
+                <Badge variant="outline" className="bg-[#F5911E]/10 text-[#F5911E] border-[#F5911E]/30">{site.category}</Badge>
+              )}
             </div>
-            {site.project && (
+            {site.project?.clientName && (
               <p className="text-sm text-muted-foreground mt-1">
-                {site.project.ownerType === 'client' ? 'Klant' : 'Project'}: {site.project.clientName || site.project.name}
+                Klant: {site.project.clientName}
               </p>
             )}
           </div>

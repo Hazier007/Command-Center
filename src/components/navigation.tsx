@@ -46,11 +46,10 @@ const navGroups = [
   {
     label: "Eigen",
     items: [
-      { href: "/projects", label: "Overzicht", icon: Rocket },
-      { href: "/sites", label: "Websites", icon: Globe },
+      { href: "/sites", label: "Sites", icon: Globe },
+      { href: "/domains", label: "Domeinen", icon: Layers },
       { href: "/projects/collectpro", label: "CollectPro", icon: Landmark },
       { href: "/projects/infinite-events", label: "Infinite Events", icon: PartyPopper },
-      { href: "/domains", label: "Domeinen", icon: Layers },
     ],
   },
   {

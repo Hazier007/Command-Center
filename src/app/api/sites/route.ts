@@ -30,6 +30,7 @@ export async function POST(request: Request) {
       data: {
         domain: data.domain,
         projectId: data.projectId,
+        category: data.category,
         status: data.status,
         techStack: data.techStack || [],
         revenue: data.revenue,

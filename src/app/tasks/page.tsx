@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { tasksStorage, projectsStorage, sitesStorage, type Task, type Project, type Site } from "@/lib/storage"
+import { tasksStorage, sitesStorage, type Task, type Site } from "@/lib/storage"
 
 const assigneeOptions = [
   { value: 'bart', label: 'Bart 👑' },
@@ -70,7 +70,7 @@ function isOverdue(dueDate?: string) {
 function TaskCard({
   task,
   status,
-  projectName,
+  siteDomain,
   onEdit,
   onDelete,
   onStatusChange,
@@ -78,7 +78,7 @@ function TaskCard({
 }: {
   task: Task
   status: Task['status']
-  projectName: string | null
+  siteDomain: string | null
   onEdit: (task: Task) => void
   onDelete: (taskId: string) => void
   onStatusChange: (taskId: string, status: Task['status']) => void
@@ -90,9 +90,9 @@ function TaskCard({
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
             <CardTitle className="text-sm leading-tight">{task.title}</CardTitle>
-            {projectName && (
+            {siteDomain && (
               <CardDescription className="text-xs truncate">
-                {projectName}
+                🌐 {siteDomain}
               </CardDescription>
             )}
           </div>
@@ -180,7 +180,7 @@ function KanbanColumn({
   status,
   isCollapsed,
   onToggleCollapse,
-  getProjectName,
+  getSiteDomain,
   onEdit,
   onDelete,
   onStatusChange,
@@ -195,7 +195,7 @@ function KanbanColumn({
   status: Task['status']
   isCollapsed: boolean
   onToggleCollapse: (id: string) => void
-  getProjectName: (projectId?: string) => string | null
+  getSiteDomain: (siteId?: string) => string | null
   onEdit: (task: Task) => void
   onDelete: (taskId: string) => void
   onStatusChange: (taskId: string, status: Task['status']) => void
@@ -220,7 +220,7 @@ function KanbanColumn({
               key={task.id}
               task={task}
               status={status}
-              projectName={getProjectName(task.projectId)}
+              siteDomain={getSiteDomain(task.siteId)}
               onEdit={onEdit}
               onDelete={onDelete}
               onStatusChange={onStatusChange}
@@ -240,7 +240,6 @@ function KanbanColumn({
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([])
-  const [projects, setProjects] = useState<Project[]>([])
   const [sites, setSites] = useState<Site[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -256,7 +255,6 @@ export default function TasksPage() {
     assignee: "",
     priority: "medium" as Task['priority'],
     siteId: "",
-    projectId: "",
   })
   const [showDone, setShowDone] = useState(false)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
@@ -269,7 +267,6 @@ export default function TasksPage() {
     title: "",
     description: "",
     status: "todo" as Task['status'],
-    projectId: "",
     siteId: "",
     priority: "medium" as Task['priority'],
     assignee: "",
@@ -278,13 +275,11 @@ export default function TasksPage() {
 
   useEffect(() => {
     const load = async () => {
-      const [tasksData, projectsData, sitesData] = await Promise.all([
+      const [tasksData, sitesData] = await Promise.all([
         tasksStorage.getAll(),
-        projectsStorage.getAll(),
         sitesStorage.getAll(),
       ])
       setTasks(tasksData)
-      setProjects(projectsData)
       setSites(sitesData)
     }
     void load()
@@ -321,7 +316,6 @@ export default function TasksPage() {
       title: "",
       description: "",
       status: "todo",
-      projectId: "",
       siteId: "",
       priority: "medium",
       assignee: "",
@@ -337,7 +331,6 @@ export default function TasksPage() {
         title: formData.title,
         description: formData.description || undefined,
         status: formData.status,
-        projectId: formData.projectId || undefined,
         siteId: formData.siteId || undefined,
         priority: formData.priority || undefined,
         assignee: formData.assignee || undefined,
@@ -348,7 +341,6 @@ export default function TasksPage() {
         title: formData.title,
         description: formData.description || undefined,
         status: formData.status,
-        projectId: formData.projectId || undefined,
         siteId: formData.siteId || undefined,
         priority: formData.priority || undefined,
         assignee: formData.assignee || undefined,
@@ -369,7 +361,6 @@ export default function TasksPage() {
       title: task.title,
       description: task.description || "",
       status: task.status,
-      projectId: task.projectId || "",
       siteId: task.siteId || "",
       priority: task.priority || "medium",
       assignee: task.assignee || "",
@@ -428,7 +419,6 @@ export default function TasksPage() {
       assignee: suggestedAssignee,
       priority: task.priority || "medium",
       siteId: task.siteId || "",
-      projectId: task.projectId || "",
     })
     setFollowUpDialogOpen(true)
   }
@@ -444,7 +434,6 @@ export default function TasksPage() {
         assignee: followUpForm.assignee || undefined,
         priority: followUpForm.priority || undefined,
         siteId: followUpForm.siteId || undefined,
-        projectId: followUpForm.projectId || undefined,
       })
     }
     const allTasks = await tasksStorage.getAll()
@@ -462,10 +451,10 @@ export default function TasksPage() {
     setFollowUpSourceTask(null)
   }
 
-  const getProjectName = (projectId?: string) => {
-    if (!projectId) return null
-    const project = projects.find(p => p.id === projectId)
-    return project?.name ?? null
+  const getSiteDomain = (siteId?: string) => {
+    if (!siteId) return null
+    const site = sites.find(s => s.id === siteId)
+    return site?.domain ?? null
   }
 
   return (
@@ -561,47 +550,28 @@ export default function TasksPage() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label htmlFor="projectId" className="text-sm font-medium">Project</label>
-                      <select
-                        id="projectId"
-                        value={formData.projectId}
-                        onChange={(e) => setFormData({ ...formData, projectId: e.target.value, siteId: "" })}
-                        className={selectClass}
-                      >
-                        <option value="">Geen project</option>
-                        {Object.entries(
-                          projects.reduce((groups, project) => {
-                            const cat = project.category || project.ownerType || 'overig'
-                            if (!groups[cat]) groups[cat] = []
-                            groups[cat].push(project)
-                            return groups
-                          }, {} as Record<string, Project[]>)
-                        ).map(([category, categoryProjects]) => (
-                          <optgroup key={category} label={category.charAt(0).toUpperCase() + category.slice(1)}>
-                            {categoryProjects.map((project) => (
-                              <option key={project.id} value={project.id}>{project.name}</option>
-                            ))}
-                          </optgroup>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label htmlFor="siteId" className="text-sm font-medium">Site</label>
+                    <div className="col-span-2">
+                      <label htmlFor="siteId" className="text-sm font-medium">Site / Domein</label>
                       <select
                         id="siteId"
                         value={formData.siteId}
                         onChange={(e) => setFormData({ ...formData, siteId: e.target.value })}
                         className={selectClass}
                       >
-                        <option value="">
-                          {formData.projectId ? 'Kies site...' : 'Kies eerst een project'}
-                        </option>
-                        {(formData.projectId
-                          ? sites.filter(s => s.projectId === formData.projectId)
-                          : sites
-                        ).sort((a, b) => a.domain.localeCompare(b.domain)).map((site) => (
-                          <option key={site.id} value={site.id}>{site.domain}</option>
+                        <option value="">Geen site</option>
+                        {Object.entries(
+                          sites.reduce((groups, site) => {
+                            const cat = site.category || 'overig'
+                            if (!groups[cat]) groups[cat] = []
+                            groups[cat].push(site)
+                            return groups
+                          }, {} as Record<string, Site[]>)
+                        ).sort(([a], [b]) => a.localeCompare(b)).map(([category, categorySites]) => (
+                          <optgroup key={category} label={category.charAt(0).toUpperCase() + category.slice(1)}>
+                            {categorySites.sort((a, b) => a.domain.localeCompare(b.domain)).map((site) => (
+                              <option key={site.id} value={site.id}>{site.domain}</option>
+                            ))}
+                          </optgroup>
                         ))}
                       </select>
                     </div>
@@ -705,7 +675,7 @@ export default function TasksPage() {
               status="todo"
               isCollapsed={collapsed.todo}
               onToggleCollapse={toggleCollapse}
-              getProjectName={getProjectName}
+              getSiteDomain={getSiteDomain}
               onEdit={handleEdit}
               onDelete={handleDelete}
               onStatusChange={handleStatusChange}
@@ -721,7 +691,7 @@ export default function TasksPage() {
               status="in-progress"
               isCollapsed={collapsed['in-progress']}
               onToggleCollapse={toggleCollapse}
-              getProjectName={getProjectName}
+              getSiteDomain={getSiteDomain}
               onEdit={handleEdit}
               onDelete={handleDelete}
               onStatusChange={handleStatusChange}
@@ -737,7 +707,7 @@ export default function TasksPage() {
               status="review"
               isCollapsed={collapsed.review}
               onToggleCollapse={toggleCollapse}
-              getProjectName={getProjectName}
+              getSiteDomain={getSiteDomain}
               onEdit={handleEdit}
               onDelete={handleDelete}
               onStatusChange={handleStatusChange}
@@ -754,7 +724,7 @@ export default function TasksPage() {
                 status="done"
                 isCollapsed={collapsed.done}
                 onToggleCollapse={toggleCollapse}
-                getProjectName={getProjectName}
+                getSiteDomain={getSiteDomain}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onStatusChange={handleStatusChange}
@@ -818,45 +788,27 @@ export default function TasksPage() {
                       <option value="high">High</option>
                     </select>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium">Project</label>
-                    <select
-                      value={followUpForm.projectId}
-                      onChange={(e) => setFollowUpForm({ ...followUpForm, projectId: e.target.value, siteId: "" })}
-                      className={selectClass}
-                    >
-                      <option value="">Geen project</option>
-                      {Object.entries(
-                        projects.reduce((groups, project) => {
-                          const cat = project.category || project.ownerType || 'overig'
-                          if (!groups[cat]) groups[cat] = []
-                          groups[cat].push(project)
-                          return groups
-                        }, {} as Record<string, Project[]>)
-                      ).map(([category, categoryProjects]) => (
-                        <optgroup key={category} label={category.charAt(0).toUpperCase() + category.slice(1)}>
-                          {categoryProjects.map((project) => (
-                            <option key={project.id} value={project.id}>{project.name}</option>
-                          ))}
-                        </optgroup>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Site</label>
+                  <div className="col-span-2">
+                    <label className="text-sm font-medium">Site / Domein</label>
                     <select
                       value={followUpForm.siteId}
                       onChange={(e) => setFollowUpForm({ ...followUpForm, siteId: e.target.value })}
                       className={selectClass}
                     >
-                      <option value="">
-                        {followUpForm.projectId ? 'Kies site...' : 'Kies eerst een project'}
-                      </option>
-                      {(followUpForm.projectId
-                        ? sites.filter(s => s.projectId === followUpForm.projectId)
-                        : sites
-                      ).sort((a, b) => a.domain.localeCompare(b.domain)).map((site) => (
-                        <option key={site.id} value={site.id}>{site.domain}</option>
+                      <option value="">Geen site</option>
+                      {Object.entries(
+                        sites.reduce((groups, site) => {
+                          const cat = site.category || 'overig'
+                          if (!groups[cat]) groups[cat] = []
+                          groups[cat].push(site)
+                          return groups
+                        }, {} as Record<string, Site[]>)
+                      ).sort(([a], [b]) => a.localeCompare(b)).map(([category, categorySites]) => (
+                        <optgroup key={category} label={category.charAt(0).toUpperCase() + category.slice(1)}>
+                          {categorySites.sort((a, b) => a.domain.localeCompare(b.domain)).map((site) => (
+                            <option key={site.id} value={site.id}>{site.domain}</option>
+                          ))}
+                        </optgroup>
                       ))}
                     </select>
                   </div>

@@ -108,6 +108,7 @@ model Site {
   domain    String
   projectId String?
   status    String   // 'planned' | 'dev' | 'staging' | 'live' | 'paused' | 'archived'
+  category  String?  // 'klant' | 'leadgen' | 'adsense' | 'affiliate' | 'rank-rent' | 'tool' | 'directory' | 'business' | 'event'
   techStack String[] // Array of tech stack items
   revenue   Float?   // monthly estimate
   listings  Int?     // for directories

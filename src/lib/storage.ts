@@ -30,6 +30,7 @@ export interface Site {
   id: string;
   domain: string;
   projectId?: string;
+  category?: string; // 'klant' | 'leadgen' | 'adsense' | 'affiliate' | 'rank-rent' | 'tool' | 'directory' | 'business' | 'event'
   status: 'live' | 'dev' | 'planned';
   techStack: string[];
   revenue?: number; // monthly estimate

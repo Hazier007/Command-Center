@@ -50,10 +50,13 @@ export default function SitesPage() {
   const [bulkProjectId, setBulkProjectId] = useState("")
   const [bulkAssigning, setBulkAssigning] = useState(false)
 
+  const [selectedCategory, setSelectedCategory] = useState<string>("all")
+
   // Form state
   const [formData, setFormData] = useState({
     domain: "",
     status: "planned" as Site['status'],
+    category: "",
     projectId: "",
     techStack: "",
     revenue: "",
@@ -81,7 +84,8 @@ export default function SitesPage() {
     const matchesSearch = site.domain.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          site.notes?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = selectedStatus === "all" || site.status === selectedStatus
-    return matchesSearch && matchesStatus
+    const matchesCategory = selectedCategory === "all" || (site.category || 'overig') === selectedCategory
+    return matchesSearch && matchesStatus && matchesCategory
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -90,6 +94,7 @@ export default function SitesPage() {
     const payload = {
       domain: formData.domain,
       status: formData.status,
+      category: formData.category || undefined,
       projectId: formData.projectId || undefined,
       techStack: formData.techStack.split(',').map(t => t.trim()).filter(Boolean),
       revenue: formData.revenue ? parseFloat(formData.revenue) : undefined,
@@ -118,6 +123,7 @@ export default function SitesPage() {
     setFormData({
       domain: "",
       status: "planned",
+      category: "",
       projectId: "",
       techStack: "",
       revenue: "",
@@ -135,6 +141,7 @@ export default function SitesPage() {
     setFormData({
       domain: site.domain,
       status: site.status,
+      category: site.category || "",
       projectId: site.projectId || "",
       techStack: site.techStack.join(', '),
       revenue: site.revenue?.toString() || "",
@@ -300,17 +307,23 @@ export default function SitesPage() {
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="projectId" className="text-sm font-medium">Project</label>
+                    <label htmlFor="category" className="text-sm font-medium">Type</label>
                     <select
-                      id="projectId"
-                      value={formData.projectId}
-                      onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
+                      id="category"
+                      value={formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                       className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     >
-                      <option value="">No project</option>
-                      {projects.map((project) => (
-                        <option key={project.id} value={project.id}>{project.name}</option>
-                      ))}
+                      <option value="">Niet ingesteld</option>
+                      <option value="klant">Klant</option>
+                      <option value="leadgen">LeadGen</option>
+                      <option value="adsense">AdSense</option>
+                      <option value="affiliate">Affiliate</option>
+                      <option value="rank-rent">Rank & Rent</option>
+                      <option value="tool">Tool</option>
+                      <option value="directory">Directory</option>
+                      <option value="business">Business</option>
+                      <option value="event">Event</option>
                     </select>
                   </div>
                 </div>
@@ -542,10 +555,27 @@ export default function SitesPage() {
               <TabsList>
                 <TabsTrigger value="all">All</TabsTrigger>
                 <TabsTrigger value="live">Live</TabsTrigger>
-                <TabsTrigger value="dev">Development</TabsTrigger>
+                <TabsTrigger value="dev">Dev</TabsTrigger>
                 <TabsTrigger value="planned">Planned</TabsTrigger>
               </TabsList>
             </Tabs>
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              <option value="all">Alle types</option>
+              <option value="klant">Klant</option>
+              <option value="leadgen">LeadGen</option>
+              <option value="adsense">AdSense</option>
+              <option value="affiliate">Affiliate</option>
+              <option value="rank-rent">Rank & Rent</option>
+              <option value="tool">Tool</option>
+              <option value="directory">Directory</option>
+              <option value="business">Business</option>
+              <option value="event">Event</option>
+              <option value="overig">Overig</option>
+            </select>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -613,6 +643,11 @@ export default function SitesPage() {
                         <Badge className={getStatusColor(site.status)}>
                           {site.status}
                         </Badge>
+                        {site.category && (
+                          <Badge variant="outline" className="bg-[#F5911E]/10 text-[#F5911E] border-[#F5911E]/30 text-xs">
+                            {site.category}
+                          </Badge>
+                        )}
                         {site.seoStatus && (
                           <Badge variant="outline" className={seoStatusConfig[site.seoStatus]?.cls || ""}>
                             {seoStatusConfig[site.seoStatus]?.label || site.seoStatus}

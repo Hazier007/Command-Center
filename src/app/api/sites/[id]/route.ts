@@ -47,6 +47,7 @@ export async function PATCH(
       data: {
         domain: data.domain,
         projectId: data.projectId,
+        category: data.category,
         status: data.status,
         techStack: data.techStack || [],
         revenue: data.revenue,
