@@ -144,16 +144,30 @@ model Idea {
   id          String   @id @default(cuid())
   title       String
   description String
-  category    String   // 'directory' | 'leadgen' | 'tool' | 'client' | 'business' | 'feature'
+  category    String   // 'directory' | 'leadgen' | 'tool' | 'client' | 'business' | 'feature' | 'domain_acquisition' | 'new_project' | 'growth_strategy'
   priority    String   // 'low' | 'medium' | 'high'
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // New fields
+  // Status & assignment
   status          String   @default("raw")  // 'raw' | 'evaluating' | 'promising' | 'active' | 'archived'
   businessUnit    String?
   revenueEstimate Float?
   assignedTo      String?  // agent name
+
+  // SPARK scoring
+  scoreOverall          Float?   // weighted total score (1-10)
+  scoreFeasibility      Float?   // haalbaarheid (1-10)
+  scoreRevenuePotential Float?   // inkomstenpotentieel (1-10)
+  scoreTimeToRevenue    Float?   // snelheid naar geld (1-10)
+  scoreCompetition      Float?   // concurrentieniveau (1-10, higher = less competition)
+  scoreStrategicFit     Float?   // fit met portfolio (1-10)
+  recommendation        String?  // 'build' | 'investigate' | 'skip'
+  estimatedInvestment   String?  // e.g. "€50-200 + 40u"
+  estimatedRevenue      String?  // e.g. "€200-500/maand na 6m"
+  evaluatedAt           DateTime?
+  evaluatedBy           String?  // 'spark'
+  linkedProjectId       String?  // link to existing project
 
   @@map("ideas")
 }

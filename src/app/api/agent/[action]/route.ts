@@ -4,7 +4,7 @@ import { validateAgentToken, unauthorizedResponse } from '@/lib/agent-auth'
 
 const prisma = new PrismaClient()
 
-type AgentAction = 'task' | 'idea' | 'alert' | 'note' | 'context'
+type AgentAction = 'task' | 'idea' | 'alert' | 'note' | 'context' | 'domain-eval'
 
 async function logAgentAction(source: string, action: string, payload: unknown) {
   await prisma.agentLog.create({
@@ -39,7 +39,7 @@ async function handleTask(body: Record<string, unknown>) {
   return task
 }
 
-// POST /api/agent/idea — Dump an idea
+// POST /api/agent/idea — Dump an idea (with optional SPARK scoring)
 async function handleIdea(body: Record<string, unknown>) {
   const { source, title, description, category, priority } = body
 
@@ -49,8 +49,23 @@ async function handleIdea(body: Record<string, unknown>) {
       description: (description as string) || '',
       category: (category as string) || 'feature',
       priority: (priority as string) || 'medium',
-      status: 'raw',
+      status: body.status as string || 'raw',
       assignedTo: source as string | undefined,
+      businessUnit: body.businessUnit as string | undefined,
+      revenueEstimate: body.revenueEstimate as number | undefined,
+      // SPARK scoring fields
+      scoreOverall: body.scoreOverall as number | undefined,
+      scoreFeasibility: body.scoreFeasibility as number | undefined,
+      scoreRevenuePotential: body.scoreRevenuePotential as number | undefined,
+      scoreTimeToRevenue: body.scoreTimeToRevenue as number | undefined,
+      scoreCompetition: body.scoreCompetition as number | undefined,
+      scoreStrategicFit: body.scoreStrategicFit as number | undefined,
+      recommendation: body.recommendation as string | undefined,
+      estimatedInvestment: body.estimatedInvestment as string | undefined,
+      estimatedRevenue: body.estimatedRevenue as string | undefined,
+      evaluatedAt: body.scoreOverall ? new Date() : undefined,
+      evaluatedBy: body.scoreOverall ? (source as string) : undefined,
+      linkedProjectId: body.linkedProjectId as string | undefined,
     },
   })
 
@@ -88,6 +103,69 @@ async function handleNote(body: Record<string, unknown>) {
 
   await logAgentAction(source as string, 'note', { noteId: note.id, title })
   return note
+}
+
+// POST /api/agent/domain-eval — SPARK evaluates a domain acquisition
+async function handleDomainEval(body: Record<string, unknown>) {
+  const { source, domain, niche, estimatedValue, priority, notes } = body
+
+  // Create or update DomainOpportunity
+  const existing = await prisma.domainOpportunity.findFirst({
+    where: { domain: domain as string },
+  })
+
+  const domainOpp = existing
+    ? await prisma.domainOpportunity.update({
+        where: { id: existing.id },
+        data: {
+          niche: (niche as string) || existing.niche,
+          estimatedValue: (estimatedValue as number) ?? existing.estimatedValue,
+          priority: (priority as string) || existing.priority,
+          notes: (notes as string) || existing.notes,
+          radarNotes: body.radarNotes as string | undefined,
+          status: (body.status as string) || existing.status,
+        },
+      })
+    : await prisma.domainOpportunity.create({
+        data: {
+          domain: domain as string,
+          status: (body.status as string) || 'parking',
+          niche: niche as string | undefined,
+          estimatedValue: estimatedValue as number | undefined,
+          priority: (priority as string) || 'medium',
+          notes: notes as string | undefined,
+          radarNotes: body.radarNotes as string | undefined,
+        },
+      })
+
+  // Optionally create a scored idea linked to this domain
+  if (body.scoreOverall) {
+    await prisma.idea.create({
+      data: {
+        title: `Domeinacquisitie: ${domain}`,
+        description: (body.analysis as string) || `Evaluatie van ${domain} in niche: ${niche}`,
+        category: 'domain_acquisition',
+        priority: (priority as string) || 'medium',
+        status: 'evaluating',
+        assignedTo: source as string,
+        scoreOverall: body.scoreOverall as number,
+        scoreFeasibility: body.scoreFeasibility as number | undefined,
+        scoreRevenuePotential: body.scoreRevenuePotential as number | undefined,
+        scoreTimeToRevenue: body.scoreTimeToRevenue as number | undefined,
+        scoreCompetition: body.scoreCompetition as number | undefined,
+        scoreStrategicFit: body.scoreStrategicFit as number | undefined,
+        recommendation: body.recommendation as string | undefined,
+        estimatedInvestment: body.estimatedInvestment as string | undefined,
+        estimatedRevenue: body.estimatedRevenue as string | undefined,
+        evaluatedAt: new Date(),
+        evaluatedBy: source as string,
+        revenueEstimate: estimatedValue as number | undefined,
+      },
+    })
+  }
+
+  await logAgentAction(source as string, 'domain-eval', { domainId: domainOpp.id, domain })
+  return domainOpp
 }
 
 // GET /api/agent/context — Get full CC context
@@ -168,6 +246,10 @@ export async function POST(
       case 'note':
         if (!body.title) return NextResponse.json({ error: 'Missing required field: title' }, { status: 400 })
         result = await handleNote(body)
+        break
+      case 'domain-eval':
+        if (!body.domain) return NextResponse.json({ error: 'Missing required field: domain' }, { status: 400 })
+        result = await handleDomainEval(body)
         break
       default:
         return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 })
