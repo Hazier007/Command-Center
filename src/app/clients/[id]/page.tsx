@@ -199,11 +199,14 @@ export default function ClientDetailPage() {
             <CardContent className="pt-6">
               <div className="flex items-center gap-2">
                 <DollarSign className="h-4 w-4 text-green-600" />
-                <span className="text-sm text-muted-foreground">MRR</span>
+                <span className="text-sm text-muted-foreground">{project.contractType === 'eenmalig' ? 'Bedrag' : 'MRR'}</span>
               </div>
               <p className="text-2xl font-bold mt-1 text-green-600">
                 {(project.monthlyFee || project.revenue || 0).toLocaleString('nl-BE', { style: 'currency', currency: 'EUR' })}
               </p>
+              {project.contractType === 'eenmalig' && (
+                <p className="text-xs text-muted-foreground mt-1">eenmalig</p>
+              )}
             </CardContent>
           </Card>
           <Card>

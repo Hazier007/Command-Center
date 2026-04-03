@@ -102,7 +102,12 @@ export default function ClientsPage() {
     return sites.filter(s => s.projectId === projectId)
   }
 
-  const totalMRR = filteredProjects.reduce((sum, p) => sum + (p.monthlyFee || p.revenue || 0), 0)
+  const totalMRR = filteredProjects
+    .filter(p => p.contractType !== 'eenmalig')
+    .reduce((sum, p) => sum + (p.monthlyFee || p.revenue || 0), 0)
+  const totalOneOff = filteredProjects
+    .filter(p => p.contractType === 'eenmalig')
+    .reduce((sum, p) => sum + (p.monthlyFee || p.revenue || 0), 0)
   const activeSites = sites.filter(s => s.status === 'live' && projects.some(p => p.id === s.projectId))
   const pipelineValue = filteredProjects
     .filter(p => p.status === 'planned')
@@ -128,6 +133,7 @@ export default function ClientsPage() {
             <h1 className="text-3xl font-bold tracking-tight">Klanten</h1>
             <p className="text-muted-foreground">
               {filteredProjects.length} klanten · {activeSites.length} actieve sites · MRR: {totalMRR.toLocaleString('nl-BE', { style: 'currency', currency: 'EUR' })}
+              {totalOneOff > 0 && ` · Eenmalig: ${totalOneOff.toLocaleString('nl-BE', { style: 'currency', currency: 'EUR' })}`}
             </p>
           </div>
 
@@ -328,7 +334,7 @@ export default function ClientsPage() {
                             <div className="font-medium text-green-600">
                               {(project.monthlyFee || project.revenue || 0).toLocaleString('nl-BE', { style: 'currency', currency: 'EUR' })}
                             </div>
-                            <div className="text-muted-foreground">/maand</div>
+                            <div className="text-muted-foreground">{project.contractType === 'eenmalig' ? 'eenmalig' : '/maand'}</div>
                           </div>
                           <div className="text-center">
                             <Badge className={`text-xs ${project.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200'}`}>
