@@ -13,7 +13,7 @@ export interface AgentProfile {
 export const AGENTS: Record<AgentName, AgentProfile> = {
   atlas: {
     name: 'atlas',
-    displayName: 'ATLAS',
+    displayName: 'ATLAS (VPZI)',
     role: 'Strategist & Operator',
     description: 'Business partner. Dirigeert het team, stelt prioriteiten, bewaakt de grote lijnen.',
     specialties: ['strategie', 'planning', 'prioriteiten', 'team coördinatie'],
@@ -22,7 +22,7 @@ export const AGENTS: Record<AgentName, AgentProfile> = {
   },
   forge: {
     name: 'forge',
-    displayName: 'FORGE',
+    displayName: 'FORGE (JKLQ)',
     role: 'Full-Stack Developer',
     description: 'Bouwt en onderhoudt alle technische systemen. Van frontend tot API tot database.',
     specialties: ['Next.js', 'React', 'Prisma', 'API development', 'deployment'],
@@ -31,7 +31,7 @@ export const AGENTS: Record<AgentName, AgentProfile> = {
   },
   radar: {
     name: 'radar',
-    displayName: 'RADAR',
+    displayName: 'RADAR (JKWF)',
     role: 'SEO & Domain Intelligence',
     description: 'Scant de markt, vindt kansen, analyseert domeinen en zoekverkeer.',
     specialties: ['SEO analyse', 'domein research', 'keyword research', 'concurrentie analyse'],
@@ -40,7 +40,7 @@ export const AGENTS: Record<AgentName, AgentProfile> = {
   },
   ink: {
     name: 'ink',
-    displayName: 'INK',
+    displayName: 'INK (HWHF)',
     role: 'Content & Copywriter',
     description: 'Schrijft alle content. Van blogposts tot productreviews tot landingspaginas.',
     specialties: ['copywriting', 'SEO content', 'productreviews', 'landingspaginas'],
@@ -49,7 +49,7 @@ export const AGENTS: Record<AgentName, AgentProfile> = {
   },
   ledger: {
     name: 'ledger',
-    displayName: 'LEDGER',
+    displayName: 'LEDGER (FXSB)',
     role: 'Finance & Analytics',
     description: 'Beheert financiën, analyseert data, maakt rapporten en forecasts.',
     specialties: ['financiële analyse', 'rapportage', 'forecasting', 'KPI tracking'],
@@ -58,7 +58,7 @@ export const AGENTS: Record<AgentName, AgentProfile> = {
   },
   spark: {
     name: 'spark',
-    displayName: 'SPARK',
+    displayName: 'SPARK (SJGU)',
     role: 'Growth & Acquisitions',
     description: 'Evalueert business ideas, zoekt groei-kansen, analyseert acquisities.',
     specialties: ['business development', 'idee evaluatie', 'groei strategie', 'acquisities'],
