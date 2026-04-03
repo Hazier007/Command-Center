@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Edit, Trash2, ExternalLink, Globe, TrendingUp, TrendingDown, AlertTriangle, FileText, Activity, Server } from "lucide-react"
+import { Plus, Edit, Trash2, ExternalLink, Globe, TrendingUp, TrendingDown, AlertTriangle, FileText, Activity, Server, CheckSquare, Square, FolderInput } from "lucide-react"
 import Link from "next/link"
 
 import { Badge } from "@/components/ui/badge"
@@ -45,6 +45,10 @@ export default function SitesPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>("all")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingSite, setEditingSite] = useState<Site | null>(null)
+  const [bulkMode, setBulkMode] = useState(false)
+  const [selectedSites, setSelectedSites] = useState<Set<string>>(new Set())
+  const [bulkProjectId, setBulkProjectId] = useState("")
+  const [bulkAssigning, setBulkAssigning] = useState(false)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -152,6 +156,62 @@ export default function SitesPage() {
     }
   }
 
+  const toggleSiteSelection = (siteId: string) => {
+    setSelectedSites(prev => {
+      const next = new Set(prev)
+      if (next.has(siteId)) next.delete(siteId)
+      else next.add(siteId)
+      return next
+    })
+  }
+
+  const selectAllFiltered = () => {
+    const allIds = new Set(filteredSites.map(s => s.id))
+    setSelectedSites(allIds)
+  }
+
+  const handleBulkAssign = async () => {
+    if (!bulkProjectId || selectedSites.size === 0) return
+    try {
+      setBulkAssigning(true)
+      await Promise.all(
+        Array.from(selectedSites).map(siteId =>
+          sitesStorage.update(siteId, { projectId: bulkProjectId })
+        )
+      )
+      const allSites = await sitesStorage.getAll()
+      setSites(allSites)
+      setSelectedSites(new Set())
+      setBulkProjectId("")
+      setBulkMode(false)
+    } catch (error) {
+      console.error('Bulk assign failed:', error)
+    } finally {
+      setBulkAssigning(false)
+    }
+  }
+
+  const handleBulkUnlink = async () => {
+    if (selectedSites.size === 0) return
+    try {
+      setBulkAssigning(true)
+      await Promise.all(
+        Array.from(selectedSites).map(siteId =>
+          sitesStorage.update(siteId, { projectId: null })
+        )
+      )
+      const allSites = await sitesStorage.getAll()
+      setSites(allSites)
+      setSelectedSites(new Set())
+    } catch (error) {
+      console.error('Bulk unlink failed:', error)
+    } finally {
+      setBulkAssigning(false)
+    }
+  }
+
+  const unlinkedCount = sites.filter(s => !s.projectId).length
+
   const getStatusColor = (status: Site['status']) => {
     switch (status) {
       case 'live': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200'
@@ -186,16 +246,26 @@ export default function SitesPage() {
             </p>
           </div>
 
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-[#F5911E] hover:bg-[#e07d0a] text-white" onClick={() => {
-                setEditingSite(null)
-                resetForm()
-              }}>
-                <Plus className="mr-2 h-4 w-4" />
-                Site toevoegen
+          <div className="flex gap-2">
+            {unlinkedCount > 0 && (
+              <Button
+                variant={bulkMode ? "default" : "outline"}
+                onClick={() => { setBulkMode(!bulkMode); setSelectedSites(new Set()); setBulkProjectId("") }}
+              >
+                <FolderInput className="mr-2 h-4 w-4" />
+                Bulk toewijzen {!bulkMode && `(${unlinkedCount})`}
               </Button>
-            </DialogTrigger>
+            )}
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-[#F5911E] hover:bg-[#e07d0a] text-white" onClick={() => {
+                  setEditingSite(null)
+                  resetForm()
+                }}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Site toevoegen
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>{editingSite ? 'Site bewerken' : 'Nieuwe site'}</DialogTitle>
@@ -364,7 +434,62 @@ export default function SitesPage() {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         </header>
+
+        {/* Bulk Assign Bar */}
+        {bulkMode && (
+          <div className="mt-4 p-4 rounded-lg border border-[#F5911E]/30 bg-[#F5911E]/5">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium">{selectedSites.size} sites geselecteerd</span>
+                <Button variant="outline" size="sm" onClick={selectAllFiltered}>
+                  Alles selecteren ({filteredSites.length})
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setSelectedSites(new Set())}>
+                  Deselecteer
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={bulkProjectId}
+                  onChange={(e) => setBulkProjectId(e.target.value)}
+                  className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                >
+                  <option value="">Kies project...</option>
+                  {Object.entries(
+                    projects.reduce((groups, project) => {
+                      const cat = project.category || project.ownerType || 'overig'
+                      if (!groups[cat]) groups[cat] = []
+                      groups[cat].push(project)
+                      return groups
+                    }, {} as Record<string, Project[]>)
+                  ).map(([category, categoryProjects]) => (
+                    <optgroup key={category} label={category.charAt(0).toUpperCase() + category.slice(1)}>
+                      {categoryProjects.map((project) => (
+                        <option key={project.id} value={project.id}>{project.name}</option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+                <Button
+                  className="bg-[#F5911E] hover:bg-[#e07d0a] text-white"
+                  disabled={!bulkProjectId || selectedSites.size === 0 || bulkAssigning}
+                  onClick={handleBulkAssign}
+                >
+                  {bulkAssigning ? 'Toewijzen...' : `Toewijzen (${selectedSites.size})`}
+                </Button>
+                <Button
+                  variant="outline"
+                  disabled={selectedSites.size === 0 || bulkAssigning}
+                  onClick={handleBulkUnlink}
+                >
+                  Ontkoppel
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* SEO Pulse Summary */}
         {sites.length > 0 && (
@@ -430,11 +555,21 @@ export default function SitesPage() {
               const rev = site.monthlyRevenue || site.revenue || 0
 
               return (
-                <Card key={site.id}>
+                <Card key={site.id} className={bulkMode && selectedSites.has(site.id) ? 'border-[#F5911E]/50 bg-[#F5911E]/5' : ''}>
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        {bulkMode ? (
+                          <button onClick={() => toggleSiteSelection(site.id)} className="flex-shrink-0">
+                            {selectedSites.has(site.id) ? (
+                              <CheckSquare className="h-5 w-5 text-[#F5911E]" />
+                            ) : (
+                              <Square className="h-5 w-5 text-muted-foreground hover:text-[#F5911E]" />
+                            )}
+                          </button>
+                        ) : (
+                          <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        )}
                         <div className="min-w-0 flex-1">
                           <CardTitle className="text-base truncate">{site.domain}</CardTitle>
                           {getProjectName(site.projectId) && (
