@@ -24,6 +24,8 @@ export async function GET(request: Request) {
     if (linkedIdeaId) where.linkedIdeaId = linkedIdeaId
     if (linkedContentId) where.linkedContentId = linkedContentId
     if (linkedSprintId) where.linkedSprintId = linkedSprintId
+    const linkedDomainId = searchParams.get('linkedDomainId')
+    if (linkedDomainId) where.linkedDomainId = linkedDomainId
     if (actionNeeded === 'true') where.actionNeeded = true
 
     const notes = await prisma.note.findMany({
@@ -59,6 +61,7 @@ export async function POST(request: Request) {
         linkedIdeaId: data.linkedIdeaId,
         linkedContentId: data.linkedContentId,
         linkedSprintId: data.linkedSprintId,
+        linkedDomainId: data.linkedDomainId,
         sentiment: data.sentiment,
         actionNeeded: data.actionNeeded || false,
       },

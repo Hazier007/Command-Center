@@ -8,9 +8,17 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status')
     const priority = searchParams.get('priority')
 
-    const where: Record<string, string> = {}
+    const hasIdea = searchParams.get('hasIdea')
+    const niche = searchParams.get('niche')
+    const businessUnit = searchParams.get('businessUnit')
+
+    const where: Record<string, unknown> = {}
     if (status) where.status = status
     if (priority) where.priority = priority
+    if (hasIdea === 'true') where.hasIdea = true
+    if (hasIdea === 'false') where.hasIdea = false
+    if (niche) where.niche = { contains: niche, mode: 'insensitive' }
+    if (businessUnit) where.businessUnit = businessUnit
 
     const domains = await prisma.domainOpportunity.findMany({
       where,
@@ -38,6 +46,10 @@ export async function POST(request: NextRequest) {
         priority: data.priority || 'medium',
         notes: data.notes,
         radarNotes: data.radarNotes,
+        linkedIdeaId: data.linkedIdeaId,
+        businessUnit: data.businessUnit,
+        hasIdea: data.hasIdea || false,
+        category: data.category,
       },
     })
 

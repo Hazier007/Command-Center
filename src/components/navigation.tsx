@@ -4,12 +4,12 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
 import {
-  Menu, Users, Bell, Brain,
+  Menu, Users, Bell,
   LayoutDashboard, Globe, CheckSquare, StickyNote,
   ChevronRight, Zap, Activity, Search,
   Inbox, FolderKanban, Receipt, UserPlus,
-  Layers, PenTool, BookOpen, Settings, Bot, DollarSign,
-  Landmark, PartyPopper, TrendingUp, BarChart3, CircleDollarSign, Gavel,
+  Layers, PenTool, BookOpen, Bot, DollarSign,
+  BarChart3, CircleDollarSign, Gavel,
   PanelLeftClose, PanelLeft,
 } from "lucide-react"
 
@@ -30,8 +30,15 @@ const navGroups = [
     items: [
       { href: "/", label: "Dashboard", icon: LayoutDashboard },
       { href: "/activity", label: "Activiteit", icon: Activity },
-      { href: "/alerts", label: "Alerts", icon: Bell },
       { href: "/inbox", label: "Inbox", icon: Inbox },
+      { href: "/alerts", label: "Alerts", icon: Bell },
+    ],
+  },
+  {
+    label: "Assets",
+    items: [
+      { href: "/sites", label: "Websites", icon: Globe },
+      { href: "/domains", label: "Domeinen", icon: Layers },
     ],
   },
   {
@@ -44,22 +51,11 @@ const navGroups = [
     ],
   },
   {
-    label: "Eigen",
-    items: [
-      { href: "/sites", label: "Sites", icon: Globe },
-      { href: "/domains", label: "Domeinen", icon: Layers },
-      { href: "/projects/collectpro", label: "CollectPro", icon: Landmark },
-      { href: "/projects/infinite-events", label: "Infinite Events", icon: PartyPopper },
-    ],
-  },
-  {
     label: "Werk",
     items: [
       { href: "/tasks", label: "Taken", icon: CheckSquare },
       { href: "/content", label: "Content", icon: PenTool },
       { href: "/research", label: "Research", icon: BookOpen },
-      { href: "/seo", label: "SEO", icon: TrendingUp },
-      { href: "/oracle", label: "Oracle", icon: Brain },
       { href: "/notes", label: "Notes", icon: StickyNote },
       { href: "/decisions", label: "Decisions", icon: Gavel },
     ],
@@ -71,7 +67,6 @@ const navGroups = [
       { href: "/adsense", label: "AdSense", icon: CircleDollarSign },
       { href: "/analytics", label: "Analytics", icon: BarChart3 },
       { href: "/agents", label: "Agents", icon: Bot },
-      { href: "/settings", label: "Instellingen", icon: Settings },
     ],
   },
 ]

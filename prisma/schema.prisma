@@ -227,7 +227,9 @@ model Task {
   // Origin tracking
   linkedIdeaId    String?  // which idea led to this task
   linkedSprintId  String?  // which sprint this task belongs to
+  linkedDomainId  String?  // task for a domain
   completedAt     DateTime? // when task was completed (for velocity tracking)
+  category        String?  // 'seo' | 'dev' | 'content' | 'research' | 'general'
 
   // Subtasks
   parentTaskId    String?
@@ -261,6 +263,7 @@ model Note {
   linkedIdeaId     String?
   linkedContentId  String?
   linkedSprintId   String?
+  linkedDomainId   String?
 
   // Feedback-specific fields
   sentiment     String?   // 'positive' | 'negative' | 'neutral' | 'mixed'
@@ -353,11 +356,15 @@ model Research {
   body      String   // full markdown content
   type      String   // 'keyword-research' | 'market-analysis' | 'api-research' | 'oracle' | 'competitor' | 'technical' | 'other'
   author    String   // 'bart' | 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark' | 'cowork'
-  projectId String?
+  projectId String?  // deprecated — use linkedSiteId/linkedDomainId
   tags      String?  // comma-separated
   status    String   // 'draft' | 'final' | 'outdated'
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Website/Domain linking
+  linkedSiteId    String?  // link to website
+  linkedDomainId  String?  // link to domain
 
   // Relations
   project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
@@ -444,7 +451,7 @@ model RevenueEntry {
 model DomainOpportunity {
   id             String   @id @default(cuid())
   domain         String
-  status         String   // 'parking' | 'developing' | 'forsale' | 'expired-watching' | 'acquired'
+  status         String   // 'parking' | 'developing' | 'forsale' | 'expired-watching' | 'acquired' | 'prospect'
   estimatedValue Float?
   niche          String?
   priority       String?  // 'low' | 'medium' | 'high'
@@ -452,6 +459,12 @@ model DomainOpportunity {
   radarNotes     String?  // notes from RADAR agent
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
+  // Extended fields for Domeinen hub
+  linkedIdeaId   String?  // SPARK can link an idea evaluation
+  businessUnit   String?  // 'agency' | 'rankrent' | 'affiliate' | 'tools' | 'leadgen'
+  hasIdea        Boolean  @default(false) // quick filter: has linked idea
+  category       String?  // 'parking' | 'prospect' | 'acquired' | 'forsale'
 
   @@map("domain_opportunities")
 }

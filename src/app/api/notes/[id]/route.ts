@@ -16,6 +16,17 @@ export async function PATCH(
         title: data.title,
         content: data.content,
         tags: data.tags || [],
+        agentId: data.agentId,
+        noteType: data.noteType,
+        sentiment: data.sentiment,
+        actionNeeded: data.actionNeeded,
+        linkedTaskId: data.linkedTaskId,
+        linkedSiteId: data.linkedSiteId,
+        linkedProjectId: data.linkedProjectId,
+        linkedIdeaId: data.linkedIdeaId,
+        linkedContentId: data.linkedContentId,
+        linkedSprintId: data.linkedSprintId,
+        linkedDomainId: data.linkedDomainId,
       },
     })
     

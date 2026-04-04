@@ -20,6 +20,10 @@ export async function PATCH(
         ...(data.priority !== undefined && { priority: data.priority }),
         ...(data.notes !== undefined && { notes: data.notes }),
         ...(data.radarNotes !== undefined && { radarNotes: data.radarNotes }),
+        ...(data.linkedIdeaId !== undefined && { linkedIdeaId: data.linkedIdeaId }),
+        ...(data.businessUnit !== undefined && { businessUnit: data.businessUnit }),
+        ...(data.hasIdea !== undefined && { hasIdea: data.hasIdea }),
+        ...(data.category !== undefined && { category: data.category }),
       },
     })
 

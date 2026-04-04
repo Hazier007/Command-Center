@@ -50,3 +50,9 @@ export type DecisionCategory = 'idea-eval' | 'project-direction' | 'resource' | 
 
 // Decision Result Status
 export type DecisionResultStatus = 'pending' | 'implemented' | 'superseded' | 'reversed';
+
+// Task Category (replaces separate SEO page)
+export type TaskCategory = 'seo' | 'dev' | 'content' | 'research' | 'general';
+
+// Domain Category
+export type DomainCategory = 'parking' | 'prospect' | 'acquired' | 'forsale';

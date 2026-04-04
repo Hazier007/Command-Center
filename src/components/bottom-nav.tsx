@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 const bottomNavItems = [
   { href: "/", label: "Home", icon: LayoutDashboard },
   { href: "/clients", label: "Klanten", icon: Users },
-  { href: "/sites", label: "Sites", icon: Globe },
+  { href: "/sites", label: "Websites", icon: Globe },
   { href: "/tasks", label: "Taken", icon: CheckSquare },
   { href: "/inbox", label: "Inbox", icon: Inbox },
 ]

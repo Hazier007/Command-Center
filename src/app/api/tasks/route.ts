@@ -10,11 +10,16 @@ export async function GET(request: Request) {
     const projectId = searchParams.get('projectId')
     const siteId = searchParams.get('siteId')
 
+    const category = searchParams.get('category')
+    const linkedDomainId = searchParams.get('linkedDomainId')
+
     const where: Record<string, string> = {}
     if (assignee) where.assignee = assignee
     if (status) where.status = status
     if (projectId) where.projectId = projectId
     if (siteId) where.siteId = siteId
+    if (category) where.category = category
+    if (linkedDomainId) where.linkedDomainId = linkedDomainId
 
     const tasks = await prisma.task.findMany({
       where,
@@ -51,6 +56,9 @@ export async function POST(request: Request) {
         assignee: data.assignee,
         dueDate: data.dueDate ? new Date(data.dueDate) : null,
         parentTaskId: data.parentTaskId,
+        category: data.category,
+        linkedDomainId: data.linkedDomainId,
+        linkedIdeaId: data.linkedIdeaId,
       },
       include: {
         project: true,
