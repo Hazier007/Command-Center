@@ -34,4 +34,19 @@ export type ContentStatus = 'briefing' | 'draft' | 'review' | 'approved' | 'reje
 export type NotifyLevel = 'info' | 'alert' | 'urgent';
 
 // Agent API Actions
-export type AgentAction = 'task' | 'idea' | 'alert' | 'note' | 'context';
+export type AgentAction = 'task' | 'idea' | 'alert' | 'note' | 'decision' | 'context';
+
+// Note Types (extended with feedback/analysis)
+export type NoteType = 'progress' | 'decision' | 'blocker' | 'review' | 'general' | 'feedback' | 'analysis' | 'lesson-learned';
+
+// Feedback Sentiment
+export type Sentiment = 'positive' | 'negative' | 'neutral' | 'mixed';
+
+// Decision Outcome
+export type DecisionOutcome = 'approved' | 'rejected' | 'deferred' | 'adjusted';
+
+// Decision Category
+export type DecisionCategory = 'idea-eval' | 'project-direction' | 'resource' | 'technical' | 'financial' | 'general';
+
+// Decision Result Status
+export type DecisionResultStatus = 'pending' | 'implemented' | 'superseded' | 'reversed';

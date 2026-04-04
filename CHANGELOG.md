@@ -2,6 +2,32 @@
 
 All notable changes to Command Center will be documented in this file.
 
+## [2026-04-04] - Feedback & Decision Layer
+
+### Added
+- **Decision model** — Formele besluitvorming met verplicht rationale-veld, polymorfe linking naar Project/Idea/Task/Site, opvolging via resultStatus
+- **Decisions API** — Volledige CRUD (`/api/decisions`, `/api/decisions/[id]`) met filtering op projectId, ideaId, category, outcome, decidedBy
+- **Decisions pagina** — `/decisions` met zoeken, filteren op categorie/uitkomst, stats cards, en inline formulier
+- **FeedbackSection component** — Herbruikbaar component voor feedback op elke entiteit (Project, Idea, Task, Site, Content, Sprint)
+- **Note uitbreiding** — 4 nieuwe linking velden (linkedProjectId, linkedIdeaId, linkedContentId, linkedSprintId), sentiment, actionNeeded
+- **Task uitbreiding** — linkedIdeaId (origin tracking), linkedSprintId, completedAt (velocity)
+- **Idea uitbreiding** — convertedToTaskId (lifecycle tracking), rejectedReason
+- **Sprint uitbreiding** — retrospective veld voor lessons learned
+- **Agent decision endpoint** — `POST /api/agent/decision` voor agents om beslissingen vast te leggen
+- **Agent note uitbreiding** — Alle linking velden + sentiment + actionNeeded beschikbaar via agent API
+- **Context API uitbreiding** — recentDecisions meegegeven in agent context response
+- **Feedback protocol** — Gedocumenteerd in alle 6 agent prompt bestanden
+- **New TypeScript types** — NoteType, Sentiment, DecisionOutcome, DecisionCategory, DecisionResultStatus
+
+### Fixed
+- **Agent report bugfix** — `body` → `content` in `/api/agent/report/route.ts` (field name mismatch met Prisma schema)
+- **Agent report** — Voegt nu ook linkedProjectId toe aan notes
+
+### Changed
+- **Navigation** — Decisions pagina toegevoegd aan "Werk" navigatiegroep
+- **Notes API** — Query parameters uitgebreid voor alle nieuwe linking velden + actionNeeded filter
+- **Agent action types** — `decision` toegevoegd als nieuwe agent actie
+
 ## [Unreleased] - 2026-02-23
 
 ### Added by JC 🥊

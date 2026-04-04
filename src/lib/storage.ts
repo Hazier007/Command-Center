@@ -676,6 +676,25 @@ export const revenueStorage = {
   },
 };
 
+export interface Decision {
+  id: string
+  title: string
+  context: string
+  outcome: string // 'approved' | 'rejected' | 'deferred' | 'adjusted'
+  rationale: string
+  decidedBy: string
+  category: string // 'idea-eval' | 'project-direction' | 'resource' | 'technical' | 'financial' | 'general'
+  projectId?: string
+  ideaId?: string
+  taskId?: string
+  siteId?: string
+  resultStatus?: string // 'pending' | 'implemented' | 'superseded' | 'reversed'
+  reviewDate?: string
+  tags: string[]
+  createdAt: string
+  updatedAt: string
+}
+
 export interface Lead {
   id: string;
   name: string;
@@ -693,6 +712,49 @@ export interface Lead {
   createdAt: string;
   updatedAt: string;
 }
+
+export const decisionsStorage = {
+  getAll: async (params?: { projectId?: string; ideaId?: string; category?: string }): Promise<Decision[]> => {
+    const searchParams = new URLSearchParams()
+    if (params?.projectId) searchParams.set('projectId', params.projectId)
+    if (params?.ideaId) searchParams.set('ideaId', params.ideaId)
+    if (params?.category) searchParams.set('category', params.category)
+
+    const url = `/api/decisions${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
+    return apiCall(url)
+  },
+
+  create: async (data: Omit<Decision, 'id' | 'createdAt' | 'updatedAt'>): Promise<Decision> => {
+    return apiCall('/api/decisions', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  update: async (id: string, data: Partial<Decision>): Promise<Decision | null> => {
+    try {
+      return await apiCall(`/api/decisions/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      })
+    } catch (error) {
+      console.error('Error updating decision:', error)
+      return null
+    }
+  },
+
+  delete: async (id: string): Promise<boolean> => {
+    try {
+      await apiCall(`/api/decisions/${id}`, {
+        method: 'DELETE',
+      })
+      return true
+    } catch (error) {
+      console.error('Error deleting decision:', error)
+      return false
+    }
+  },
+};
 
 export const leadsStorage = {
   getAll: async (): Promise<Lead[]> => {

@@ -196,6 +196,10 @@ model Idea {
   evaluatedBy           String?  // 'spark'
   linkedProjectId       String?  // link to existing project
 
+  // Lifecycle tracking
+  convertedToTaskId     String?  // which task was created from this idea
+  rejectedReason        String?  // why recommendation='skip'
+
   @@map("ideas")
 }
 
@@ -220,6 +224,11 @@ model Task {
   source          String?  // 'manual' | 'agent' | 'cron'
   agentAssignee   String?  // 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark'
 
+  // Origin tracking
+  linkedIdeaId    String?  // which idea led to this task
+  linkedSprintId  String?  // which sprint this task belongs to
+  completedAt     DateTime? // when task was completed (for velocity tracking)
+
   // Subtasks
   parentTaskId    String?
   parentTask      Task?    @relation("Subtasks", fields: [parentTaskId], references: [id], onDelete: SetNull)
@@ -243,9 +252,19 @@ model Note {
 
   // Agent context
   agentId       String?  // 'forge' | 'radar' | 'atlas' | etc.
-  noteType      String?  // 'progress' | 'decision' | 'blocker' | 'review' | 'general'
+  noteType      String?  // 'progress' | 'decision' | 'blocker' | 'review' | 'general' | 'feedback' | 'analysis' | 'lesson-learned'
   linkedTaskId  String?
   linkedSiteId  String?
+
+  // Extended linking (feedback/analysis can attach to any core entity)
+  linkedProjectId  String?
+  linkedIdeaId     String?
+  linkedContentId  String?
+  linkedSprintId   String?
+
+  // Feedback-specific fields
+  sentiment     String?   // 'positive' | 'negative' | 'neutral' | 'mixed'
+  actionNeeded  Boolean   @default(false)
 
   @@map("notes")
 }
@@ -498,16 +517,43 @@ model AgentMessage {
 }
 
 model Sprint {
-  id        String   @id @default(cuid())
-  week      String   @unique // '2026-W14' format
-  status    String   @default("active") // 'planning' | 'active' | 'completed' | 'cancelled'
-  goals     String?  // JSON array of sprint goals
-  summary   String?  // ATLAS end-of-week summary
-  createdBy String   @default("atlas")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  week          String   @unique // '2026-W14' format
+  status        String   @default("active") // 'planning' | 'active' | 'completed' | 'cancelled'
+  goals         String?  // JSON array of sprint goals
+  summary       String?  // ATLAS end-of-week summary
+  retrospective String?  // lessons learned after sprint completion
+  createdBy     String   @default("atlas")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@map("sprints")
+}
+
+model Decision {
+  id          String   @id @default(cuid())
+  title       String                          // "Idea X: build of skip?"
+  context     String                          // situation description, what was on the table
+  outcome     String                          // 'approved' | 'rejected' | 'deferred' | 'adjusted'
+  rationale   String                          // the WHY — core field
+  decidedBy   String                          // 'bart' | agent name
+  category    String   @default("general")    // 'idea-eval' | 'project-direction' | 'resource' | 'technical' | 'financial' | 'general'
+
+  // Polymorphic linking (optional, at least 1 should be filled)
+  projectId   String?
+  ideaId      String?
+  taskId      String?
+  siteId      String?
+
+  // Follow-up tracking
+  resultStatus  String?   // 'pending' | 'implemented' | 'superseded' | 'reversed'
+  reviewDate    DateTime? // when to reconsider
+  tags          String[]  // free tags for filtering
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("decisions")
 }
 
 model Lead {

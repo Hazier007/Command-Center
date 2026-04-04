@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { projectsStorage, sitesStorage, tasksStorage, ideasStorage, type Project, type Site, type Task, type Idea } from "@/lib/storage"
+import { FeedbackSection } from "@/components/feedback-section"
 
 export default function ProjectDetailPage() {
   const params = useParams()
@@ -424,6 +425,13 @@ export default function ProjectDetailPage() {
               </Card>
             )}
           </div>
+
+          {/* Feedback & Notes */}
+          <FeedbackSection
+            linkedField="linkedProjectId"
+            linkedId={projectId}
+            showAllTypes
+          />
 
           {/* Project metadata */}
           <div className="pt-4 border-t">

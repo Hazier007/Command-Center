@@ -10,7 +10,7 @@ import {
   Inbox, FolderKanban, Receipt, UserPlus,
   GlobeLock, Wrench, Link2, Layers,
   PenTool, BookOpen, Settings, Bot, DollarSign,
-  Landmark, PartyPopper, TrendingUp, BarChart3, CircleDollarSign,
+  Landmark, PartyPopper, TrendingUp, BarChart3, CircleDollarSign, Gavel,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -61,6 +61,7 @@ const navGroups = [
       { href: "/seo", label: "SEO", icon: TrendingUp },
       { href: "/oracle", label: "Oracle", icon: Brain },
       { href: "/notes", label: "Notes", icon: StickyNote },
+      { href: "/decisions", label: "Decisions", icon: Gavel },
     ],
   },
   {

@@ -112,6 +112,78 @@ Content-Type: application/json
 6. **Communiceer** — stuur berichten als prioriteiten verschuiven of als agents vastlopen
 7. **Status "blocked"** — als je op Bart's input wacht, markeer de taak als blocked met uitleg
 
+## Feedback & Decision Protocol
+
+### Feedback geven op een idea, project, taak of site
+Gebruik `POST /api/agent/note` met `noteType: "feedback"`:
+```json
+{
+  "source": "atlas",
+  "title": "Feedback op [naam record]",
+  "content": "## Observaties\n- Punt 1\n- Punt 2\n\n## Aanbevelingen\n- Voorstel 1",
+  "noteType": "feedback",
+  "sentiment": "positive",
+  "actionNeeded": true,
+  "linkedProjectId": "<optioneel>",
+  "linkedIdeaId": "<optioneel>",
+  "linkedTaskId": "<optioneel>",
+  "linkedSiteId": "<optioneel>",
+  "linkedContentId": "<optioneel>",
+  "linkedSprintId": "<optioneel>",
+  "tags": ["tag1", "tag2"]
+}
+```
+
+**noteType opties:** `feedback` | `analysis` | `lesson-learned` | `blocker` | `progress` | `general`
+**sentiment opties:** `positive` | `negative` | `neutral` | `mixed`
+
+### Beslissingen vastleggen
+Gebruik `POST /api/agent/decision`:
+```json
+{
+  "source": "atlas",
+  "title": "Beslissing: [onderwerp]",
+  "context": "Wat lag er op tafel? Welke opties waren er?",
+  "outcome": "approved",
+  "rationale": "WAAROM is dit beslist? Dit is het belangrijkste veld.",
+  "decidedBy": "bart",
+  "category": "idea-eval",
+  "ideaId": "<optioneel>",
+  "projectId": "<optioneel>",
+  "resultStatus": "pending",
+  "tags": ["tag1"]
+}
+```
+
+**outcome opties:** `approved` | `rejected` | `deferred` | `adjusted`
+**category opties:** `idea-eval` | `project-direction` | `resource` | `technical` | `financial` | `general`
+
+### Analyse delen
+Gebruik `noteType: "analysis"` voor objectieve bevindingen:
+```json
+{
+  "source": "atlas",
+  "title": "Analyse: marktpositie CollectPro",
+  "content": "Gedetailleerde analyse in markdown...",
+  "noteType": "analysis",
+  "linkedProjectId": "<project-id>",
+  "tags": ["collectpro", "marktanalyse"]
+}
+```
+
+### Lessons learned vastleggen
+Na afronding van een taak of sprint:
+```json
+{
+  "source": "atlas",
+  "title": "Lesson: [wat geleerd]",
+  "content": "Wat ging goed, wat kan beter...",
+  "noteType": "lesson-learned",
+  "linkedTaskId": "<optioneel>",
+  "linkedSprintId": "<optioneel>"
+}
+```
+
 ## Beschikbare API endpoints
 
 | Methode | Endpoint | Doel |
@@ -121,8 +193,11 @@ Content-Type: application/json
 | POST | `/api/agent/task` | Taak aanmaken/delegeren |
 | POST | `/api/agent/idea` | Idee indienen |
 | POST | `/api/agent/alert` | Alert aanmaken |
-| POST | `/api/agent/note` | Notitie toevoegen |
+| POST | `/api/agent/note` | Notitie/feedback/analyse toevoegen |
+| POST | `/api/agent/decision` | Beslissing vastleggen |
 | POST | `/api/agent/report` | Taak voortgang rapporteren |
 | GET/POST/PATCH | `/api/agent/message` | Berichten lezen/sturen |
 | GET/POST | `/api/sprints` | Sprint beheer |
 | PATCH | `/api/sprints/<id>` | Sprint bijwerken |
+| GET/POST | `/api/decisions` | Decisions lezen/aanmaken |
+| PATCH | `/api/decisions/<id>` | Decision bijwerken |

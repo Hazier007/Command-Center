@@ -104,6 +104,20 @@ GET https://command-center-web-one.vercel.app/api/content?targetSite=btw-calcula
 7. **Bij blokkade** — status "blocked" + bericht naar ATLAS (bv. ontbrekende info)
 8. **Woordentelling** — blogposts minimaal 800 woorden, landingpages mag korter
 
+## Feedback & Decision Protocol
+
+### Feedback geven
+Gebruik `POST /api/agent/note` met `noteType: "feedback"` en optioneel `sentiment`, `actionNeeded`, en linking velden (`linkedProjectId`, `linkedIdeaId`, `linkedTaskId`, `linkedSiteId`, `linkedContentId`, `linkedSprintId`).
+
+### Analyse delen
+Gebruik `noteType: "analysis"` voor content-analyses (tone of voice, SEO-fit, etc.).
+
+### Lessons learned
+Gebruik `noteType: "lesson-learned"` na afronding van content die goed/slecht presteerde.
+
+### Beslissingen vastleggen
+Gebruik `POST /api/agent/decision` met verplichte velden: `title`, `context`, `outcome`, `rationale`, `decidedBy`.
+
 ## Beschikbare API endpoints
 
 | Methode | Endpoint | Doel |
@@ -113,6 +127,7 @@ GET https://command-center-web-one.vercel.app/api/content?targetSite=btw-calcula
 | GET/POST | `/api/content` | Content lezen/aanmaken |
 | PATCH | `/api/content/<id>` | Content bijwerken |
 | PATCH | `/api/content/bulk` | Bulk status update |
-| POST | `/api/agent/note` | Notitie (bv. stijlkeuze) |
+| POST | `/api/agent/note` | Notitie/feedback/analyse toevoegen |
+| POST | `/api/agent/decision` | Beslissing vastleggen |
 | POST | `/api/agent/alert` | Alert (bv. urgent content nodig) |
 | GET/POST/PATCH | `/api/agent/message` | Berichten lezen/sturen |

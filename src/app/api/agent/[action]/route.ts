@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { validateAgentToken, unauthorizedResponse } from '@/lib/agent-auth'
 
-type AgentAction = 'task' | 'idea' | 'alert' | 'note' | 'context' | 'domain-eval'
+type AgentAction = 'task' | 'idea' | 'alert' | 'note' | 'decision' | 'context' | 'domain-eval'
 
 async function logAgentAction(source: string, action: string, payload: unknown) {
   await prisma.agentLog.create({
@@ -94,7 +94,7 @@ async function handleAlert(body: Record<string, unknown>) {
   return alert
 }
 
-// POST /api/agent/note — Add a note (with optional agent context)
+// POST /api/agent/note — Add a note (with optional agent context and extended linking)
 async function handleNote(body: Record<string, unknown>) {
   const { source, title, content, tags } = body
 
@@ -107,11 +107,43 @@ async function handleNote(body: Record<string, unknown>) {
       noteType: (body.noteType as string) || 'general',
       linkedTaskId: body.linkedTaskId as string | undefined,
       linkedSiteId: body.linkedSiteId as string | undefined,
+      linkedProjectId: body.linkedProjectId as string | undefined,
+      linkedIdeaId: body.linkedIdeaId as string | undefined,
+      linkedContentId: body.linkedContentId as string | undefined,
+      linkedSprintId: body.linkedSprintId as string | undefined,
+      sentiment: body.sentiment as string | undefined,
+      actionNeeded: (body.actionNeeded as boolean) || false,
     },
   })
 
-  await logAgentAction(source as string, 'note', { noteId: note.id, title })
+  await logAgentAction(source as string, 'note', { noteId: note.id, title, noteType: body.noteType })
   return note
+}
+
+// POST /api/agent/decision — Record a decision
+async function handleDecision(body: Record<string, unknown>) {
+  const { source, title, context, outcome, rationale } = body
+
+  const decision = await prisma.decision.create({
+    data: {
+      title: title as string,
+      context: (context as string) || '',
+      outcome: (outcome as string) || 'approved',
+      rationale: (rationale as string) || '',
+      decidedBy: (body.decidedBy as string) || (source as string),
+      category: (body.category as string) || 'general',
+      projectId: body.projectId as string | undefined,
+      ideaId: body.ideaId as string | undefined,
+      taskId: body.taskId as string | undefined,
+      siteId: body.siteId as string | undefined,
+      resultStatus: (body.resultStatus as string) || 'pending',
+      reviewDate: body.reviewDate ? new Date(body.reviewDate as string) : undefined,
+      tags: (body.tags as string[]) || [],
+    },
+  })
+
+  await logAgentAction(source as string, 'decision', { decisionId: decision.id, title, outcome })
+  return decision
 }
 
 // POST /api/agent/domain-eval — SPARK evaluates a domain acquisition
@@ -182,7 +214,7 @@ async function handleContext() {
   const last7Days = new Date()
   last7Days.setDate(last7Days.getDate() - 7)
 
-  const [projects, tasks, sites, alerts, nowItems, ideas, recentActivity, costs, kpis, recentKeywords, unreadMessages, latestSnapshot, activeDomains, sprints] = await Promise.all([
+  const [projects, tasks, sites, alerts, nowItems, ideas, recentActivity, costs, kpis, recentKeywords, unreadMessages, latestSnapshot, activeDomains, sprints, recentDecisions] = await Promise.all([
     prisma.project.findMany({ where: { status: 'active' }, orderBy: { updatedAt: 'desc' } }),
     prisma.task.findMany({ where: { status: { notIn: ['done', 'cancelled'] } }, orderBy: { createdAt: 'desc' }, take: 50, include: { project: true, site: true } }),
     prisma.site.findMany({ orderBy: { domain: 'asc' } }),
@@ -197,6 +229,7 @@ async function handleContext() {
     prisma.financeSnapshot.findFirst({ orderBy: { period: 'desc' } }),
     prisma.domainOpportunity.findMany({ where: { status: { in: ['evaluating', 'active', 'developing'] } }, orderBy: { createdAt: 'desc' }, take: 10 }),
     prisma.sprint.findMany({ orderBy: { week: 'desc' }, take: 2 }),
+    prisma.decision.findMany({ where: { createdAt: { gte: last7Days } }, orderBy: { createdAt: 'desc' }, take: 20 }),
   ])
 
   // Finance summary for context
@@ -222,6 +255,7 @@ async function handleContext() {
     latestSnapshot,
     activeDomains,
     sprints,
+    recentDecisions,
     finance: {
       totalMRR: Math.round((clientMRR + siteMRR) * 100) / 100,
       clientMRR: Math.round(clientMRR * 100) / 100,
@@ -268,6 +302,10 @@ export async function POST(
       case 'note':
         if (!body.title) return NextResponse.json({ error: 'Missing required field: title' }, { status: 400 })
         result = await handleNote(body)
+        break
+      case 'decision':
+        if (!body.title) return NextResponse.json({ error: 'Missing required field: title' }, { status: 400 })
+        result = await handleDecision(body)
         break
       case 'domain-eval':
         if (!body.domain) return NextResponse.json({ error: 'Missing required field: domain' }, { status: 400 })

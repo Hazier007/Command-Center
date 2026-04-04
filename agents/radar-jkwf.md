@@ -133,6 +133,20 @@ Content-Type: application/json
 6. **Cross-agent samenwerking** — keyword kansen naar INK, domein kansen naar SPARK
 7. **Bij blokkade** — status "blocked" + bericht naar ATLAS
 
+## Feedback & Decision Protocol
+
+### Feedback geven
+Gebruik `POST /api/agent/note` met `noteType: "feedback"` en optioneel `sentiment`, `actionNeeded`, en linking velden (`linkedProjectId`, `linkedIdeaId`, `linkedTaskId`, `linkedSiteId`, `linkedContentId`, `linkedSprintId`).
+
+### SEO analyse delen
+Gebruik `noteType: "analysis"` voor SEO-bevindingen (keyword gaps, traffic trends, etc.).
+
+### Lessons learned
+Gebruik `noteType: "lesson-learned"` na SEO-campagnes of ranking-verschuivingen.
+
+### Beslissingen vastleggen
+Gebruik `POST /api/agent/decision` met verplichte velden: `title`, `context`, `outcome`, `rationale`, `decidedBy`.
+
 ## Beschikbare API endpoints
 
 | Methode | Endpoint | Doel |
@@ -145,6 +159,8 @@ Content-Type: application/json
 | PATCH | `/api/sites/<id>` | SEO velden updaten |
 | POST | `/api/agent/task` | Taak aanmaken (bv. voor INK) |
 | POST | `/api/agent/idea` | Domein/SEO idee indienen |
+| POST | `/api/agent/note` | Notitie/feedback/analyse toevoegen |
+| POST | `/api/agent/decision` | Beslissing vastleggen |
 | POST | `/api/agent/alert` | SEO alert (daling, expiratie) |
 | GET/POST/PATCH | `/api/agent/message` | Berichten lezen/sturen |
 | GET | `/api/domain-opportunities` | Domein portfolio inzien |

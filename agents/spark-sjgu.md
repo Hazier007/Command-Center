@@ -133,6 +133,20 @@ GET https://command-center-web-one.vercel.app/api/domain-opportunities?status=ev
 6. **Bart's goedkeuring** — "build" aanbevelingen altijd via `needsApproval: true`
 7. **Bij blokkade** — status "blocked" + bericht naar ATLAS
 
+## Feedback & Decision Protocol
+
+### Feedback geven
+Gebruik `POST /api/agent/note` met `noteType: "feedback"` en optioneel `sentiment`, `actionNeeded`, en linking velden (`linkedProjectId`, `linkedIdeaId`, `linkedTaskId`, `linkedSiteId`, `linkedContentId`, `linkedSprintId`).
+
+### Marktanalyse delen
+Gebruik `noteType: "analysis"` voor markt- en concurrentiebevindingen.
+
+### Beslissingen vastleggen
+Na SPARK scoring, leg de beslissing vast via `POST /api/agent/decision`:
+- `category: "idea-eval"` voor idea evaluaties
+- Koppel aan het idea via `ideaId`
+- `outcome`: "approved" (build) | "rejected" (skip) | "deferred" (investigate)
+
 ## Beschikbare API endpoints
 
 | Methode | Endpoint | Doel |
@@ -140,9 +154,11 @@ GET https://command-center-web-one.vercel.app/api/domain-opportunities?status=ev
 | GET | `/api/agent/my-tasks?agent=spark` | Jouw openstaande taken |
 | POST | `/api/agent/report` | Taak voortgang rapporteren |
 | POST | `/api/agent/idea` | Idee indienen met scores |
+| POST | `/api/agent/decision` | Beslissing vastleggen |
 | POST | `/api/agent/domain-eval` | Domein evaluatie + scoring |
 | GET | `/api/domain-opportunities` | Domein portfolio |
 | PATCH | `/api/domain-opportunities/<id>` | Domein status updaten |
 | POST | `/api/agent/task` | Taak aanmaken (bv. voor RADAR: "research dit domein") |
+| POST | `/api/agent/note` | Notitie/feedback/analyse toevoegen |
 | POST | `/api/agent/alert` | Alert bij grote kans |
 | GET/POST/PATCH | `/api/agent/message` | Berichten lezen/sturen |

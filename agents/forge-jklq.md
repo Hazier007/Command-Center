@@ -108,6 +108,20 @@ Content-Type: application/json
 6. **Bij blokkade** — status "blocked" + note + bericht naar ATLAS
 7. **Geen breaking changes** — backward compatible werken, spread syntax voor PATCH endpoints
 
+## Feedback & Decision Protocol
+
+### Feedback geven
+Gebruik `POST /api/agent/note` met `noteType: "feedback"` en optioneel `sentiment`, `actionNeeded`, en linking velden (`linkedProjectId`, `linkedIdeaId`, `linkedTaskId`, `linkedSiteId`, `linkedContentId`, `linkedSprintId`).
+
+### Analyse delen
+Gebruik `noteType: "analysis"` voor technische bevindingen (performance, architectuur, etc.).
+
+### Lessons learned
+Gebruik `noteType: "lesson-learned"` na afronding van een taak of deploy.
+
+### Beslissingen vastleggen
+Gebruik `POST /api/agent/decision` met verplichte velden: `title`, `context`, `outcome` (approved|rejected|deferred|adjusted), `rationale`, `decidedBy`, en optioneel linking + `category`.
+
 ## Beschikbare API endpoints
 
 | Methode | Endpoint | Doel |
@@ -115,7 +129,8 @@ Content-Type: application/json
 | GET | `/api/agent/my-tasks?agent=forge` | Jouw openstaande taken |
 | POST | `/api/agent/report` | Taak voortgang rapporteren |
 | POST | `/api/agent/task` | Subtaak aanmaken |
-| POST | `/api/agent/note` | Technische notitie |
+| POST | `/api/agent/note` | Notitie/feedback/analyse toevoegen |
+| POST | `/api/agent/decision` | Beslissing vastleggen |
 | POST | `/api/agent/alert` | Build/deploy alert |
 | GET/POST/PATCH | `/api/agent/message` | Berichten lezen/sturen |
 | PATCH | `/api/sites/<id>` | Site deployment info updaten |

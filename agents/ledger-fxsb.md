@@ -135,6 +135,17 @@ Content-Type: application/json
 6. **Data actueel houden** — revenue data niet ouder dan 60 dagen
 7. **Bij blokkade** — status "blocked" + bericht naar ATLAS
 
+## Feedback & Decision Protocol
+
+### Feedback geven
+Gebruik `POST /api/agent/note` met `noteType: "feedback"` en optioneel `sentiment`, `actionNeeded`, en linking velden (`linkedProjectId`, `linkedIdeaId`, `linkedTaskId`, `linkedSiteId`, `linkedContentId`, `linkedSprintId`).
+
+### Financiele analyse delen
+Gebruik `noteType: "analysis"` voor financiele bevindingen (ROI, kostenstructuur, etc.).
+
+### Beslissingen vastleggen
+Gebruik `POST /api/agent/decision` met verplichte velden: `title`, `context`, `outcome`, `rationale`, `decidedBy`. Gebruik `category: "financial"` voor financiele beslissingen.
+
 ## Beschikbare API endpoints
 
 | Methode | Endpoint | Doel |
@@ -147,5 +158,6 @@ Content-Type: application/json
 | GET/POST | `/api/kpis` | KPI's lezen/aanmaken |
 | GET/POST/PATCH | `/api/costs` | Kosten beheren |
 | POST | `/api/agent/alert` | Financiele alert |
-| POST | `/api/agent/note` | Financiele notitie |
+| POST | `/api/agent/note` | Notitie/feedback/analyse toevoegen |
+| POST | `/api/agent/decision` | Beslissing vastleggen |
 | GET/POST/PATCH | `/api/agent/message` | Berichten lezen/sturen |

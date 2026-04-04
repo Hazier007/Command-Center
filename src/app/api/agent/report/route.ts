@@ -41,11 +41,12 @@ export async function POST(request: NextRequest) {
       await prisma.note.create({
         data: {
           title: `[${agent.toUpperCase()}] ${status === 'done' ? 'Taak afgerond' : 'Voortgang'}: ${task.title}`,
-          body: note || result || '',
+          content: note || result || '',
           agentId: agent,
-          noteType: 'progress',
+          noteType: status === 'done' ? 'progress' : 'progress',
           linkedTaskId: taskId,
           linkedSiteId: task.siteId || undefined,
+          linkedProjectId: task.projectId || undefined,
         },
       })
     }
