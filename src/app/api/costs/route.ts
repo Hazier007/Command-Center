@@ -33,6 +33,7 @@ export async function POST(request: Request) {
         notes: data.notes,
         projectId: data.projectId,
         billingDay: data.billingDay,
+        billingDate: data.billingDate ? new Date(data.billingDate) : undefined,
       },
     })
     

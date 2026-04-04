@@ -280,16 +280,17 @@ model Alert {
 }
 
 model Cost {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   name         String
-  amount       Float    // amount in EUR
-  category     String   // AI, Hosting, Database, Domains, Infrastructure, Tools, Other
-  recurring    Boolean  // monthly recurring or one-time
-  billingCycle String?  // 'monthly' | 'yearly' | 'one_time'
+  amount       Float     // amount in EUR
+  category     String    // AI, Hosting, Database, Domains, Infrastructure, Tools, Other
+  recurring    Boolean   // monthly recurring or one-time
+  billingCycle String?   // 'monthly' | 'yearly' | 'one_time'
   notes        String?
-  projectId    String?  // link cost to specific project (null = overhead)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  projectId    String?   // link cost to specific project (null = overhead)
+  billingDate  DateTime? // date of one-time cost
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   // New fields
   billingDay Int?    // day of month when billed

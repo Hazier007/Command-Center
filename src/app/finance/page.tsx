@@ -14,6 +14,7 @@ import {
   Receipt,
   ArrowUpRight,
   ArrowDownRight,
+  Calendar,
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -40,10 +41,10 @@ import {
   TableFooter,
 } from "@/components/ui/table"
 import {
-  projectsStorage,
+  sitesStorage,
   costsStorage,
   revenueStorage,
-  type Project,
+  type Site,
   type Cost,
   type RevenueEntry,
 } from "@/lib/storage"
@@ -56,17 +57,12 @@ const contractBadge: Record<string, string> = {
   mixed: "bg-purple-500/20 text-purple-400 border-purple-500/30",
 }
 
-const statusBadge: Record<string, { label: string; cls: string }> = {
-  active: { label: "Actief", cls: "bg-green-500/20 text-green-400 border-green-500/30" },
-  planned: { label: "Gepland", cls: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
-  paused: { label: "Gepauzeerd", cls: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" },
-}
-
 const sourceColors: Record<string, string> = {
   adsense: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
   affiliate: "bg-blue-500/20 text-blue-400 border-blue-500/30",
   domain: "bg-purple-500/20 text-purple-400 border-purple-500/30",
   leadgen: "bg-orange-500/20 text-orange-400 border-orange-500/30",
+  agency: "bg-blue-500/20 text-blue-400 border-blue-500/30",
 }
 
 const categoryColors: Record<string, string> = {
@@ -85,7 +81,7 @@ function currentMonth() {
 }
 
 export default function FinancePage() {
-  const [projects, setProjects] = useState<Project[]>([])
+  const [sites, setSites] = useState<Site[]>([])
   const [costs, setCosts] = useState<Cost[]>([])
   const [revenue, setRevenue] = useState<RevenueEntry[]>([])
   const [loading, setLoading] = useState(true)
@@ -108,7 +104,9 @@ export default function FinancePage() {
     amount: "",
     category: "Tools",
     recurring: true,
+    billingCycle: "monthly" as string,
     billingDay: "",
+    billingDate: "",
     notes: "",
   })
 
@@ -119,12 +117,12 @@ export default function FinancePage() {
   const loadData = async () => {
     try {
       setLoading(true)
-      const [p, c, r] = await Promise.all([
-        projectsStorage.getAll(),
+      const [s, c, r] = await Promise.all([
+        sitesStorage.getAll(),
         costsStorage.getAll(),
         revenueStorage.getAll(),
       ])
-      setProjects(p)
+      setSites(s)
       setCosts(c)
       setRevenue(r)
     } catch (error) {
@@ -162,23 +160,31 @@ export default function FinancePage() {
     e.preventDefault()
     try {
       setSubmitting(true)
-      const payload = {
+      const isRecurring = costForm.recurring
+      const payload: Record<string, unknown> = {
         name: costForm.name,
         amount: parseFloat(costForm.amount),
         category: costForm.category,
-        recurring: costForm.recurring,
-        billingDay: costForm.billingDay ? parseInt(costForm.billingDay) : undefined,
+        recurring: isRecurring,
+        billingCycle: isRecurring ? costForm.billingCycle : "one_time",
         notes: costForm.notes || undefined,
+      }
+      if (isRecurring) {
+        payload.billingDay = costForm.billingDay ? parseInt(costForm.billingDay) : undefined
+        payload.billingDate = null
+      } else {
+        payload.billingDate = costForm.billingDate || undefined
+        payload.billingDay = null
       }
       if (editingCost) {
         await costsStorage.update(editingCost.id, payload)
       } else {
-        await costsStorage.create(payload)
+        await costsStorage.create(payload as Parameters<typeof costsStorage.create>[0])
       }
       await loadData()
       setCostDialogOpen(false)
       setEditingCost(null)
-      setCostForm({ name: "", amount: "", category: "Tools", recurring: true, billingDay: "", notes: "" })
+      setCostForm({ name: "", amount: "", category: "Tools", recurring: true, billingCycle: "monthly", billingDay: "", billingDate: "", notes: "" })
     } catch (error) {
       console.error("Failed to save cost:", error)
     } finally {
@@ -193,7 +199,9 @@ export default function FinancePage() {
       amount: cost.amount.toString(),
       category: cost.category,
       recurring: cost.recurring,
+      billingCycle: cost.billingCycle || (cost.recurring ? "monthly" : "one_time"),
       billingDay: cost.billingDay?.toString() || "",
+      billingDate: cost.billingDate ? cost.billingDate.split("T")[0] : "",
       notes: cost.notes || "",
     })
     setCostDialogOpen(true)
@@ -214,19 +222,42 @@ export default function FinancePage() {
   }
 
   // --- Calculations ---
-  const clientProjects = projects.filter((p) => p.ownerType === "client" || p.category === "client")
-  const agencyMRR = clientProjects.reduce((sum, p) => sum + (p.monthlyFee || 0), 0)
+  // Agency MRR: sites with ownerType=client AND contractType !== eenmalig
+  const clientSites = (sites as (Site & { ownerType?: string; contractType?: string; monthlyFee?: number; clientName?: string })[])
+    .filter(s => s.ownerType === "client")
 
+  const agencyMRR = clientSites
+    .filter(s => s.contractType !== "eenmalig")
+    .reduce((sum, s) => sum + (s.monthlyFee || 0), 0)
+
+  const agencyOneOff = clientSites
+    .filter(s => s.contractType === "eenmalig")
+    .reduce((sum, s) => sum + (s.monthlyFee || 0), 0)
+
+  // Own revenue: only recurring entries for current month count as MRR
   const month = currentMonth()
   const currentRevenue = revenue.filter((r) => r.month === month)
-  const ownRevenue = currentRevenue.reduce((sum, r) => sum + r.amount, 0)
+  const ownMRR = currentRevenue.filter(r => r.recurring).reduce((sum, r) => sum + r.amount, 0)
+  const ownOneOff = currentRevenue.filter(r => !r.recurring).reduce((sum, r) => sum + r.amount, 0)
 
-  const totalMRR = agencyMRR + ownRevenue
+  // Total MRR = only recurring
+  const totalMRR = agencyMRR + ownMRR
+  const totalOneOff = agencyOneOff + ownOneOff
+  const totalRevenue = totalMRR + totalOneOff
   const gap = Math.max(0, GOAL_AMOUNT - totalMRR)
   const goalProgress = (totalMRR / GOAL_AMOUNT) * 100
 
-  const totalCosts = costs.reduce((sum, c) => sum + c.amount, 0)
-  const netResult = totalMRR - totalCosts
+  // Costs: split recurring vs one-time
+  const recurringCosts = costs.filter(c => c.recurring)
+  const oneTimeCosts = costs.filter(c => !c.recurring)
+
+  // Monthly costs = recurring only (yearly / 12)
+  const monthlyCosts = recurringCosts.reduce((sum, c) => {
+    if (c.billingCycle === "yearly") return sum + (c.amount / 12)
+    return sum + c.amount
+  }, 0)
+
+  const netResult = totalMRR - monthlyCosts
 
   // Group revenue by source
   const revenueBySource = currentRevenue.reduce((acc, r) => {
@@ -234,13 +265,6 @@ export default function FinancePage() {
     acc[r.source].push(r)
     return acc
   }, {} as Record<string, RevenueEntry[]>)
-
-  // Group costs by category
-  const costsByCategory = costs.reduce((acc, cost) => {
-    if (!acc[cost.category]) acc[cost.category] = []
-    acc[cost.category].push(cost)
-    return acc
-  }, {} as Record<string, Cost[]>)
 
   if (loading) {
     return (
@@ -265,7 +289,7 @@ export default function FinancePage() {
               Finance Cockpit
             </h1>
             <p className="text-muted-foreground mt-1">
-              Compleet overzicht: agency + eigen projecten + kosten.
+              MRR = alleen terugkerende inkomsten. Eenmalig staat apart.
             </p>
           </div>
           <div className="flex gap-2">
@@ -293,6 +317,7 @@ export default function FinancePage() {
                       <option value="affiliate">Affiliate</option>
                       <option value="domain">Domain Sales</option>
                       <option value="leadgen">Lead Generation</option>
+                      <option value="agency">Agency</option>
                     </select>
                   </div>
                   <div>
@@ -344,7 +369,7 @@ export default function FinancePage() {
                       className="rounded border border-input"
                     />
                     <label htmlFor="rev-recurring" className="text-sm font-medium">
-                      Terugkerend
+                      Terugkerend (telt mee voor MRR)
                     </label>
                   </div>
                   <div className="flex gap-2 pt-4">
@@ -365,7 +390,7 @@ export default function FinancePage() {
                   variant="outline"
                   onClick={() => {
                     setEditingCost(null)
-                    setCostForm({ name: "", amount: "", category: "Tools", recurring: true, billingDay: "", notes: "" })
+                    setCostForm({ name: "", amount: "", category: "Tools", recurring: true, billingCycle: "monthly", billingDay: "", billingDate: "", notes: "" })
                   }}
                 >
                   <Plus className="mr-2 h-4 w-4" />
@@ -389,7 +414,7 @@ export default function FinancePage() {
                       required
                     />
                   </div>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-medium">Bedrag (EUR)</label>
                       <Input
@@ -418,17 +443,6 @@ export default function FinancePage() {
                         <option value="Other">Other</option>
                       </select>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium">Factuurdatum</label>
-                      <Input
-                        type="number"
-                        value={costForm.billingDay}
-                        onChange={(e) => setCostForm({ ...costForm, billingDay: e.target.value })}
-                        placeholder="Dag"
-                        min="1"
-                        max="31"
-                      />
-                    </div>
                   </div>
                   <div className="flex items-center space-x-2">
                     <input
@@ -439,9 +453,44 @@ export default function FinancePage() {
                       className="rounded border border-input"
                     />
                     <label htmlFor="cost-recurring" className="text-sm font-medium">
-                      Maandelijks terugkerend
+                      Terugkerend (maandelijks/jaarlijks)
                     </label>
                   </div>
+                  {costForm.recurring ? (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium">Facturatiecyclus</label>
+                        <select
+                          value={costForm.billingCycle}
+                          onChange={(e) => setCostForm({ ...costForm, billingCycle: e.target.value })}
+                          className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                        >
+                          <option value="monthly">Maandelijks</option>
+                          <option value="yearly">Jaarlijks</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Factuurdag</label>
+                        <Input
+                          type="number"
+                          value={costForm.billingDay}
+                          onChange={(e) => setCostForm({ ...costForm, billingDay: e.target.value })}
+                          placeholder="Dag van de maand"
+                          min="1"
+                          max="31"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="text-sm font-medium">Datum van de kost</label>
+                      <Input
+                        type="date"
+                        value={costForm.billingDate}
+                        onChange={(e) => setCostForm({ ...costForm, billingDate: e.target.value })}
+                      />
+                    </div>
+                  )}
                   <div>
                     <label className="text-sm font-medium">Notities (optioneel)</label>
                     <Textarea
@@ -469,33 +518,7 @@ export default function FinancePage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>Agency MRR</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <Briefcase className="h-5 w-5 text-blue-500" />
-                <span className="text-2xl font-bold text-blue-500">
-                  &euro;{agencyMRR.toLocaleString()}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Eigen Projecten</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-emerald-500" />
-                <span className="text-2xl font-bold text-emerald-500">
-                  &euro;{ownRevenue.toLocaleString()}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Totaal MRR</CardDescription>
+              <CardDescription>MRR (terugkerend)</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2">
@@ -504,12 +527,43 @@ export default function FinancePage() {
                   &euro;{totalMRR.toLocaleString()}
                 </span>
               </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Agency: &euro;{agencyMRR.toLocaleString()} + Eigen: &euro;{ownMRR.toLocaleString()}
+              </p>
               <Progress value={Math.min(goalProgress, 100)} className="h-1.5 mt-2" />
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>Gap naar &euro;10K</CardDescription>
+              <CardDescription>Eenmalig ({month})</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-emerald-500" />
+                <span className="text-2xl font-bold text-emerald-500">
+                  &euro;{totalOneOff.toLocaleString()}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Niet meegeteld in MRR</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Maandelijkse kosten</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2">
+                <Receipt className="h-5 w-5 text-red-400" />
+                <span className="text-2xl font-bold text-red-400">
+                  &euro;{monthlyCosts.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Alleen terugkerend</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Gap naar &euro;10K MRR</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2">
@@ -528,59 +582,81 @@ export default function FinancePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Briefcase className="h-5 w-5 text-blue-500" />
-              Agency Revenue
+              Agency Revenue (klanten)
             </CardTitle>
-            <CardDescription>Klantprojecten met maandelijkse fee</CardDescription>
+            <CardDescription>Klantsites met contract. Eenmalig telt NIET mee in MRR.</CardDescription>
           </CardHeader>
           <CardContent>
-            {clientProjects.length === 0 ? (
+            {clientSites.length === 0 ? (
               <div className="text-center py-8">
                 <Briefcase className="h-12 w-12 mx-auto text-muted-foreground/30" />
-                <p className="text-muted-foreground mt-2">Nog geen klantprojecten</p>
+                <p className="text-muted-foreground mt-2">Nog geen klantsites</p>
               </div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Klant</TableHead>
-                    <TableHead>Project</TableHead>
+                    <TableHead>Site</TableHead>
                     <TableHead>Contract</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Maandelijks</TableHead>
+                    <TableHead className="text-right">Bedrag</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {clientProjects.map((p) => (
-                    <TableRow key={p.id}>
-                      <TableCell className="font-medium">{p.clientName || "—"}</TableCell>
-                      <TableCell>{p.name}</TableCell>
-                      <TableCell>
-                        {p.contractType && (
-                          <Badge variant="outline" className={contractBadge[p.contractType] || ""}>
-                            {p.contractType}
+                  {clientSites.map((s) => {
+                    const isEenmalig = s.contractType === "eenmalig"
+                    return (
+                      <TableRow key={s.id} className={isEenmalig ? "opacity-60" : ""}>
+                        <TableCell className="font-medium">{s.clientName || "---"}</TableCell>
+                        <TableCell>{s.domain}</TableCell>
+                        <TableCell>
+                          {s.contractType && (
+                            <Badge variant="outline" className={contractBadge[s.contractType] || ""}>
+                              {s.contractType}
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={
+                            s.status === "live" ? "bg-green-500/20 text-green-400 border-green-500/30" :
+                            s.status === "dev" ? "bg-orange-500/20 text-orange-400 border-orange-500/30" :
+                            "bg-blue-500/20 text-blue-400 border-blue-500/30"
+                          }>
+                            {s.status}
                           </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={statusBadge[p.status]?.cls || ""}>
-                          {statusBadge[p.status]?.label || p.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right font-mono">
-                        &euro;{(p.monthlyFee || 0).toLocaleString()}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                        </TableCell>
+                        <TableCell className="text-right font-mono">
+                          &euro;{(s.monthlyFee || 0).toLocaleString()}
+                          {isEenmalig ? (
+                            <span className="text-xs text-yellow-400 ml-1">(eenmalig)</span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground ml-1">/mnd</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
                 </TableBody>
                 <TableFooter>
                   <TableRow>
                     <TableCell colSpan={4} className="font-semibold">
-                      Subtotaal Agency
+                      Agency MRR (excl. eenmalig)
                     </TableCell>
                     <TableCell className="text-right font-mono font-semibold">
                       &euro;{agencyMRR.toLocaleString()}/mnd
                     </TableCell>
                   </TableRow>
+                  {agencyOneOff > 0 && (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-muted-foreground">
+                        Eenmalig (niet in MRR)
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-muted-foreground">
+                        &euro;{agencyOneOff.toLocaleString()}
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableFooter>
               </Table>
             )}
@@ -592,10 +668,10 @@ export default function FinancePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-emerald-500" />
-              Eigen Projecten Revenue
+              Eigen Revenue
               <Badge variant="outline" className="ml-2 text-xs">{month}</Badge>
             </CardTitle>
-            <CardDescription>Revenue entries per bron voor de huidige maand</CardDescription>
+            <CardDescription>Revenue entries voor de huidige maand. Terugkerend = MRR, eenmalig = apart.</CardDescription>
           </CardHeader>
           <CardContent>
             {Object.keys(revenueBySource).length === 0 ? (
@@ -620,6 +696,7 @@ export default function FinancePage() {
                           <TableRow>
                             <TableHead>Beschrijving</TableHead>
                             <TableHead>Site</TableHead>
+                            <TableHead>Type</TableHead>
                             <TableHead className="text-right">Bedrag</TableHead>
                             <TableHead className="w-10"></TableHead>
                           </TableRow>
@@ -627,14 +704,17 @@ export default function FinancePage() {
                         <TableBody>
                           {entries.map((entry) => (
                             <TableRow key={entry.id}>
-                              <TableCell>
-                                {entry.description}
-                                {entry.recurring && (
-                                  <Badge variant="outline" className="ml-2 text-xs">Terugkerend</Badge>
-                                )}
-                              </TableCell>
+                              <TableCell>{entry.description}</TableCell>
                               <TableCell className="text-muted-foreground text-sm">
-                                {entry.siteDomain || "—"}
+                                {entry.siteDomain || "---"}
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className={entry.recurring
+                                  ? "bg-blue-500/10 text-blue-400 border-blue-500/30"
+                                  : "bg-yellow-500/10 text-yellow-400 border-yellow-500/30"
+                                }>
+                                  {entry.recurring ? "MRR" : "Eenmalig"}
+                                </Badge>
                               </TableCell>
                               <TableCell className="text-right font-mono">
                                 &euro;{entry.amount.toLocaleString()}
@@ -656,31 +736,37 @@ export default function FinancePage() {
                     </div>
                   )
                 })}
-                <div className="border-t pt-3">
+                <div className="border-t pt-3 space-y-1">
                   <div className="flex justify-between font-semibold">
-                    <span>Totaal Eigen Projecten</span>
-                    <span className="font-mono">&euro;{ownRevenue.toLocaleString()}/mnd</span>
+                    <span>Eigen MRR (terugkerend)</span>
+                    <span className="font-mono">&euro;{ownMRR.toLocaleString()}/mnd</span>
                   </div>
+                  {ownOneOff > 0 && (
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>Eenmalig (niet in MRR)</span>
+                      <span className="font-mono">&euro;{ownOneOff.toLocaleString()}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Costs Section */}
+        {/* Recurring Costs */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Receipt className="h-5 w-5 text-red-400" />
-              Kosten Overzicht
+              Terugkerende Kosten
             </CardTitle>
-            <CardDescription>Maandelijkse kosten per categorie</CardDescription>
+            <CardDescription>Maandelijkse en jaarlijkse kosten (jaarlijks /12 berekend)</CardDescription>
           </CardHeader>
           <CardContent>
-            {Object.keys(costsByCategory).length === 0 ? (
+            {recurringCosts.length === 0 ? (
               <div className="text-center py-8">
                 <PiggyBank className="h-12 w-12 mx-auto text-muted-foreground/30" />
-                <p className="text-muted-foreground mt-2">Nog geen kosten toegevoegd</p>
+                <p className="text-muted-foreground mt-2">Geen terugkerende kosten</p>
               </div>
             ) : (
               <Table>
@@ -688,67 +774,65 @@ export default function FinancePage() {
                   <TableRow>
                     <TableHead>Naam</TableHead>
                     <TableHead>Categorie</TableHead>
-                    <TableHead>Factuurdatum</TableHead>
-                    <TableHead>Type</TableHead>
+                    <TableHead>Cyclus</TableHead>
+                    <TableHead>Factuurdag</TableHead>
                     <TableHead className="text-right">Bedrag</TableHead>
+                    <TableHead className="text-right">Per maand</TableHead>
                     <TableHead className="w-20"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {costs
+                  {recurringCosts
                     .sort((a, b) => a.category.localeCompare(b.category))
-                    .map((cost) => (
-                      <TableRow key={cost.id}>
-                        <TableCell className="font-medium">
-                          {cost.name}
-                          {cost.notes && (
-                            <p className="text-xs text-muted-foreground mt-0.5">{cost.notes}</p>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={categoryColors[cost.category] || "bg-gray-500/20 text-gray-400"}
-                          >
-                            {cost.category}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {cost.billingDay ? `Dag ${cost.billingDay}` : "—"}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={cost.recurring ? "" : "bg-yellow-500/10 text-yellow-400"}>
-                            {cost.recurring ? "Maandelijks" : "Eenmalig"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right font-mono">
-                          &euro;{cost.amount.toLocaleString()}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-1">
-                            <Button variant="ghost" size="sm" onClick={() => handleEditCost(cost)} className="h-6 w-6 p-0">
-                              <Edit className="h-3 w-3" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteCost(cost.id)}
-                              className="h-6 w-6 p-0 text-red-500 hover:text-red-600"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    .map((cost) => {
+                      const monthly = cost.billingCycle === "yearly" ? cost.amount / 12 : cost.amount
+                      return (
+                        <TableRow key={cost.id}>
+                          <TableCell className="font-medium">
+                            {cost.name}
+                            {cost.notes && (
+                              <p className="text-xs text-muted-foreground mt-0.5">{cost.notes}</p>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={categoryColors[cost.category] || "bg-gray-500/20 text-gray-400"}>
+                              {cost.category}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">
+                              {cost.billingCycle === "yearly" ? "Jaarlijks" : "Maandelijks"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {cost.billingDay ? `Dag ${cost.billingDay}` : "---"}
+                          </TableCell>
+                          <TableCell className="text-right font-mono">
+                            &euro;{cost.amount.toLocaleString()}
+                            {cost.billingCycle === "yearly" && <span className="text-xs text-muted-foreground">/jr</span>}
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-muted-foreground">
+                            &euro;{monthly.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button variant="ghost" size="sm" onClick={() => handleEditCost(cost)} className="h-6 w-6 p-0">
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => handleDeleteCost(cost.id)} className="h-6 w-6 p-0 text-red-500 hover:text-red-600">
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
                 </TableBody>
                 <TableFooter>
                   <TableRow>
-                    <TableCell colSpan={4} className="font-semibold">
-                      Totaal Kosten
-                    </TableCell>
+                    <TableCell colSpan={5} className="font-semibold">Totaal maandelijks</TableCell>
                     <TableCell className="text-right font-mono font-semibold">
-                      &euro;{totalCosts.toLocaleString()}/mnd
+                      &euro;{monthlyCosts.toLocaleString(undefined, { maximumFractionDigits: 0 })}/mnd
                     </TableCell>
                     <TableCell />
                   </TableRow>
@@ -758,35 +842,113 @@ export default function FinancePage() {
           </CardContent>
         </Card>
 
+        {/* One-time Costs */}
+        {oneTimeCosts.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-yellow-400" />
+                Eenmalige Kosten
+              </CardTitle>
+              <CardDescription>Niet meegerekend in maandelijkse kosten</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Naam</TableHead>
+                    <TableHead>Categorie</TableHead>
+                    <TableHead>Datum</TableHead>
+                    <TableHead className="text-right">Bedrag</TableHead>
+                    <TableHead className="w-20"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {oneTimeCosts
+                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                    .map((cost) => (
+                      <TableRow key={cost.id}>
+                        <TableCell className="font-medium">
+                          {cost.name}
+                          {cost.notes && (
+                            <p className="text-xs text-muted-foreground mt-0.5">{cost.notes}</p>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={categoryColors[cost.category] || "bg-gray-500/20 text-gray-400"}>
+                            {cost.category}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {cost.billingDate
+                            ? new Date(cost.billingDate).toLocaleDateString("nl-BE")
+                            : new Date(cost.createdAt).toLocaleDateString("nl-BE")}
+                        </TableCell>
+                        <TableCell className="text-right font-mono">
+                          &euro;{cost.amount.toLocaleString()}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="sm" onClick={() => handleEditCost(cost)} className="h-6 w-6 p-0">
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteCost(cost.id)} className="h-6 w-6 p-0 text-red-500 hover:text-red-600">
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+                <TableFooter>
+                  <TableRow>
+                    <TableCell colSpan={3} className="font-semibold text-muted-foreground">
+                      Totaal eenmalig
+                    </TableCell>
+                    <TableCell className="text-right font-mono font-semibold text-muted-foreground">
+                      &euro;{oneTimeCosts.reduce((s, c) => s + c.amount, 0).toLocaleString()}
+                    </TableCell>
+                    <TableCell />
+                  </TableRow>
+                </TableFooter>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
+
         {/* P&L Summary */}
         <Card className="border-[#F5911E]/30">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <PiggyBank className="h-5 w-5 text-[#F5911E]" />
-              P&amp;L Samenvatting
+              P&amp;L Samenvatting (maandelijks)
             </CardTitle>
+            <CardDescription>Alleen terugkerende inkomsten en kosten</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <ArrowUpRight className="h-4 w-4 text-emerald-500" />
-                  Totale Revenue
+                  MRR (terugkerend)
                 </div>
                 <div className="text-3xl font-bold text-emerald-500">
                   &euro;{totalMRR.toLocaleString()}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  Agency: &euro;{agencyMRR.toLocaleString()} + Eigen: &euro;{ownRevenue.toLocaleString()}
+                  Agency: &euro;{agencyMRR.toLocaleString()} + Eigen: &euro;{ownMRR.toLocaleString()}
                 </div>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <ArrowDownRight className="h-4 w-4 text-red-400" />
-                  Totale Kosten
+                  Maandelijkse Kosten
                 </div>
                 <div className="text-3xl font-bold text-red-400">
-                  &euro;{totalCosts.toLocaleString()}
+                  &euro;{monthlyCosts.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Excl. eenmalige kosten
                 </div>
               </div>
               <div className="space-y-2">
@@ -795,10 +957,10 @@ export default function FinancePage() {
                   Netto Resultaat
                 </div>
                 <div className={`text-4xl font-bold ${netResult >= 0 ? "text-emerald-500" : "text-red-500"}`}>
-                  &euro;{netResult.toLocaleString()}
+                  &euro;{netResult.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {netResult >= 0 ? "Winst" : "Verlies"} deze maand
+                  {netResult >= 0 ? "Winst" : "Verlies"} per maand (terugkerend)
                 </div>
               </div>
             </div>

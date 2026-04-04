@@ -21,6 +21,7 @@ export async function PATCH(
         ...(data.billingCycle !== undefined && { billingCycle: data.billingCycle }),
         ...(data.projectId !== undefined && { projectId: data.projectId }),
         ...(data.billingDay !== undefined && { billingDay: data.billingDay }),
+        ...(data.billingDate !== undefined && { billingDate: data.billingDate ? new Date(data.billingDate) : null }),
       },
     })
     

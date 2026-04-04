@@ -113,8 +113,10 @@ export interface Cost {
   amount: number; // monthly amount in EUR
   category: string; // AI, Hosting, Database, Domains, Infrastructure, Tools, Other
   recurring: boolean; // monthly recurring or one-time
+  billingCycle?: string; // 'monthly' | 'yearly' | 'one_time'
   notes?: string;
   billingDay?: number;
+  billingDate?: string; // ISO date for one-time costs
   createdAt: string;
   updatedAt: string;
 }
