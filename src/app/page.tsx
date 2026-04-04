@@ -8,11 +8,10 @@ import {
   Clock3,
   Inbox,
   Activity,
-  Send,
-  Target,
   TrendingUp,
   X,
   Zap,
+  Globe,
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -24,17 +23,13 @@ import { ErrorState } from "@/components/ui/error-state"
 import {
   tasksStorage,
   sitesStorage,
-  projectsStorage,
   contentStorage,
   alertsStorage,
-  nowItemsStorage,
   revenueStorage,
   type Task,
   type Site,
-  type Project,
   type ContentItem,
   type Alert,
-  type NowItem,
   type RevenueEntry,
 } from "@/lib/storage"
 
@@ -118,10 +113,8 @@ function AgentBadge({ agent }: { agent: string }) {
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [sites, setSites] = useState<Site[]>([])
-  const [projects, setProjects] = useState<Project[]>([])
   const [content, setContent] = useState<ContentItem[]>([])
   const [alerts, setAlerts] = useState<Alert[]>([])
-  const [nowItems, setNowItems] = useState<NowItem[]>([])
   const [revenue, setRevenue] = useState<RevenueEntry[]>([])
   const [agentLogs, setAgentLogs] = useState<AgentLog[]>([])
   const [loading, setLoading] = useState(true)
@@ -131,21 +124,17 @@ export default function Home() {
     try {
       setLoading(true)
       setError(null)
-      const [t, si, p, c, al, ni, rev] = await Promise.all([
+      const [t, si, c, al, rev] = await Promise.all([
         tasksStorage.getAll(),
         sitesStorage.getAll(),
-        projectsStorage.getAll(),
         contentStorage.getAll(),
         alertsStorage.getAll(),
-        nowItemsStorage.getAll(),
         revenueStorage.getAll(),
       ])
       setTasks(t)
       setSites(si)
-      setProjects(p)
       setContent(c)
       setAlerts(al)
-      setNowItems(ni)
       setRevenue(rev)
       // agent logs non-blocking
       fetch("/api/agent-logs?limit=5").then((r) => r.json()).then(setAgentLogs).catch(() => {})
@@ -171,10 +160,9 @@ export default function Home() {
 
   // --- Derived data ---
   const openTasks = tasks.filter((t) => t.status === "todo" || t.status === "in-progress")
-  const activeProjects = projects.filter((p) => p.status === "active")
+  const liveSites = sites.filter((s) => s.status === "live")
   const contentInReview = content.filter((c) => c.status === "review")
   const unresolvedAlerts = alerts.filter((a) => !a.resolved)
-  const projectMap = Object.fromEntries(projects.map((p) => [p.id, p]))
 
   // MRR: sum recurring revenue entries
   const currentMRR = revenue
@@ -192,11 +180,8 @@ export default function Home() {
   const inboxItems = [...approvalTasks, ...approvalContent]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
-  // NOW items (max 3)
-  const nowSlice = nowItems.slice(0, 3)
-
   // Priority assets status from live sites
-  const liveDomains = new Set(sites.filter((s) => s.status === "live").map((s) => s.domain))
+  const liveDomains = new Set(liveSites.map((s) => s.domain))
 
   // --- Handlers ---
   const handleApprove = async (item: InboxItem) => {
@@ -293,60 +278,13 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          {/* ===== 3. NOW SECTION ===== */}
-          <Card className="border-zinc-800/80 bg-gradient-to-br from-zinc-900/95 via-zinc-900/80 to-zinc-950/95 shadow-lg">
-            <CardHeader className="border-b border-white/5 pb-4">
-              <CardTitle className="flex items-center gap-2 text-base font-semibold text-white">
-                <Target className="h-4 w-4 text-[#F5911E]" />
-                NOW — Focus Items
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4">
-              {nowSlice.length === 0 ? (
-                <p className="py-4 text-center text-sm text-zinc-500">Geen focus items. Voeg items toe via /now.</p>
-              ) : (
-                <div className="grid gap-3 md:grid-cols-3">
-                  {nowSlice.map((item) => {
-                    const proj = item.projectId ? projectMap[item.projectId] : null
-                    return (
-                      <div key={item.id} className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-4 space-y-2">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {proj && (
-                            <span className="rounded-full bg-[#F5911E]/15 border border-[#F5911E]/30 px-2 py-0.5 text-[10px] text-[#F5B15C]">
-                              {proj.name}
-                            </span>
-                          )}
-                          <Badge variant="outline" className="border-zinc-700 text-zinc-400 text-[10px]">
-                            {item.tag}
-                          </Badge>
-                        </div>
-                        <div className="text-sm font-medium text-white">{item.title}</div>
-                        <div className="text-xs text-zinc-500">{item.meta}</div>
-                        {item.description && (
-                          <div className="text-xs text-zinc-400 line-clamp-2">{item.description}</div>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="border-[#F5911E]/30 text-[#F5911E] hover:bg-[#F5911E]/10 h-7 text-xs mt-1"
-                        >
-                          <Send className="mr-1 h-3 w-3" /> Dispatch to agent
-                        </Button>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* ===== 4. QUICK STATS ROW ===== */}
+          {/* ===== 3. QUICK STATS ROW ===== */}
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {[
-              { label: "Actieve Projecten", count: activeProjects.length, href: "/projects" },
-              { label: "Open Taken", count: openTasks.length, href: "/tasks" },
-              { label: "Content in Review", count: contentInReview.length, href: "/content?status=review" },
-              { label: "Ongelezen Alerts", count: unresolvedAlerts.length, href: "/alerts" },
+              { label: "Live Sites", count: liveSites.length, href: "/sites", icon: Globe },
+              { label: "Open Taken", count: openTasks.length, href: "/tasks", icon: Clock3 },
+              { label: "Content in Review", count: contentInReview.length, href: "/content?status=review", icon: Inbox },
+              { label: "Ongelezen Alerts", count: unresolvedAlerts.length, href: "/alerts", icon: Activity },
             ].map((s) => (
               <Link key={s.label} href={s.href} className="block">
                 <Card className="group border-zinc-800/80 bg-gradient-to-br from-zinc-900 via-zinc-900/90 to-zinc-950 hover:border-zinc-700 transition-all hover:-translate-y-0.5 cursor-pointer">
@@ -459,7 +397,7 @@ export default function Home() {
 
           {/* ===== FOOTER ===== */}
           <footer className="border-t border-zinc-800 pt-4 text-xs text-zinc-600">
-            Command Center &middot; {tasks.length} taken &middot; {sites.length} sites &middot; {projects.length} projecten
+            Command Center &middot; {tasks.length} taken &middot; {sites.length} sites &middot; {liveSites.length} live
           </footer>
         </div>
       </div>
