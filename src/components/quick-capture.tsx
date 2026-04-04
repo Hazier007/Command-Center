@@ -1,18 +1,18 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Plus, X, Lightbulb, CheckSquare, Globe, FileText, StickyNote } from "lucide-react"
+import { Plus, X, Lightbulb, CheckSquare, Globe, FileText, StickyNote, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 
 const CAPTURE_TYPES = [
-  { value: 'idea', label: 'Idee', icon: Lightbulb, color: 'text-yellow-400' },
-  { value: 'task', label: 'Taak', icon: CheckSquare, color: 'text-blue-400' },
-  { value: 'domain', label: 'Domein', icon: Globe, color: 'text-green-400' },
-  { value: 'content', label: 'Content', icon: FileText, color: 'text-purple-400' },
-  { value: 'note', label: 'Notitie', icon: StickyNote, color: 'text-zinc-400' },
+  { value: 'idea', label: 'Idee', icon: Lightbulb, color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/20' },
+  { value: 'task', label: 'Taak', icon: CheckSquare, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20' },
+  { value: 'domain', label: 'Domein', icon: Globe, color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/20' },
+  { value: 'content', label: 'Content', icon: FileText, color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20' },
+  { value: 'note', label: 'Notitie', icon: StickyNote, color: 'text-zinc-400', bg: 'bg-zinc-500/10 border-zinc-500/20' },
 ] as const
 
 export function QuickCapture() {
@@ -23,7 +23,6 @@ export function QuickCapture() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
-  // Cmd+Shift+Space keyboard shortcut
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.code === 'Space') {
@@ -38,133 +37,109 @@ export function QuickCapture() {
   const handleSave = useCallback(async () => {
     if (!title.trim()) return
     setSaving(true)
-
     try {
       let endpoint = ''
       let body: Record<string, unknown> = {}
-
       switch (type) {
-        case 'idea':
-          endpoint = '/api/ideas'
-          body = { title, description, category: 'feature', priority: 'medium' }
-          break
-        case 'task':
-          endpoint = '/api/tasks'
-          body = { title, description, status: 'todo', priority: 'medium' }
-          break
-        case 'domain':
-          endpoint = '/api/domains'
-          body = { domain: title, notes: description, status: 'parking', priority: 'medium' }
-          break
-        case 'content':
-          endpoint = '/api/content'
-          body = { title, body: description || '', type: 'article', status: 'draft', author: 'bart' }
-          break
-        case 'note':
-          endpoint = '/api/notes'
-          body = { title, content: description || '' }
-          break
+        case 'idea':    endpoint = '/api/ideas';   body = { title, description, category: 'feature', priority: 'medium' }; break
+        case 'task':    endpoint = '/api/tasks';   body = { title, description, status: 'todo', priority: 'medium' }; break
+        case 'domain':  endpoint = '/api/domains'; body = { domain: title, notes: description, status: 'parking', priority: 'medium' }; break
+        case 'content': endpoint = '/api/content'; body = { title, body: description || '', type: 'article', status: 'draft', author: 'bart' }; break
+        case 'note':    endpoint = '/api/notes';   body = { title, content: description || '' }; break
       }
-
-      await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-
+      await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       setSaved(true)
-      setTimeout(() => {
-        setOpen(false)
-        setTitle('')
-        setDescription('')
-        setType('idea')
-        setSaved(false)
-      }, 1000)
-    } catch (err) {
-      console.error('Quick capture error:', err)
-    } finally {
-      setSaving(false)
-    }
+      setTimeout(() => { setOpen(false); setTitle(''); setDescription(''); setType('idea'); setSaved(false) }, 800)
+    } catch (err) { console.error('Quick capture error:', err) }
+    finally { setSaving(false) }
   }, [title, description, type])
+
+  const activeType = CAPTURE_TYPES.find(t => t.value === type)!
 
   return (
     <>
-      {/* FAB Button */}
+      {/* FAB */}
       <button
         onClick={() => setOpen(true)}
         className={cn(
-          "fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50 w-14 h-14 rounded-full",
-          "bg-[#F5911E] hover:bg-[#F5911E]/90 text-white shadow-lg shadow-[#F5911E]/25",
-          "flex items-center justify-center transition-all hover:scale-105",
+          "fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50",
+          "h-12 w-12 rounded-xl",
+          "bg-[#F5911E] hover:bg-[#e5820f] text-white",
+          "shadow-lg shadow-[#F5911E]/20 hover:shadow-[#F5911E]/30",
+          "flex items-center justify-center transition-all hover:scale-105 active:scale-95",
           open && "hidden"
         )}
       >
-        <Plus className="h-6 w-6" />
+        <Plus className="h-5 w-5" />
       </button>
 
-      {/* Modal Overlay */}
+      {/* Modal */}
       {open && (
-        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl">
+        <div className="fixed inset-0 z-[90] flex items-end md:items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+          <div className="w-full max-w-md rounded-2xl border border-white/[0.08] bg-zinc-900/95 shadow-2xl overflow-hidden cc-animate-in">
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
-              <h3 className="text-sm font-semibold text-white">Quick Capture</h3>
-              <button onClick={() => setOpen(false)} className="text-zinc-500 hover:text-white">
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06]">
+              <div className="flex items-center gap-2">
+                <div className={cn("rounded-lg p-1.5 border", activeType.bg)}>
+                  <activeType.icon className={cn("h-3.5 w-3.5", activeType.color)} />
+                </div>
+                <span className="text-sm font-semibold text-white">Quick Capture</span>
+              </div>
+              <button onClick={() => setOpen(false)} className="rounded-lg p-1.5 text-zinc-600 hover:text-white hover:bg-white/[0.05] transition-colors">
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             {saved ? (
-              <div className="p-8 text-center">
-                <div className="text-3xl mb-2">&#x2705;</div>
+              <div className="p-10 text-center cc-animate-in">
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/15 mb-3">
+                  <Check className="h-6 w-6 text-emerald-400" />
+                </div>
                 <p className="text-white font-medium">Opgeslagen!</p>
               </div>
             ) : (
-              <div className="p-4 space-y-4">
-                {/* Type Selector */}
+              <div className="p-5 space-y-4">
+                {/* Type selector */}
                 <div className="flex gap-1">
                   {CAPTURE_TYPES.map((t) => (
                     <button
                       key={t.value}
                       onClick={() => setType(t.value)}
                       className={cn(
-                        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
+                        "flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition-all",
                         type === t.value
-                          ? "bg-zinc-700 text-white"
-                          : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800"
+                          ? cn(t.bg, "shadow-sm")
+                          : "border-transparent text-zinc-600 hover:text-zinc-300 hover:bg-white/[0.04]"
                       )}
                     >
-                      <t.icon className={cn("h-3.5 w-3.5", type === t.value && t.color)} />
+                      <t.icon className={cn("h-3 w-3", type === t.value ? t.color : "")} />
                       {t.label}
                     </button>
                   ))}
                 </div>
 
-                {/* Title */}
                 <Input
                   placeholder={type === 'domain' ? 'domein.be' : 'Titel...'}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="bg-zinc-800 border-zinc-700 text-white"
+                  className="bg-white/[0.03] border-white/[0.08] text-white placeholder:text-zinc-600 focus:border-[#F5911E]/30 focus:ring-[#F5911E]/10"
                   autoFocus
                 />
 
-                {/* Description */}
                 <Textarea
                   placeholder="Beschrijving (optioneel)..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="bg-zinc-800 border-zinc-700 text-white resize-none"
+                  className="bg-white/[0.03] border-white/[0.08] text-white placeholder:text-zinc-600 resize-none focus:border-[#F5911E]/30 focus:ring-[#F5911E]/10"
                   rows={3}
                 />
 
-                {/* Actions */}
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-zinc-600">Ctrl+Shift+Space</span>
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[10px] text-zinc-700 font-mono">⌘⇧Space</span>
                   <Button
                     onClick={handleSave}
                     disabled={!title.trim() || saving}
-                    className="bg-[#F5911E] hover:bg-[#F5911E]/90 text-white"
+                    className="bg-[#F5911E] hover:bg-[#e5820f] text-white border-0 shadow-sm"
                     size="sm"
                   >
                     {saving ? 'Opslaan...' : 'Opslaan'}

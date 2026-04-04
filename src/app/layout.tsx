@@ -5,6 +5,7 @@ import { Navigation } from "@/components/navigation";
 import { BottomNav } from "@/components/bottom-nav";
 import { QuickCapture } from "@/components/quick-capture";
 import { CommandSearch } from "@/components/command-search";
+import { AppShell } from "@/components/app-shell";
 import { SessionProvider } from "next-auth/react";
 
 const geistSans = Geist({
@@ -30,11 +31,13 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased pb-16 md:pb-0`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SessionProvider>
           <Navigation />
-          {children}
+          <AppShell>
+            {children}
+          </AppShell>
           <BottomNav />
           <QuickCapture />
           <CommandSearch />
