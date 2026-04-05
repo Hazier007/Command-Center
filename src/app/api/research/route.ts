@@ -7,23 +7,28 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const linkedSiteId = searchParams.get('linkedSiteId')
     const linkedDomainId = searchParams.get('linkedDomainId')
+    const linkedIdeaId = searchParams.get('linkedIdeaId')
     const status = searchParams.get('status')
     const type = searchParams.get('type')
     const author = searchParams.get('author')
     const search = searchParams.get('search')
+    const needsApproval = searchParams.get('needsApproval')
     const page = parseInt(searchParams.get('page') || '0')
     const limit = parseInt(searchParams.get('limit') || '0')
 
     const where: Record<string, unknown> = {}
     if (linkedSiteId) where.linkedSiteId = linkedSiteId
     if (linkedDomainId) where.linkedDomainId = linkedDomainId
+    if (linkedIdeaId) where.linkedIdeaId = linkedIdeaId
     if (status) where.status = status
     if (type) where.type = type
     if (author) where.author = author
+    if (needsApproval === 'true') where.needsApproval = true
     if (search) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
         { body: { contains: search, mode: 'insensitive' } },
+        { summary: { contains: search, mode: 'insensitive' } },
         { tags: { contains: search, mode: 'insensitive' } },
       ]
     }
@@ -78,8 +83,15 @@ export async function POST(request: Request) {
         projectId: data.projectId,
         linkedSiteId: data.linkedSiteId,
         linkedDomainId: data.linkedDomainId,
+        linkedIdeaId: data.linkedIdeaId,
+        linkedTaskId: data.linkedTaskId,
         tags: data.tags,
         status: data.status,
+        summary: data.summary,
+        metadata: data.metadata,
+        needsApproval: data.needsApproval || false,
+        reportDate: data.reportDate ? new Date(data.reportDate) : undefined,
+        version: data.version || 1,
       },
       include: {
         project: { select: { id: true, name: true } },

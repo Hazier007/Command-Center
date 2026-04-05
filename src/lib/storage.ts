@@ -140,13 +140,23 @@ export interface ResearchItem {
   id: string
   title: string
   body: string // full markdown content
-  type: 'keyword-research' | 'market-analysis' | 'api-research' | 'oracle' | 'competitor' | 'technical' | 'seo-strategy' | 'completion-report' | 'roadmap' | 'data-dataset' | 'business-case' | 'governance' | 'other'
+  type: 'keyword-research' | 'market-analysis' | 'api-research' | 'oracle' | 'competitor' | 'technical' | 'seo-strategy' | 'completion-report' | 'roadmap' | 'data-dataset' | 'business-case' | 'governance' | 'visibility-audit' | 'domain-analysis' | 'market-research' | 'acquisition-memo' | 'growth-evaluation' | 'other'
   author: string // 'bart' | 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark' | 'cowork'
   projectId?: string
   tags?: string // comma-separated
   status: 'draft' | 'final' | 'outdated'
   createdAt: string
   updatedAt: string
+  // SPARK reporting extensions
+  summary?: string
+  metadata?: Record<string, unknown>
+  linkedSiteId?: string
+  linkedDomainId?: string
+  linkedIdeaId?: string
+  linkedTaskId?: string
+  needsApproval?: boolean
+  reportDate?: string
+  version?: number
 }
 
 export interface ActivityItem {

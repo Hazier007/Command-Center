@@ -1,13 +1,14 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Plus, Edit, Trash2, Search, Calendar, Eye, EyeOff, FileText, BarChart3, Brain, Database, Users, Wrench, Globe, Map, Target, CheckCircle2, Route, BookOpen, Shield, ChevronLeft, ChevronRight, Filter, X } from "lucide-react"
+import { Plus, Edit, Trash2, Search, Calendar, Eye, EyeOff, FileText, BarChart3, Brain, Database, Users, Wrench, Globe, Target, CheckCircle2, Route, BookOpen, Shield, ChevronLeft, ChevronRight, X, Zap, TrendingUp, Briefcase, AlertCircle } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardTitle } from "@/components/ui/card"
+import { SparkScorecard } from "@/components/spark-scorecard"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import {
@@ -32,6 +33,11 @@ const RESEARCH_TYPES = [
   { value: 'business-case', label: 'Business Case', icon: BookOpen, color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-200' },
   { value: 'data-dataset', label: 'Dataset', icon: Database, color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200' },
   { value: 'governance', label: 'Governance', icon: Shield, color: 'bg-violet-100 text-violet-800 dark:bg-violet-900/20 dark:text-violet-200' },
+  { value: 'visibility-audit', label: 'Visibility Audit', icon: Eye, color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-200' },
+  { value: 'domain-analysis', label: 'Domain Analysis', icon: Globe, color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-200' },
+  { value: 'market-research', label: 'Market Research', icon: TrendingUp, color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200' },
+  { value: 'acquisition-memo', label: 'Acquisition Memo', icon: Briefcase, color: 'bg-rose-100 text-rose-800 dark:bg-rose-900/20 dark:text-rose-200' },
+  { value: 'growth-evaluation', label: 'Growth Evaluation', icon: Zap, color: 'bg-lime-100 text-lime-800 dark:bg-lime-900/20 dark:text-lime-200' },
   { value: 'oracle', label: 'Oracle', icon: Brain, color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-200' },
   { value: 'api-research', label: 'API Research', icon: Database, color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200' },
   { value: 'technical', label: 'Technical', icon: Wrench, color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200' },
@@ -438,6 +444,9 @@ export default function ResearchPage() {
             const TypeIcon = typeConfig.icon
             const linkedSiteId = (item as Record<string, unknown>).linkedSiteId as string | undefined
             const siteLabel = linkedSiteId ? getSiteLabel(linkedSiteId) : null
+            const summary = (item as Record<string, unknown>).summary as string | undefined
+            const metadata = (item as Record<string, unknown>).metadata as Record<string, unknown> | undefined
+            const itemNeedsApproval = (item as Record<string, unknown>).needsApproval as boolean | undefined
 
             return (
               <Card key={item.id} className="overflow-hidden">
@@ -453,6 +462,12 @@ export default function ResearchPage() {
                     <Badge className={getStatusColor(item.status)}>
                       {item.status}
                     </Badge>
+                    {itemNeedsApproval && (
+                      <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-200 gap-1 text-xs">
+                        <AlertCircle className="h-3 w-3" />
+                        Approval
+                      </Badge>
+                    )}
                     {siteLabel && (
                       <Badge variant="outline" className="gap-1 text-xs">
                         <Globe className="h-3 w-3" />
@@ -487,6 +502,13 @@ export default function ResearchPage() {
                   </div>
                 </div>
 
+                {/* Summary line */}
+                {summary && (
+                  <div className="px-4 pb-1 text-sm text-muted-foreground line-clamp-1">
+                    {summary}
+                  </div>
+                )}
+
                 {/* Mobile: tags */}
                 {item.tags && (
                   <div className="flex md:hidden flex-wrap gap-1 px-4 pb-2">
@@ -499,6 +521,7 @@ export default function ResearchPage() {
                 {/* Expanded content */}
                 {expandedResearch === item.id && (
                   <div className="border-t px-4 py-4">
+                    {metadata && <SparkScorecard metadata={metadata} />}
                     <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg overflow-y-auto max-h-[70vh] prose prose-sm dark:prose-invert max-w-none prose-headings:text-base prose-headings:font-semibold prose-p:text-sm prose-table:text-xs prose-th:p-2 prose-td:p-2 prose-table:border prose-th:border prose-td:border">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>{item.body}</ReactMarkdown>
                     </div>

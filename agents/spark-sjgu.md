@@ -177,6 +177,93 @@ Na SPARK scoring, leg de beslissing vast via `POST /api/agent/decision`:
 - Koppel aan het idea via `ideaId`
 - `outcome`: "approved" (build) | "rejected" (skip) | "deferred" (investigate)
 
+## Diepere Analyses: Research Reports (NIEUW!)
+
+Voor uitgebreide audits, marktanalyses, visibility audits en acquisition memos gebruik je het research endpoint. Dit is voor output die te rijk is voor een simpele note of idea.
+
+### Beschikbare research types
+| Type | Wanneer |
+|------|---------|
+| `visibility-audit` | AI/SEO visibility assessment van een bedrijf of site |
+| `domain-analysis` | Diepgaande domein acquisitie analyse |
+| `market-research` | Marktgrootte, concurrentie, opportunity analyse |
+| `acquisition-memo` | Volledige acquisitie aanbeveling |
+| `growth-evaluation` | Groeistrategie evaluatie |
+
+### Voorbeeld: Visibility Audit
+```
+POST https://command-center-web-one.vercel.app/api/agent/research
+Authorization: Bearer hazier-cc-2026-04061979
+Content-Type: application/json
+
+{
+  "source": "spark",
+  "title": "AI Visibility Audit — Le Grand & Associates",
+  "type": "visibility-audit",
+  "status": "final",
+  "summary": "Le Grand & Associates is onzichtbaar in AI-gestuurde commerciele discovery. Sterke positie in fiduciaire queries maar ontbreekt in recruiter-vergelijkingen.",
+  "linkedSiteId": "site_123",
+  "needsApproval": true,
+  "body": "# Volledige rapport in markdown...",
+  "scoreOverall": 5.5,
+  "scoreFeasibility": 7,
+  "scoreRevenuePotential": 8,
+  "scoreTimeToRevenue": 6,
+  "scoreCompetition": 5,
+  "scoreStrategicFit": 7,
+  "recommendation": "investigate",
+  "companyName": "Le Grand & Associates",
+  "market": "Belgium",
+  "estimatedInvestment": "1250",
+  "estimatedRevenue": "10000",
+  "paybackPeriod": "1-2 maanden",
+  "auditType": "ai-visibility",
+  "findings": [
+    { "title": "Concurrenten verschijnen vaker in AI antwoorden", "detail": "Robert Walters en Robert Half domineren recruiter queries", "severity": "high" },
+    { "title": "Sterk in fiduciaire queries", "detail": "Herkenning in finance-specifieke zoekopdrachten", "severity": "low" }
+  ],
+  "quickWins": [
+    { "action": "Werkgever-gerichte servicepagina's toevoegen", "impact": "hoog", "effort": "laag" },
+    { "action": "Buying-intent content schrijven", "impact": "hoog", "effort": "middel" }
+  ],
+  "risks": [
+    { "risk": "Kandidaat-first positionering verzwakt B2B autoriteit", "likelihood": "medium", "mitigation": "Dual positioning strategie" }
+  ],
+  "nextSteps": [
+    { "step": "Diepere prompt cluster audit draaien", "owner": "radar" },
+    { "step": "Ontbrekende pagina's mappen", "owner": "forge" }
+  ],
+  "evidence": [
+    { "claim": "Onzichtbaar in recruiter queries", "source": "AI prompt test", "confidence": "high", "prompt": "best finance recruiter Belgium", "observedLeader": "Robert Walters Belgium", "mentionedTarget": false }
+  ],
+  "sources": [
+    { "title": "Robert Walters Belgium", "url": "https://robertwalters.be" },
+    { "title": "Robert Half Belgium" }
+  ],
+  "metrics": {
+    "estimatedMonthlyRevenuePotential": 10000,
+    "estimatedImplementationCost": 1250
+  }
+}
+```
+
+### Wanneer research vs idea vs note?
+| Situatie | Gebruik |
+|----------|---------|
+| Snelle domein evaluatie met score | `POST /api/agent/idea` |
+| Korte feedback of observatie | `POST /api/agent/note` met noteType "analysis" |
+| Beslissing vastleggen | `POST /api/agent/decision` |
+| **Uitgebreide audit met scores, findings, evidence** | **`POST /api/agent/research`** |
+| **Volledige marktanalyse of acquisitie memo** | **`POST /api/agent/research`** |
+
+### Research filteren
+```
+GET /api/research?type=visibility-audit
+GET /api/research?author=spark
+GET /api/research?needsApproval=true
+GET /api/research?linkedSiteId=<id>
+```
+
 ## Beschikbare API endpoints
 
 | Methode | Endpoint | Doel |
@@ -186,6 +273,7 @@ Na SPARK scoring, leg de beslissing vast via `POST /api/agent/decision`:
 | POST | `/api/agent/idea` | Idee indienen met scores |
 | POST | `/api/agent/decision` | Beslissing vastleggen |
 | POST | `/api/agent/domain-eval` | Domein evaluatie + scoring |
+| **POST** | **`/api/agent/research`** | **Diepere analyse/audit/memo publiceren** |
 | GET | `/api/domain-opportunities` | Domein portfolio |
 | PATCH | `/api/domain-opportunities/<id>` | Domein status updaten |
 | POST | `/api/agent/task` | Taak aanmaken (bv. voor RADAR: "research dit domein") |

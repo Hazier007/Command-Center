@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { validateAgentToken, unauthorizedResponse } from '@/lib/agent-auth'
 
-type AgentAction = 'task' | 'idea' | 'alert' | 'note' | 'decision' | 'context' | 'domain-eval'
+type AgentAction = 'task' | 'idea' | 'alert' | 'note' | 'decision' | 'context' | 'domain-eval' | 'research'
 
 async function logAgentAction(source: string, action: string, payload: unknown) {
   await prisma.agentLog.create({
@@ -262,6 +262,52 @@ async function handleDomainEval(body: Record<string, unknown>) {
   return domainOpp
 }
 
+// POST /api/agent/research — Create a research record (SPARK reports, audits, analyses)
+async function handleResearch(body: Record<string, unknown>) {
+  const { source, title, type: researchType } = body
+
+  if (!researchType) {
+    throw new ValidationError('type is verplicht voor research. Kies uit: visibility-audit, domain-analysis, market-research, acquisition-memo, growth-evaluation, keyword-research, market-analysis, technical, etc.')
+  }
+
+  // Pack structured fields into metadata JSON
+  const METADATA_FIELDS = [
+    'scoreOverall', 'scoreFeasibility', 'scoreRevenuePotential',
+    'scoreTimeToRevenue', 'scoreCompetition', 'scoreStrategicFit',
+    'findings', 'quickWins', 'risks', 'nextSteps', 'evidence',
+    'sources', 'metrics', 'companyName', 'market', 'recommendation',
+    'estimatedInvestment', 'estimatedRevenue', 'paybackPeriod', 'auditType',
+  ]
+
+  const metadata: Record<string, unknown> = {}
+  for (const field of METADATA_FIELDS) {
+    if (body[field] !== undefined) metadata[field] = body[field]
+  }
+
+  const research = await prisma.research.create({
+    data: {
+      title: title as string,
+      body: (body.body as string) || (body.bodyMarkdown as string) || '',
+      type: researchType as string,
+      author: source as string,
+      status: (body.status as string) || 'draft',
+      tags: body.tags as string | undefined,
+      linkedSiteId: body.linkedSiteId as string | undefined,
+      linkedDomainId: body.linkedDomainId as string | undefined,
+      linkedIdeaId: body.linkedIdeaId as string | undefined,
+      linkedTaskId: body.linkedTaskId as string | undefined,
+      summary: body.summary as string | undefined,
+      metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
+      needsApproval: (body.needsApproval as boolean) || false,
+      reportDate: body.reportDate ? new Date(body.reportDate as string) : new Date(),
+      version: (body.version as number) || 1,
+    },
+  })
+
+  await logAgentAction(source as string, 'research', { researchId: research.id, title, type: researchType })
+  return research
+}
+
 // GET /api/agent/context — Get full CC context
 async function handleContext() {
   const last7Days = new Date()
@@ -363,6 +409,10 @@ export async function POST(
       case 'domain-eval':
         if (!body.domain) return NextResponse.json({ error: 'Missing required field: domain' }, { status: 400 })
         result = await handleDomainEval(body)
+        break
+      case 'research':
+        if (!body.title) return NextResponse.json({ error: 'Missing required field: title' }, { status: 400 })
+        result = await handleResearch(body)
         break
       default:
         return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 })

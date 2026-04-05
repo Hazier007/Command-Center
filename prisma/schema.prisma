@@ -354,7 +354,7 @@ model Research {
   id        String   @id @default(cuid())
   title     String
   body      String   // full markdown content
-  type      String   // 'keyword-research' | 'market-analysis' | 'api-research' | 'oracle' | 'competitor' | 'technical' | 'other'
+  type      String   // keyword-research | market-analysis | visibility-audit | domain-analysis | market-research | acquisition-memo | growth-evaluation | ...
   author    String   // 'bart' | 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark' | 'cowork'
   projectId String?  // deprecated — use linkedSiteId/linkedDomainId
   tags      String?  // comma-separated
@@ -362,9 +362,18 @@ model Research {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Website/Domain linking
+  // Website/Domain/Entity linking
   linkedSiteId    String?  // link to website
   linkedDomainId  String?  // link to domain
+  linkedIdeaId    String?  // link to evaluated idea
+  linkedTaskId    String?  // link to originating task
+
+  // SPARK reporting extensions
+  summary       String?           // Executive summary for list views (searchable)
+  metadata      Json?             // Structured data: scores, findings, quickWins, risks, etc.
+  needsApproval Boolean  @default(false) // Show in inbox/approval flow?
+  reportDate    DateTime?         // When the analysis was conducted
+  version       Int      @default(1)     // Report version tracking
 
   // Relations
   project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
