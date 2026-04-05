@@ -140,7 +140,7 @@ export interface ResearchItem {
   id: string
   title: string
   body: string // full markdown content
-  type: 'keyword-research' | 'market-analysis' | 'api-research' | 'oracle' | 'competitor' | 'technical' | 'other'
+  type: 'keyword-research' | 'market-analysis' | 'api-research' | 'oracle' | 'competitor' | 'technical' | 'seo-strategy' | 'completion-report' | 'roadmap' | 'data-dataset' | 'business-case' | 'governance' | 'other'
   author: string // 'bart' | 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark' | 'cowork'
   projectId?: string
   tags?: string // comma-separated
