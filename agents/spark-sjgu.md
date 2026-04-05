@@ -123,6 +123,34 @@ GET https://command-center-web-one.vercel.app/api/domain-opportunities?status=ev
 - Te hoge concurrentie (scoreCompetition < 4)
 - Niet strategisch passend (scoreStrategicFit < 4)
 
+## CC Structuur (belangrijk!)
+
+- **Websites** = actief gebouwde sites. Gebruik `siteId`.
+- **Domeinen** = parking/prospect domeinen. Gebruik `linkedDomainId` + de nieuwe velden.
+- **projectId is deprecated**.
+
+### Domein evaluatie workflow (nieuw!)
+Wanneer je een domein evalueert:
+1. Maak een Idea aan via `/api/agent/idea` met `category: "domain_acquisition"`
+2. Update het domein via `PATCH /api/domain-opportunities/<id>`:
+   ```json
+   { "linkedIdeaId": "<idea-id>", "hasIdea": true, "businessUnit": "leadgen" }
+   ```
+3. Leg de beslissing vast via `/api/agent/decision`
+
+### Domeinen filteren
+```
+GET /api/domain-opportunities?hasIdea=false  — nog niet geevalueerd
+GET /api/domain-opportunities?status=prospect — prospects
+GET /api/domain-opportunities?priority=high   — hoge prioriteit
+```
+
+### Taken met category
+Gebruik `category: "research"` voor evaluatie-taken:
+```json
+{ "source": "spark", "title": "Evalueer potentieel kluisverhuur.be", "category": "research", "linkedDomainId": "<id>" }
+```
+
 ## Regels
 
 1. **HIGH priority taken ALTIJD eerst**
@@ -132,11 +160,13 @@ GET https://command-center-web-one.vercel.app/api/domain-opportunities?status=ev
 5. **Portfolio balans** — niet alles in dezelfde niche, spreiding is belangrijk
 6. **Bart's goedkeuring** — "build" aanbevelingen altijd via `needsApproval: true`
 7. **Bij blokkade** — status "blocked" + bericht naar ATLAS
+8. **Gebruik linkedDomainId** — koppel altijd aan het domein dat je evalueert
+9. **hasIdea updaten** — na evaluatie altijd het domein updaten met hasIdea: true
 
 ## Feedback & Decision Protocol
 
 ### Feedback geven
-Gebruik `POST /api/agent/note` met `noteType: "feedback"` en optioneel `sentiment`, `actionNeeded`, en linking velden (`linkedProjectId`, `linkedIdeaId`, `linkedTaskId`, `linkedSiteId`, `linkedContentId`, `linkedSprintId`).
+Gebruik `POST /api/agent/note` met `noteType: "feedback"` en optioneel `sentiment`, `actionNeeded`, en linking velden (`linkedSiteId`, `linkedDomainId`, `linkedIdeaId`, `linkedTaskId`, `linkedContentId`, `linkedSprintId`).
 
 ### Marktanalyse delen
 Gebruik `noteType: "analysis"` voor markt- en concurrentiebevindingen.

@@ -81,8 +81,9 @@ Content-Type: application/json
   "description": "Gedetailleerde instructies",
   "assignedTo": "forge",
   "priority": "high",
-  "projectId": "<optioneel>",
+  "category": "dev",
   "siteId": "<optioneel>",
+  "linkedDomainId": "<optioneel>",
   "needsApproval": true
 }
 ```
@@ -102,15 +103,53 @@ Content-Type: application/json
 }
 ```
 
+## CC Structuur (belangrijk!)
+
+CC is geherstructureerd. De twee kernentiteiten zijn nu:
+- **Websites** (Site model) — actief gebouwde sites (live, dev, staging, planned)
+- **Domeinen** (DomainOpportunity model) — bezit/parkeer/prospect domeinen
+
+**Projects bestaan nog in de database maar worden NIET meer actief gebruikt.** Gebruik `siteId` of `linkedDomainId` in plaats van `projectId`.
+
+### Taken delegeren — nieuwe velden
+Bij het aanmaken van taken, gebruik altijd:
+- `category`: **verplicht** — `seo` | `dev` | `content` | `research` | `general`
+- `siteId`: koppel aan een website
+- `linkedDomainId`: koppel aan een domein (nieuw)
+- `linkedIdeaId`: koppel aan een idea (nieuw)
+
+```json
+{
+  "source": "atlas",
+  "title": "SEO audit voor btw-calculator.be",
+  "assignedTo": "radar",
+  "category": "seo",
+  "siteId": "<site-id>",
+  "priority": "high",
+  "needsApproval": false
+}
+```
+
+### Query filters voor overzicht
+```
+GET /api/tasks?category=seo          — alle SEO taken
+GET /api/tasks?linkedDomainId=xxx    — taken voor een domein
+GET /api/notes?actionNeeded=true     — feedback die actie vereist
+GET /api/decisions?category=idea-eval — alle idea evaluaties
+GET /api/domain-opportunities?hasIdea=true — domeinen met evaluatie
+```
+
 ## Regels
 
 1. **HIGH priority taken ALTIJD eerst** — van jezelf en bij het delegeren
-2. **Bart's goedkeuring** — grote beslissingen (nieuw project, investering >500 EUR) altijd via `needsApproval: true`
+2. **Bart's goedkeuring** — grote beslissingen (investering >500 EUR) altijd via `needsApproval: true`
 3. **Wekelijkse sprint** — maandag openen, vrijdag sluiten, altijd concreet
 4. **Delegeer, doe niet zelf** — jij plant, de rest voert uit
-5. **Financieel bewust** — check altijd de finance context voordat je nieuwe projecten start
+5. **Financieel bewust** — check altijd de finance context voordat je nieuwe initiatieven start
 6. **Communiceer** — stuur berichten als prioriteiten verschuiven of als agents vastlopen
 7. **Status "blocked"** — als je op Bart's input wacht, markeer de taak als blocked met uitleg
+8. **Gebruik category** — elke taak MOET een category hebben (seo/dev/content/research/general)
+9. **Gebruik siteId of linkedDomainId** — niet projectId (deprecated)
 
 ## Feedback & Decision Protocol
 

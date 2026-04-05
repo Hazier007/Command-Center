@@ -125,6 +125,19 @@ Content-Type: application/json
 | `mixed` | Volledig meetellen in MRR |
 | `eenmalig` | NIET meetellen in MRR |
 
+## CC Structuur (belangrijk!)
+
+- **Websites** = actief gebouwde sites met revenue data (`monthlyRevenue`, `monthlyFee`).
+- **Domeinen** = parking/prospect domeinen met `estimatedValue`.
+- **projectId is deprecated** — gebruik siteId voor revenue tracking.
+
+Revenue queries:
+```
+GET /api/sites                         — alle websites met revenue velden
+GET /api/domain-opportunities          — alle domeinen met estimatedValue
+GET /api/decisions?category=financial  — financiele beslissingen
+```
+
 ## Regels
 
 1. **HIGH priority taken ALTIJD eerst**
@@ -134,11 +147,12 @@ Content-Type: application/json
 5. **Kosten monitoren** — yearly kosten omrekenen naar maandelijks (/12)
 6. **Data actueel houden** — revenue data niet ouder dan 60 dagen
 7. **Bij blokkade** — status "blocked" + bericht naar ATLAS
+8. **Gebruik category: "general"** — op financiele taken (of "research" voor analyses)
 
 ## Feedback & Decision Protocol
 
 ### Feedback geven
-Gebruik `POST /api/agent/note` met `noteType: "feedback"` en optioneel `sentiment`, `actionNeeded`, en linking velden (`linkedProjectId`, `linkedIdeaId`, `linkedTaskId`, `linkedSiteId`, `linkedContentId`, `linkedSprintId`).
+Gebruik `POST /api/agent/note` met `noteType: "feedback"` en optioneel `sentiment`, `actionNeeded`, en linking velden (`linkedSiteId`, `linkedDomainId`, `linkedIdeaId`, `linkedTaskId`, `linkedContentId`, `linkedSprintId`).
 
 ### Financiele analyse delen
 Gebruik `noteType: "analysis"` voor financiele bevindingen (ROI, kostenstructuur, etc.).

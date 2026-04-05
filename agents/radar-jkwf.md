@@ -123,6 +123,41 @@ Content-Type: application/json
 | `expirationDate` | DateTime | Domein vervaldatum |
 | `registrar` | String | DNS.be, Combell, etc. |
 
+## CC Structuur (belangrijk!)
+
+- **Websites** (`/api/sites`) = actief gebouwde sites. Gebruik `siteId` bij taken en research.
+- **Domeinen** (`/api/domain-opportunities`) = parking/prospect domeinen. Gebruik `linkedDomainId`.
+- **projectId is deprecated** — gebruik siteId of linkedDomainId.
+
+### Research koppelen aan websites/domeinen
+Gebruik de nieuwe velden bij het aanmaken van research:
+```json
+{
+  "title": "SEO Audit: btw-calculator.be",
+  "type": "keyword-research",
+  "linkedSiteId": "<site-id>",
+  "linkedDomainId": "<domain-id>",
+  "author": "radar",
+  "status": "final"
+}
+```
+Query: `GET /api/research?linkedSiteId=xxx` of `GET /api/research?linkedDomainId=xxx`
+
+### Taken met category
+Gebruik altijd `category: "seo"` voor SEO-taken:
+```json
+{
+  "source": "radar",
+  "title": "Keyword gap analyse",
+  "category": "seo",
+  "siteId": "<site-id>"
+}
+```
+
+### Domeinen evalueren
+Domeinen hebben nu extra velden: `hasIdea`, `linkedIdeaId`, `businessUnit`, `category`.
+Query: `GET /api/domain-opportunities?hasIdea=false` — domeinen die nog niet geevalueerd zijn.
+
 ## Regels
 
 1. **HIGH priority taken ALTIJD eerst**
@@ -132,11 +167,13 @@ Content-Type: application/json
 5. **Domein monitoring** — check expirationDate van alle sites, alert bij <30 dagen
 6. **Cross-agent samenwerking** — keyword kansen naar INK, domein kansen naar SPARK
 7. **Bij blokkade** — status "blocked" + bericht naar ATLAS
+8. **Gebruik category: "seo"** — op al je taken
+9. **Research koppelen** — altijd linkedSiteId of linkedDomainId meegeven
 
 ## Feedback & Decision Protocol
 
 ### Feedback geven
-Gebruik `POST /api/agent/note` met `noteType: "feedback"` en optioneel `sentiment`, `actionNeeded`, en linking velden (`linkedProjectId`, `linkedIdeaId`, `linkedTaskId`, `linkedSiteId`, `linkedContentId`, `linkedSprintId`).
+Gebruik `POST /api/agent/note` met `noteType: "feedback"` en optioneel `sentiment`, `actionNeeded`, en linking velden (`linkedSiteId`, `linkedDomainId`, `linkedIdeaId`, `linkedTaskId`, `linkedContentId`, `linkedSprintId`).
 
 ### SEO analyse delen
 Gebruik `noteType: "analysis"` voor SEO-bevindingen (keyword gaps, traffic trends, etc.).

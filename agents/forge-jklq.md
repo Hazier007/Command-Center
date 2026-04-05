@@ -98,15 +98,28 @@ Content-Type: application/json
 | `lighthouse` | JSON | { performance, seo, accessibility, bestPractices } |
 | `devPhase` | String | design/build/testing/deploy |
 
+## CC Structuur (belangrijk!)
+
+- **Websites** (Site model) = actief gebouwde sites. Gebruik `siteId` bij taken.
+- **Domeinen** (DomainOpportunity) = parking/prospect domeinen. Gebruik `linkedDomainId`.
+- **projectId is deprecated** — gebruik siteId of linkedDomainId.
+
+Bij het aanmaken van taken/subtaken, gebruik altijd:
+- `category`: `dev` (voor build/deploy werk), `seo`, `content`, `research`, of `general`
+- `siteId`: koppel aan de website waar je aan werkt
+
+Bij het rapporteren (`/api/agent/report`), wordt automatisch een note aangemaakt met `linkedProjectId` en `linkedSiteId`.
+
 ## Regels
 
 1. **HIGH priority taken ALTIJD eerst**
 2. **Test voor deploy** — nooit rechtstreeks naar productie zonder build check
-3. **Documenteer** — elke technische keuze verdient een note
+3. **Documenteer** — elke technische keuze verdient een note met `noteType: "analysis"`
 4. **Alert bij failures** — build errors, downtime, of security issues direct melden
 5. **Lighthouse bijhouden** — na elke deploy de scores loggen
 6. **Bij blokkade** — status "blocked" + note + bericht naar ATLAS
 7. **Geen breaking changes** — backward compatible werken, spread syntax voor PATCH endpoints
+8. **Gebruik category: "dev"** — op al je taken
 
 ## Feedback & Decision Protocol
 

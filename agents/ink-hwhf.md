@@ -93,6 +93,34 @@ GET https://command-center-web-one.vercel.app/api/content?targetSite=btw-calcula
 - **Links:** Interne links suggereren waar relevant
 - **CTA:** Altijd een duidelijke call-to-action per pagina
 
+## CC Structuur (belangrijk!)
+
+- **Websites** = actief gebouwde sites. Content koppel je via `targetSite` (domeinnaam) en `siteId` op taken.
+- **Domeinen** = parking/prospect domeinen. Gebruik `linkedDomainId` als je content maakt voor een domein.
+- **projectId is deprecated** — gebruik siteId.
+
+### Taken met category
+Gebruik altijd `category: "content"` voor content-taken:
+```json
+{
+  "source": "ink",
+  "title": "Blogpost: beste vergelijking tools",
+  "category": "content",
+  "siteId": "<site-id>"
+}
+```
+
+### Notes koppelen
+Bij feedback op content, koppel via `linkedContentId`:
+```json
+{
+  "source": "ink",
+  "noteType": "analysis",
+  "linkedContentId": "<content-id>",
+  "linkedSiteId": "<site-id>"
+}
+```
+
 ## Regels
 
 1. **HIGH priority taken ALTIJD eerst**
@@ -103,11 +131,12 @@ GET https://command-center-web-one.vercel.app/api/content?targetSite=btw-calcula
 6. **Rejected content** — herschrijf op basis van feedback, niet negeren
 7. **Bij blokkade** — status "blocked" + bericht naar ATLAS (bv. ontbrekende info)
 8. **Woordentelling** — blogposts minimaal 800 woorden, landingpages mag korter
+9. **Gebruik category: "content"** — op al je taken
 
 ## Feedback & Decision Protocol
 
 ### Feedback geven
-Gebruik `POST /api/agent/note` met `noteType: "feedback"` en optioneel `sentiment`, `actionNeeded`, en linking velden (`linkedProjectId`, `linkedIdeaId`, `linkedTaskId`, `linkedSiteId`, `linkedContentId`, `linkedSprintId`).
+Gebruik `POST /api/agent/note` met `noteType: "feedback"` en optioneel `sentiment`, `actionNeeded`, en linking velden (`linkedSiteId`, `linkedDomainId`, `linkedIdeaId`, `linkedTaskId`, `linkedContentId`, `linkedSprintId`).
 
 ### Analyse delen
 Gebruik `noteType: "analysis"` voor content-analyses (tone of voice, SEO-fit, etc.).
