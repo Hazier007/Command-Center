@@ -71,6 +71,7 @@ function TaskCard({
   task,
   status,
   siteDomain,
+  projectName,
   onEdit,
   onDelete,
   onStatusChange,
@@ -79,6 +80,7 @@ function TaskCard({
   task: Task
   status: Task['status']
   siteDomain: string | null
+  projectName?: string | null
   onEdit: (task: Task) => void
   onDelete: (taskId: string) => void
   onStatusChange: (taskId: string, status: Task['status']) => void
@@ -90,11 +92,18 @@ function TaskCard({
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
             <CardTitle className="text-sm leading-tight">{task.title}</CardTitle>
-            {siteDomain && (
-              <CardDescription className="text-xs truncate">
-                🌐 {siteDomain}
-              </CardDescription>
-            )}
+            <div className="flex items-center gap-2">
+              {siteDomain && (
+                <CardDescription className="text-xs truncate">
+                  🌐 {siteDomain}
+                </CardDescription>
+              )}
+              {projectName && (
+                <Badge variant="outline" className="text-[10px] bg-violet-500/10 text-violet-400 border-violet-500/30">
+                  {projectName}
+                </Badge>
+              )}
+            </div>
           </div>
           <div className="flex gap-1 flex-shrink-0">
             <Button variant="ghost" size="sm" onClick={() => onEdit(task)}>
@@ -181,6 +190,7 @@ function KanbanColumn({
   isCollapsed,
   onToggleCollapse,
   getSiteDomain,
+  getProjectName,
   onEdit,
   onDelete,
   onStatusChange,
@@ -196,6 +206,7 @@ function KanbanColumn({
   isCollapsed: boolean
   onToggleCollapse: (id: string) => void
   getSiteDomain: (siteId?: string) => string | null
+  getProjectName: (projectId?: string) => string | null
   onEdit: (task: Task) => void
   onDelete: (taskId: string) => void
   onStatusChange: (taskId: string, status: Task['status']) => void
@@ -221,6 +232,7 @@ function KanbanColumn({
               task={task}
               status={status}
               siteDomain={getSiteDomain(task.siteId)}
+              projectName={getProjectName(task.projectId)}
               onEdit={onEdit}
               onDelete={onDelete}
               onStatusChange={onStatusChange}
@@ -247,6 +259,8 @@ export default function TasksPage() {
   const [filterSite, setFilterSite] = useState("")
   const [filterAssignee, setFilterAssignee] = useState("")
   const [filterPriority, setFilterPriority] = useState("")
+  const [filterProject, setFilterProject] = useState("")
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([])
   const [followUpDialogOpen, setFollowUpDialogOpen] = useState(false)
   const [followUpSourceTask, setFollowUpSourceTask] = useState<Task | null>(null)
   const [followUpForm, setFollowUpForm] = useState({
@@ -268,6 +282,7 @@ export default function TasksPage() {
     description: "",
     status: "todo" as Task['status'],
     siteId: "",
+    projectId: "",
     priority: "medium" as Task['priority'],
     assignee: "",
     dueDate: "",
@@ -275,12 +290,14 @@ export default function TasksPage() {
 
   useEffect(() => {
     const load = async () => {
-      const [tasksData, sitesData] = await Promise.all([
+      const [tasksData, sitesData, projectsRes] = await Promise.all([
         tasksStorage.getAll(),
         sitesStorage.getAll(),
+        fetch('/api/projects').then(r => r.ok ? r.json() : []).catch(() => []),
       ])
       setTasks(tasksData)
       setSites(sitesData)
+      setProjects(Array.isArray(projectsRes) ? projectsRes : [])
     }
     void load()
   }, [])
@@ -291,6 +308,7 @@ export default function TasksPage() {
     if (filterSite && task.siteId !== filterSite) return false
     if (filterAssignee && task.assignee !== filterAssignee) return false
     if (filterPriority && task.priority !== filterPriority) return false
+    if (filterProject && task.projectId !== filterProject) return false
     return true
   })
 
@@ -299,12 +317,13 @@ export default function TasksPage() {
   const reviewTasks = filteredTasks.filter(t => t.status === 'review')
   const doneTasks = filteredTasks.filter(t => t.status === 'done')
 
-  const hasActiveFilters = filterSite || filterAssignee || filterPriority
+  const hasActiveFilters = filterSite || filterAssignee || filterPriority || filterProject
 
   const clearFilters = () => {
     setFilterSite("")
     setFilterAssignee("")
     setFilterPriority("")
+    setFilterProject("")
   }
 
   const toggleCollapse = (col: string) => {
@@ -317,6 +336,7 @@ export default function TasksPage() {
       description: "",
       status: "todo",
       siteId: "",
+      projectId: "",
       priority: "medium",
       assignee: "",
       dueDate: "",
@@ -332,6 +352,7 @@ export default function TasksPage() {
         description: formData.description || undefined,
         status: formData.status,
         siteId: formData.siteId || undefined,
+        projectId: formData.projectId || undefined,
         priority: formData.priority || undefined,
         assignee: formData.assignee || undefined,
         dueDate: formData.dueDate || undefined,
@@ -342,6 +363,7 @@ export default function TasksPage() {
         description: formData.description || undefined,
         status: formData.status,
         siteId: formData.siteId || undefined,
+        projectId: formData.projectId || undefined,
         priority: formData.priority || undefined,
         assignee: formData.assignee || undefined,
         dueDate: formData.dueDate || undefined,
@@ -362,6 +384,7 @@ export default function TasksPage() {
       description: task.description || "",
       status: task.status,
       siteId: task.siteId || "",
+      projectId: task.projectId || "",
       priority: task.priority || "medium",
       assignee: task.assignee || "",
       dueDate: task.dueDate || "",
@@ -457,6 +480,12 @@ export default function TasksPage() {
     return site?.domain ?? null
   }
 
+  const getProjectName = (projectId?: string) => {
+    if (!projectId) return null
+    const project = projects.find(p => p.id === projectId)
+    return project?.name ?? null
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 via-background to-background dark:from-orange-950/25 dark:via-background dark:to-background">
       <div className="mx-auto max-w-7xl px-4 py-6 md:px-6">
@@ -550,7 +579,21 @@ export default function TasksPage() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="col-span-2">
+                    <div>
+                      <label htmlFor="projectId" className="text-sm font-medium">Project</label>
+                      <select
+                        id="projectId"
+                        value={formData.projectId}
+                        onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
+                        className={selectClass}
+                      >
+                        <option value="">Geen project</option>
+                        {projects.map(p => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
                       <label htmlFor="siteId" className="text-sm font-medium">Site / Domein</label>
                       <select
                         id="siteId"
@@ -656,6 +699,17 @@ export default function TasksPage() {
               <option value="low">Laag</option>
             </select>
 
+            <select
+              value={filterProject}
+              onChange={(e) => setFilterProject(e.target.value)}
+              className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              <option value="">Alle projecten</option>
+              {projects.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+
             {hasActiveFilters && (
               <Button variant="ghost" size="sm" onClick={clearFilters} className="text-[#F5911E] hover:text-[#F5911E] hover:bg-orange-50 dark:hover:bg-orange-950/20">
                 <X className="h-3 w-3 mr-1" />
@@ -676,6 +730,7 @@ export default function TasksPage() {
               isCollapsed={collapsed.todo}
               onToggleCollapse={toggleCollapse}
               getSiteDomain={getSiteDomain}
+              getProjectName={getProjectName}
               onEdit={handleEdit}
               onDelete={handleDelete}
               onStatusChange={handleStatusChange}
@@ -692,6 +747,7 @@ export default function TasksPage() {
               isCollapsed={collapsed['in-progress']}
               onToggleCollapse={toggleCollapse}
               getSiteDomain={getSiteDomain}
+              getProjectName={getProjectName}
               onEdit={handleEdit}
               onDelete={handleDelete}
               onStatusChange={handleStatusChange}
@@ -708,6 +764,7 @@ export default function TasksPage() {
               isCollapsed={collapsed.review}
               onToggleCollapse={toggleCollapse}
               getSiteDomain={getSiteDomain}
+              getProjectName={getProjectName}
               onEdit={handleEdit}
               onDelete={handleDelete}
               onStatusChange={handleStatusChange}
@@ -725,6 +782,7 @@ export default function TasksPage() {
                 isCollapsed={collapsed.done}
                 onToggleCollapse={toggleCollapse}
                 getSiteDomain={getSiteDomain}
+                getProjectName={getProjectName}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onStatusChange={handleStatusChange}

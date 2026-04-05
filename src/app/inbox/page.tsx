@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Inbox as InboxIcon, Check, X, MessageSquare, Clock, Bot, Filter } from "lucide-react"
+import { Inbox as InboxIcon, Check, X, MessageSquare, Clock, Bot, Filter, ChevronDown, ChevronUp } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -83,6 +83,7 @@ export default function InboxPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [feedbackId, setFeedbackId] = useState<string | null>(null)
   const [feedbackText, setFeedbackText] = useState('')
+  const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const fetchItems = useCallback(async () => {
     try {
@@ -353,11 +354,19 @@ export default function InboxPage() {
                         )}
                       </div>
 
-                      {/* Title */}
-                      <h4 className="text-sm font-medium text-white mb-1 truncate">{item.title}</h4>
+                      {/* Title — clickable to expand */}
+                      <button
+                        onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
+                        className="text-left w-full group"
+                      >
+                        <div className="flex items-center gap-1">
+                          <h4 className="text-sm font-medium text-white mb-1 truncate group-hover:text-[#F5911E] transition-colors">{item.title}</h4>
+                          {expandedId === item.id ? <ChevronUp className="h-3 w-3 text-zinc-500 shrink-0" /> : <ChevronDown className="h-3 w-3 text-zinc-500 shrink-0" />}
+                        </div>
+                      </button>
 
-                      {/* Description Preview */}
-                      {desc && (
+                      {/* Description Preview (collapsed) */}
+                      {desc && expandedId !== item.id && (
                         <p className="text-xs text-zinc-500 line-clamp-2 mb-2">{desc}</p>
                       )}
 
@@ -412,6 +421,26 @@ export default function InboxPage() {
                       )}
                     </div>
                   </div>
+
+                  {/* Expanded Detail View */}
+                  {expandedId === item.id && (
+                    <div className="mt-3 pt-3 border-t border-zinc-800">
+                      <div className="bg-zinc-800/50 rounded-lg p-4 max-h-[400px] overflow-y-auto">
+                        {item.itemType === 'content' ? (
+                          <div className="whitespace-pre-wrap text-sm text-zinc-300">
+                            {(item as InboxContent).body || 'Geen content body'}
+                          </div>
+                        ) : (
+                          <div className="whitespace-pre-wrap text-sm text-zinc-300">
+                            {(item as InboxTask).description || 'Geen beschrijving'}
+                          </div>
+                        )}
+                      </div>
+                      {item.itemType === 'content' && (item as InboxContent).targetSite && (
+                        <p className="mt-2 text-xs text-zinc-500">Site: {(item as InboxContent).targetSite}</p>
+                      )}
+                    </div>
+                  )}
 
                   {/* Feedback Input */}
                   {showFeedback && (

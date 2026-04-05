@@ -6,11 +6,11 @@ import { useState } from "react"
 import {
   Menu, Users, Bell,
   LayoutDashboard, Globe, CheckSquare, StickyNote,
-  ChevronRight, Zap, Activity, Search,
+  ChevronRight, Zap, Search,
   Inbox, FolderKanban, Receipt, UserPlus,
   Layers, PenTool, BookOpen, Bot, DollarSign,
   BarChart3, CircleDollarSign, Gavel, ClipboardList,
-  PanelLeftClose, PanelLeft, Radar,
+  PanelLeftClose, PanelLeft, Radar, Briefcase, Music,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -29,25 +29,32 @@ const navGroups = [
     label: "Overzicht",
     items: [
       { href: "/", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/activity", label: "Activiteit", icon: Activity },
       { href: "/inbox", label: "Inbox", icon: Inbox },
       { href: "/alerts", label: "Alerts", icon: Bell },
     ],
   },
   {
-    label: "Assets",
+    label: "Hazier",
     items: [
       { href: "/sites", label: "Websites", icon: Globe },
+      { href: "/adsense", label: "AdSense", icon: CircleDollarSign },
       { href: "/domains", label: "Domeinen", icon: Layers },
-    ],
-  },
-  {
-    label: "Klanten",
-    items: [
-      { href: "/clients", label: "Overzicht", icon: Users },
+      { href: "/clients", label: "Klanten", icon: Users },
       { href: "/clients/leads", label: "Leads", icon: UserPlus },
       { href: "/clients/pipeline", label: "Pipeline", icon: FolderKanban },
       { href: "/clients/quotes", label: "Offertes", icon: Receipt },
+    ],
+  },
+  {
+    label: "CollectPro",
+    items: [
+      { href: "/projects/collectpro", label: "CollectPro", icon: Briefcase },
+    ],
+  },
+  {
+    label: "Infinite Events",
+    items: [
+      { href: "/projects/infinite-events", label: "Infinite Events", icon: Music },
     ],
   },
   {
@@ -66,7 +73,6 @@ const navGroups = [
     label: "Business",
     items: [
       { href: "/finance", label: "Finance", icon: DollarSign },
-      { href: "/adsense", label: "AdSense", icon: CircleDollarSign },
       { href: "/analytics", label: "Analytics", icon: BarChart3 },
       { href: "/agents", label: "Agents", icon: Bot },
     ],

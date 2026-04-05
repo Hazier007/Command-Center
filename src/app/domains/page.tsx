@@ -113,10 +113,18 @@ export default function DomainsPage() {
   const [priorityFilter, setPriorityFilter] = useState("all")
   const [nicheFilter, setNicheFilter] = useState("")
 
-  // Dialog
+  // Dialogs
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [sparkLoading, setSparkLoading] = useState<string | null>(null)
+
+  // Task dialog
+  const [taskDialogDomain, setTaskDialogDomain] = useState<DomainRecord | null>(null)
+  const [taskForm, setTaskForm] = useState({ title: "", description: "", priority: "medium", assignee: "" })
+
+  // Note dialog
+  const [noteDialogDomain, setNoteDialogDomain] = useState<DomainRecord | null>(null)
+  const [noteForm, setNoteForm] = useState({ title: "", content: "" })
 
   const [formData, setFormData] = useState({
     domain: "",
@@ -246,6 +254,57 @@ export default function DomainsPage() {
       console.error("Failed to create SPARK evaluation:", error)
     } finally {
       setSparkLoading(null)
+    }
+  }
+
+  const handleCreateTask = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!taskDialogDomain) return
+    try {
+      setSubmitting(true)
+      await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: taskForm.title,
+          description: taskForm.description || undefined,
+          priority: taskForm.priority,
+          assignee: taskForm.assignee || undefined,
+          linkedDomainId: taskDialogDomain.id,
+          category: "general",
+          status: "todo",
+        }),
+      })
+      setTaskDialogDomain(null)
+      setTaskForm({ title: "", description: "", priority: "medium", assignee: "" })
+    } catch (error) {
+      console.error("Failed to create task:", error)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleCreateNote = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!noteDialogDomain) return
+    try {
+      setSubmitting(true)
+      await fetch("/api/notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: noteForm.title,
+          content: noteForm.content || "",
+          tags: [],
+          linkedDomainId: noteDialogDomain.id,
+        }),
+      })
+      setNoteDialogDomain(null)
+      setNoteForm({ title: "", content: "" })
+    } catch (error) {
+      console.error("Failed to create note:", error)
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -594,8 +653,8 @@ export default function DomainsPage() {
                     variant="outline"
                     className="text-[11px] gap-1.5 border-white/[0.06] text-zinc-400 hover:text-zinc-200"
                     onClick={() => {
-                      // Placeholder for task creation
-                      console.log("Create task for domain:", domain.domain)
+                      setTaskForm({ title: `Taak voor ${domain.domain}`, description: "", priority: "medium", assignee: "" })
+                      setTaskDialogDomain(domain)
                     }}
                   >
                     <ListTodo className="h-3.5 w-3.5" />
@@ -606,8 +665,8 @@ export default function DomainsPage() {
                     variant="outline"
                     className="text-[11px] gap-1.5 border-white/[0.06] text-zinc-400 hover:text-zinc-200"
                     onClick={() => {
-                      // Placeholder for note adding
-                      console.log("Add note for domain:", domain.domain)
+                      setNoteForm({ title: `Notitie: ${domain.domain}`, content: "" })
+                      setNoteDialogDomain(domain)
                     }}
                   >
                     <StickyNote className="h-3.5 w-3.5" />
@@ -632,6 +691,83 @@ export default function DomainsPage() {
           </p>
         </div>
       )}
+
+      {/* ─── Task Dialog ────────────────────────────────────── */}
+      <Dialog open={!!taskDialogDomain} onOpenChange={() => setTaskDialogDomain(null)}>
+        <DialogContent className="bg-zinc-950 border-white/[0.06]">
+          <DialogHeader>
+            <DialogTitle>Nieuwe taak voor {taskDialogDomain?.domain}</DialogTitle>
+            <DialogDescription>Taak wordt gekoppeld aan dit domein.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCreateTask} className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-zinc-300">Titel</label>
+              <Input value={taskForm.title} onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })} placeholder="Wat moet er gebeuren?" required className="mt-1 bg-white/[0.02] border-white/[0.06]" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-zinc-300">Beschrijving</label>
+              <Input value={taskForm.description} onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })} placeholder="Details..." className="mt-1 bg-white/[0.02] border-white/[0.06]" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-zinc-300">Prioriteit</label>
+                <select value={taskForm.priority} onChange={(e) => setTaskForm({ ...taskForm, priority: e.target.value })} className="mt-1 flex h-9 w-full rounded-md border border-white/[0.06] bg-white/[0.02] px-3 py-1 text-sm text-zinc-200">
+                  <option value="low">Laag</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">Hoog</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-zinc-300">Toewijzen aan</label>
+                <select value={taskForm.assignee} onChange={(e) => setTaskForm({ ...taskForm, assignee: e.target.value })} className="mt-1 flex h-9 w-full rounded-md border border-white/[0.06] bg-white/[0.02] px-3 py-1 text-sm text-zinc-200">
+                  <option value="">Niet toegewezen</option>
+                  <option value="bart">👤 Bart</option>
+                  <option value="atlas">🗺️ Atlas</option>
+                  <option value="forge">🔨 Forge</option>
+                  <option value="radar">📡 Radar</option>
+                  <option value="ink">✒️ Ink</option>
+                  <option value="ledger">📊 Ledger</option>
+                  <option value="spark">⚡ Spark</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button type="submit" className="flex-1 bg-[#F5911E] hover:bg-[#e07d0a] text-white" disabled={submitting}>{submitting ? "Aanmaken..." : "Taak aanmaken"}</Button>
+              <Button type="button" variant="outline" onClick={() => setTaskDialogDomain(null)} className="border-white/[0.06]">Annuleren</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ─── Note Dialog ────────────────────────────────────── */}
+      <Dialog open={!!noteDialogDomain} onOpenChange={() => setNoteDialogDomain(null)}>
+        <DialogContent className="bg-zinc-950 border-white/[0.06]">
+          <DialogHeader>
+            <DialogTitle>Notitie voor {noteDialogDomain?.domain}</DialogTitle>
+            <DialogDescription>Notitie wordt gekoppeld aan dit domein.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCreateNote} className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-zinc-300">Titel</label>
+              <Input value={noteForm.title} onChange={(e) => setNoteForm({ ...noteForm, title: e.target.value })} placeholder="Notitie titel" required className="mt-1 bg-white/[0.02] border-white/[0.06]" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-zinc-300">Inhoud</label>
+              <textarea
+                value={noteForm.content}
+                onChange={(e) => setNoteForm({ ...noteForm, content: e.target.value })}
+                placeholder="Schrijf je notitie..."
+                rows={4}
+                className="mt-1 flex w-full rounded-md border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-sm text-zinc-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#F5911E] resize-none"
+              />
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button type="submit" className="flex-1 bg-[#F5911E] hover:bg-[#e07d0a] text-white" disabled={submitting}>{submitting ? "Opslaan..." : "Notitie opslaan"}</Button>
+              <Button type="button" variant="outline" onClick={() => setNoteDialogDomain(null)} className="border-white/[0.06]">Annuleren</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

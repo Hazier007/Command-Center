@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Plus, FileText, Send, CheckCircle, XCircle } from "lucide-react"
+import { ArrowLeft, Plus, FileText, Send, CheckCircle, XCircle, Pencil, Trash2 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -46,6 +46,11 @@ export default function QuotesPage() {
     amount: "",
     status: "concept" as Quote['status'],
   })
+  const [editQuote, setEditQuote] = useState<Quote | null>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [editForm, setEditForm] = useState({
+    clientName: "", description: "", amount: "", status: "concept" as Quote['status'],
+  })
 
   const filteredQuotes = quotes.filter(quote => {
     const matchesSearch = quote.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -67,6 +72,37 @@ export default function QuotesPage() {
     setQuotes([newQuote, ...quotes])
     setIsDialogOpen(false)
     setFormData({ clientName: "", description: "", amount: "", status: "concept" })
+  }
+
+  const handleEdit = (quote: Quote) => {
+    setEditQuote(quote)
+    setEditForm({
+      clientName: quote.clientName,
+      description: quote.description,
+      amount: quote.amount.toString(),
+      status: quote.status,
+    })
+    setIsEditDialogOpen(true)
+  }
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editQuote) return
+    setQuotes(prev => prev.map(q => q.id === editQuote.id ? {
+      ...q,
+      clientName: editForm.clientName,
+      description: editForm.description,
+      amount: parseFloat(editForm.amount),
+      status: editForm.status,
+    } : q))
+    setIsEditDialogOpen(false)
+    setEditQuote(null)
+  }
+
+  const handleDelete = (quoteId: string) => {
+    if (confirm('Weet je zeker dat je deze offerte wilt verwijderen?')) {
+      setQuotes(prev => prev.filter(q => q.id !== quoteId))
+    }
   }
 
   const getStatusColor = (status: Quote['status']) => {
@@ -225,9 +261,19 @@ export default function QuotesPage() {
                         <p className="text-xs text-muted-foreground truncate">{quote.description}</p>
                       </div>
                     </div>
-                    <div className="text-right flex-shrink-0 ml-4">
-                      <p className="text-sm font-bold">{quote.amount.toLocaleString('nl-BE', { style: 'currency', currency: 'EUR' })}</p>
-                      <p className="text-xs text-muted-foreground">{new Date(quote.createdAt).toLocaleDateString('nl-BE')}</p>
+                    <div className="flex items-center gap-3 flex-shrink-0 ml-4">
+                      <div className="text-right">
+                        <p className="text-sm font-bold">{quote.amount.toLocaleString('nl-BE', { style: 'currency', currency: 'EUR' })}</p>
+                        <p className="text-xs text-muted-foreground">{new Date(quote.createdAt).toLocaleDateString('nl-BE')}</p>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleEdit(quote)}>
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-500 hover:text-red-400" onClick={() => handleDelete(quote.id)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -247,6 +293,50 @@ export default function QuotesPage() {
             </div>
           )}
         </div>
+
+        {/* Edit Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Offerte bewerken</DialogTitle>
+              <DialogDescription>Pas de offerte aan</DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="editClientName" className="text-sm font-medium">Klantnaam</label>
+                <Input id="editClientName" value={editForm.clientName} onChange={(e) => setEditForm({ ...editForm, clientName: e.target.value })} required />
+              </div>
+              <div>
+                <label htmlFor="editDescription" className="text-sm font-medium">Beschrijving</label>
+                <Input id="editDescription" value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} required />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="editAmount" className="text-sm font-medium">Bedrag (EUR)</label>
+                  <Input id="editAmount" type="number" value={editForm.amount} onChange={(e) => setEditForm({ ...editForm, amount: e.target.value })} min="0" step="0.01" required />
+                </div>
+                <div>
+                  <label htmlFor="editStatus" className="text-sm font-medium">Status</label>
+                  <select
+                    id="editStatus"
+                    value={editForm.status}
+                    onChange={(e) => setEditForm({ ...editForm, status: e.target.value as Quote['status'] })}
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                  >
+                    <option value="concept">Concept</option>
+                    <option value="verstuurd">Verstuurd</option>
+                    <option value="goedgekeurd">Goedgekeurd</option>
+                    <option value="afgewezen">Afgewezen</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button type="submit" className="flex-1 bg-[#F5911E] hover:bg-[#e07d0a] text-white">Opslaan</Button>
+                <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>Annuleren</Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )

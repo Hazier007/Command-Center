@@ -6,7 +6,7 @@ import Link from "next/link"
 import {
   ArrowLeft, Globe, ExternalLink, CheckSquare, FileText, StickyNote,
   TrendingUp, Server, Plus, Clock, Send, Search, Activity, Wrench,
-  BarChart3, Calendar, DollarSign, AlertTriangle, X,
+  BarChart3, Calendar, DollarSign, AlertTriangle, X, Edit, ChevronDown, ChevronUp,
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -39,9 +39,9 @@ interface TaskData {
 }
 
 interface ContentData {
-  id: string; title: string; status: string; type?: string;
+  id: string; title: string; body?: string; status: string; type?: string;
   author?: string; wordCount?: number; linkedKeyword?: string;
-  createdAt: string;
+  summary?: string; createdAt: string;
 }
 
 interface NoteData {
@@ -76,6 +76,12 @@ export default function SiteDetailPage() {
   const [taskForm, setTaskForm] = useState({
     title: "", description: "", priority: "medium", assignee: "",
   })
+  const [editingTech, setEditingTech] = useState(false)
+  const [techForm, setTechForm] = useState({
+    hosting: "", devPhase: "", deployStatus: "", buildStatus: "", githubRepo: "", techStack: "",
+  })
+  const [expandedNote, setExpandedNote] = useState<string | null>(null)
+  const [expandedContent, setExpandedContent] = useState<string | null>(null)
 
   const loadData = useCallback(async () => {
     try {
@@ -139,6 +145,43 @@ export default function SiteDetailPage() {
       body: JSON.stringify({ status }),
     })
     await loadData()
+  }
+
+  const startEditTech = () => {
+    if (!site) return
+    setTechForm({
+      hosting: site.hosting || "",
+      devPhase: site.devPhase || "",
+      deployStatus: site.deployStatus || "",
+      buildStatus: site.buildStatus || "",
+      githubRepo: site.githubRepo || "",
+      techStack: site.techStack?.join(", ") || "",
+    })
+    setEditingTech(true)
+  }
+
+  const saveTech = async () => {
+    try {
+      setSubmitting(true)
+      await fetch(`/api/sites/${siteId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          hosting: techForm.hosting || null,
+          devPhase: techForm.devPhase || null,
+          deployStatus: techForm.deployStatus || null,
+          buildStatus: techForm.buildStatus || null,
+          githubRepo: techForm.githubRepo || null,
+          techStack: techForm.techStack ? techForm.techStack.split(",").map(s => s.trim()).filter(Boolean) : [],
+        }),
+      })
+      setEditingTech(false)
+      await loadData()
+    } catch (error) {
+      console.error('Failed to save tech:', error)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const getStatusColor = (status: string) => {
@@ -366,62 +409,136 @@ export default function SiteDetailPage() {
         {/* === TECHNISCH === */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Wrench className="h-5 w-5" /> Technisch
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Wrench className="h-5 w-5" /> Technisch
+              </CardTitle>
+              {!editingTech ? (
+                <Button size="sm" variant="outline" onClick={startEditTech}>
+                  <Edit className="mr-1 h-3 w-3" /> Edit
+                </Button>
+              ) : (
+                <div className="flex gap-1">
+                  <Button size="sm" className="bg-[#F5911E] hover:bg-[#e07d0a] text-white" onClick={saveTech} disabled={submitting}>
+                    {submitting ? '...' : 'Opslaan'}
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => setEditingTech(false)}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <p className="text-xs text-muted-foreground">Hosting</p>
-                <p className="text-sm font-medium capitalize">{site.hosting || '-'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Dev fase</p>
-                <p className="text-sm font-medium capitalize">{site.devPhase || '-'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Deploy status</p>
-                <p className="text-sm font-medium capitalize">{site.deployStatus || '-'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Build status</p>
-                <p className="text-sm font-medium capitalize">{site.buildStatus || '-'}</p>
-              </div>
-            </div>
-            {site.techStack && site.techStack.length > 0 && (
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Tech stack</p>
-                <div className="flex flex-wrap gap-1">
-                  {site.techStack.map(tech => (
-                    <Badge key={tech} variant="outline" className="text-[10px]">{tech}</Badge>
-                  ))}
+            {editingTech ? (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-muted-foreground">Hosting</label>
+                    <select value={techForm.hosting} onChange={(e) => setTechForm({ ...techForm, hosting: e.target.value })} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm">
+                      <option value="">-</option>
+                      <option value="vercel">Vercel</option>
+                      <option value="cloudflare">Cloudflare</option>
+                      <option value="hostinger">Hostinger</option>
+                      <option value="combell">Combell</option>
+                      <option value="netlify">Netlify</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Dev fase</label>
+                    <select value={techForm.devPhase} onChange={(e) => setTechForm({ ...techForm, devPhase: e.target.value })} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm">
+                      <option value="">-</option>
+                      <option value="design">Design</option>
+                      <option value="build">Build</option>
+                      <option value="testing">Testing</option>
+                      <option value="deploy">Deploy</option>
+                      <option value="live">Live</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Deploy status</label>
+                    <select value={techForm.deployStatus} onChange={(e) => setTechForm({ ...techForm, deployStatus: e.target.value })} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm">
+                      <option value="">-</option>
+                      <option value="success">Success</option>
+                      <option value="failed">Failed</option>
+                      <option value="building">Building</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Build status</label>
+                    <select value={techForm.buildStatus} onChange={(e) => setTechForm({ ...techForm, buildStatus: e.target.value })} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm">
+                      <option value="">-</option>
+                      <option value="passing">Passing</option>
+                      <option value="failing">Failing</option>
+                      <option value="unknown">Unknown</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">GitHub repo</label>
+                  <Input value={techForm.githubRepo} onChange={(e) => setTechForm({ ...techForm, githubRepo: e.target.value })} placeholder="owner/repo" />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Tech stack (komma-gescheiden)</label>
+                  <Input value={techForm.techStack} onChange={(e) => setTechForm({ ...techForm, techStack: e.target.value })} placeholder="Next.js, Tailwind, Prisma" />
                 </div>
               </div>
-            )}
-            {site.githubRepo && (
-              <div>
-                <p className="text-xs text-muted-foreground">GitHub</p>
-                <a href={`https://github.com/${site.githubRepo}`} target="_blank" className="text-sm text-[#F5911E] hover:underline">{site.githubRepo}</a>
-              </div>
-            )}
-            {site.lighthouse && (
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Lighthouse</p>
-                <div className="flex gap-3">
-                  {Object.entries(site.lighthouse).map(([key, val]) => (
-                    <div key={key} className="text-center">
-                      <div className={`text-sm font-bold ${(val as number) >= 90 ? 'text-green-400' : (val as number) >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>{val as number}</div>
-                      <div className="text-[10px] text-muted-foreground capitalize">{key}</div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Hosting</p>
+                    <p className="text-sm font-medium capitalize">{site.hosting || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Dev fase</p>
+                    <p className="text-sm font-medium capitalize">{site.devPhase || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Deploy status</p>
+                    <p className="text-sm font-medium capitalize">{site.deployStatus || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Build status</p>
+                    <p className="text-sm font-medium capitalize">{site.buildStatus || '-'}</p>
+                  </div>
+                </div>
+                {site.techStack && site.techStack.length > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Tech stack</p>
+                    <div className="flex flex-wrap gap-1">
+                      {site.techStack.map(tech => (
+                        <Badge key={tech} variant="outline" className="text-[10px]">{tech}</Badge>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {site.lastDeployAt && (
-              <p className="text-xs text-muted-foreground">
-                Laatste deploy: {new Date(site.lastDeployAt).toLocaleDateString('nl-BE')}
-              </p>
+                  </div>
+                )}
+                {site.githubRepo && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">GitHub</p>
+                    <a href={`https://github.com/${site.githubRepo}`} target="_blank" className="text-sm text-[#F5911E] hover:underline">{site.githubRepo}</a>
+                  </div>
+                )}
+                {site.lighthouse && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Lighthouse</p>
+                    <div className="flex gap-3">
+                      {Object.entries(site.lighthouse).map(([key, val]) => (
+                        <div key={key} className="text-center">
+                          <div className={`text-sm font-bold ${(val as number) >= 90 ? 'text-green-400' : (val as number) >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>{val as number}</div>
+                          <div className="text-[10px] text-muted-foreground capitalize">{key}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {site.lastDeployAt && (
+                  <p className="text-xs text-muted-foreground">
+                    Laatste deploy: {new Date(site.lastDeployAt).toLocaleDateString('nl-BE')}
+                  </p>
+                )}
+              </>
             )}
           </CardContent>
         </Card>
@@ -440,16 +557,34 @@ export default function SiteDetailPage() {
             ) : (
               <div className="space-y-2">
                 {content.slice(0, 8).map(item => (
-                  <div key={item.id} className="flex items-center justify-between p-2 rounded bg-white/[0.02]">
-                    <div className="min-w-0">
-                      <p className="text-xs font-medium truncate">{item.title}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[10px] text-muted-foreground capitalize">{item.type}</span>
-                        {item.wordCount && <span className="text-[10px] text-muted-foreground">{item.wordCount}w</span>}
-                        {item.linkedKeyword && <span className="text-[10px] text-[#F5911E]">{item.linkedKeyword}</span>}
+                  <div key={item.id}>
+                    <button
+                      onClick={() => setExpandedContent(expandedContent === item.id ? null : item.id)}
+                      className="w-full text-left flex items-center justify-between p-2 rounded bg-white/[0.02] hover:bg-white/[0.05] transition-colors cursor-pointer"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium truncate">{item.title}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[10px] text-muted-foreground capitalize">{item.type}</span>
+                          {item.wordCount && <span className="text-[10px] text-muted-foreground">{item.wordCount}w</span>}
+                          {item.linkedKeyword && <span className="text-[10px] text-[#F5911E]">{item.linkedKeyword}</span>}
+                        </div>
                       </div>
-                    </div>
-                    <Badge variant="outline" className={`text-[10px] ${getStatusColor(item.status)}`}>{item.status}</Badge>
+                      <div className="flex items-center gap-1">
+                        <Badge variant="outline" className={`text-[10px] ${getStatusColor(item.status)}`}>{item.status}</Badge>
+                        {expandedContent === item.id ? <ChevronUp className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
+                      </div>
+                    </button>
+                    {expandedContent === item.id && (
+                      <div className="mt-1 p-3 rounded bg-white/[0.03] border border-white/[0.06] text-sm text-muted-foreground">
+                        {item.summary && <p className="text-xs text-[#F5911E] mb-2">{item.summary}</p>}
+                        {item.body ? (
+                          <div className="whitespace-pre-wrap max-h-[300px] overflow-y-auto text-xs">{item.body}</div>
+                        ) : (
+                          <p className="text-xs italic">Geen body content</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -471,13 +606,26 @@ export default function SiteDetailPage() {
             ) : (
               <div className="space-y-2">
                 {notes.slice(0, 6).map(note => (
-                  <div key={note.id} className="p-2 rounded bg-white/[0.02]">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs font-medium truncate">{note.title}</p>
-                      {note.agentId && <span className="text-[10px]">{assigneeEmojis[note.agentId] || ''}</span>}
-                    </div>
-                    {note.body && <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{note.body}</p>}
-                    <p className="text-[10px] text-muted-foreground mt-1">{new Date(note.createdAt).toLocaleDateString('nl-BE')}</p>
+                  <div key={note.id}>
+                    <button
+                      onClick={() => setExpandedNote(expandedNote === note.id ? null : note.id)}
+                      className="w-full text-left p-2 rounded bg-white/[0.02] hover:bg-white/[0.05] transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-medium truncate">{note.title}</p>
+                        <div className="flex items-center gap-1">
+                          {note.agentId && <span className="text-[10px]">{assigneeEmojis[note.agentId] || ''}</span>}
+                          {expandedNote === note.id ? <ChevronUp className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
+                        </div>
+                      </div>
+                      {note.body && expandedNote !== note.id && <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{note.body}</p>}
+                      <p className="text-[10px] text-muted-foreground mt-1">{new Date(note.createdAt).toLocaleDateString('nl-BE')}</p>
+                    </button>
+                    {expandedNote === note.id && note.body && (
+                      <div className="mt-1 p-3 rounded bg-white/[0.03] border border-white/[0.06]">
+                        <div className="whitespace-pre-wrap text-xs text-muted-foreground max-h-[300px] overflow-y-auto">{note.body}</div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
