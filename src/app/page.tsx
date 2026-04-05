@@ -164,21 +164,27 @@ export default function Home() {
     try {
       setLoading(true)
       setError(null)
+
+      // Fault-tolerant: each fetch independently, never blocks others
+      const safeFetch = async <T,>(fn: () => Promise<T>, fallback: T): Promise<T> => {
+        try { return await fn() } catch { return fallback }
+      }
+
       const [t, si, c, al, rev, co] = await Promise.all([
-        tasksStorage.getAll(),
-        sitesStorage.getAll(),
-        contentStorage.getAll(),
-        alertsStorage.getAll(),
-        revenueStorage.getAll(),
-        costsStorage.getAll(),
+        safeFetch(() => tasksStorage.getAll(), []),
+        safeFetch(() => sitesStorage.getAll(), []),
+        safeFetch(() => contentStorage.getAll(), []),
+        safeFetch(() => alertsStorage.getAll(), []),
+        safeFetch(() => revenueStorage.getAll(), []),
+        safeFetch(() => costsStorage.getAll(), []),
       ])
       setTasks(t); setSites(si); setContent(c); setAlerts(al); setRevenue(rev); setCosts(co)
 
       // Non-blocking fetches
-      fetch("/api/agent-logs?limit=8").then(r => r.json()).then(setAgentLogs).catch(() => {})
-      fetch("/api/decisions").then(r => r.json()).then((d: Decision[]) => setDecisions(d.slice(0, 5))).catch(() => {})
-      fetch("/api/sprints").then(r => r.json()).then((s: SprintData[]) => setSprint(s[0] ?? null)).catch(() => {})
-      fetch("/api/notes?noteType=feedback&actionNeeded=true").then(r => r.json()).then(setFeedbackNotes).catch(() => {})
+      fetch("/api/agent-logs?limit=8").then(r => r.ok ? r.json() : []).then(d => setAgentLogs(Array.isArray(d) ? d : [])).catch(() => {})
+      fetch("/api/decisions").then(r => r.ok ? r.json() : []).then((d: Decision[]) => setDecisions(Array.isArray(d) ? d.slice(0, 5) : [])).catch(() => {})
+      fetch("/api/sprints").then(r => r.ok ? r.json() : []).then((s: SprintData[]) => setSprint(Array.isArray(s) ? s[0] ?? null : null)).catch(() => {})
+      fetch("/api/notes?noteType=feedback&actionNeeded=true").then(r => r.ok ? r.json() : []).then(d => setFeedbackNotes(Array.isArray(d) ? d : [])).catch(() => {})
     } catch (err) {
       console.error("Dashboard load failed:", err)
       setError("Kon dashboard niet laden.")
