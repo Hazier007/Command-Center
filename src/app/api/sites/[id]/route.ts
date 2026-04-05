@@ -42,6 +42,9 @@ export async function PATCH(
     const { id } = await params
     const data = await request.json()
     
+    // Fetch current site to compare status change
+    const currentSite = await prisma.site.findUnique({ where: { id } })
+
     const site = await prisma.site.update({
       where: { id },
       data: {
@@ -89,6 +92,29 @@ export async function PATCH(
       },
     })
     
+    // ── Site onboarding guard: alert als dev/live zonder deploy velden ──
+    const activeStatuses = ['dev', 'staging', 'live']
+    const newStatus = data.status || site.status
+    const wasInactive = currentSite && !activeStatuses.includes(currentSite.status)
+    const isNowActive = activeStatuses.includes(newStatus)
+
+    if ((wasInactive && isNowActive) || data.status === 'live') {
+      const missing: string[] = []
+      if (!site.githubRepo && !data.githubRepo) missing.push('githubRepo')
+      if (!site.vercelProjectId && !data.vercelProjectId) missing.push('vercelProjectId')
+      if (!site.productionUrl && !data.productionUrl) missing.push('productionUrl')
+
+      if (missing.length > 0) {
+        await prisma.alert.create({
+          data: {
+            title: `Site onboarding incompleet: ${site.domain}`,
+            body: `${site.domain} is nu "${newStatus}" maar mist: ${missing.join(', ')}. Vraag FORGE om deze velden in te vullen.`,
+            priority: newStatus === 'live' ? 'high' : 'medium',
+          },
+        })
+      }
+    }
+
     return NextResponse.json(site)
   } catch (error) {
     console.error('Error updating site:', error)

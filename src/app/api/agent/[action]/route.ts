@@ -14,10 +14,60 @@ async function logAgentAction(source: string, action: string, payload: unknown) 
   })
 }
 
+// ─── Validation helpers ─────────────────────────────────────
+
+const VALID_TASK_CATEGORIES = ['seo', 'dev', 'content', 'research', 'general']
+
+function validateTaskCategory(category: unknown): string {
+  const cat = category as string
+  if (!cat || !VALID_TASK_CATEGORIES.includes(cat)) {
+    throw new ValidationError(`category is verplicht. Kies uit: ${VALID_TASK_CATEGORIES.join(', ')}. Ontvangen: "${cat || 'leeg'}"`)
+  }
+  return cat
+}
+
+function validateTaskLinking(body: Record<string, unknown>): void {
+  const category = body.category as string
+  const siteId = body.siteId as string | undefined
+  const linkedDomainId = body.linkedDomainId as string | undefined
+
+  // dev/seo/content taken MOETEN gekoppeld zijn aan een site of domein
+  if (['dev', 'seo', 'content'].includes(category) && !siteId && !linkedDomainId) {
+    throw new ValidationError(`Taken met category "${category}" moeten een siteId of linkedDomainId hebben. Losse taken zonder link zijn niet toegestaan.`)
+  }
+}
+
+class ValidationError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'ValidationError'
+  }
+}
+
 // POST /api/agent/task — Create a task
 async function handleTask(body: Record<string, unknown>) {
   const { source, title, description, projectId, siteId, priority, assignee, assignedTo, needsApproval, dueDate } = body
   const resolvedAssignee = (assignedTo as string) || (assignee as string) || (source as string) || undefined
+
+  // ── Guard 1: category verplicht ──
+  const category = validateTaskCategory(body.category)
+
+  // ── Guard 2: dev/seo/content taken moeten gelinkt zijn ──
+  validateTaskLinking(body)
+
+  // ── Guard 3: duplicate check (zelfde title + siteId die nog open is) ──
+  if (siteId) {
+    const duplicate = await prisma.task.findFirst({
+      where: {
+        title: title as string,
+        siteId: siteId as string,
+        status: { in: ['todo', 'in-progress'] },
+      },
+    })
+    if (duplicate) {
+      throw new ValidationError(`Duplicate taak: "${title}" bestaat al voor deze site (id: ${duplicate.id}, status: ${duplicate.status}). Gebruik de bestaande taak of geef een andere titel.`)
+    }
+  }
 
   const task = await prisma.task.create({
     data: {
@@ -33,6 +83,9 @@ async function handleTask(body: Record<string, unknown>) {
       needsApproval: (needsApproval as boolean) || false,
       approvalSource: source as string | undefined,
       dueDate: dueDate ? new Date(dueDate as string) : undefined,
+      category,
+      linkedDomainId: body.linkedDomainId as string | undefined,
+      linkedIdeaId: body.linkedIdeaId as string | undefined,
     },
     include: {
       project: true,
@@ -40,7 +93,7 @@ async function handleTask(body: Record<string, unknown>) {
     },
   })
 
-  await logAgentAction(source as string, 'task', { taskId: task.id, title, assignee, projectId, siteId })
+  await logAgentAction(source as string, 'task', { taskId: task.id, title, assignee, category, siteId })
   return task
 }
 
@@ -317,6 +370,9 @@ export async function POST(
 
     return NextResponse.json({ success: true, data: result })
   } catch (error) {
+    if (error instanceof ValidationError) {
+      return NextResponse.json({ error: error.message, type: 'validation' }, { status: 400 })
+    }
     console.error(`Agent API error (${action}):`, error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }

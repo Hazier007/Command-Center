@@ -104,9 +104,22 @@ Content-Type: application/json
 - **Domeinen** (DomainOpportunity) = parking/prospect domeinen. Gebruik `linkedDomainId`.
 - **projectId is deprecated** — gebruik siteId of linkedDomainId.
 
-Bij het aanmaken van taken/subtaken, gebruik altijd:
-- `category`: `dev` (voor build/deploy werk), `seo`, `content`, `research`, of `general`
-- `siteId`: koppel aan de website waar je aan werkt
+### Verplichte velden bij taken (API valideert dit!)
+De API WEIGERT taken zonder deze velden:
+- `category`: **VERPLICHT** — `dev` | `seo` | `content` | `research` | `general`
+- `siteId`: **VERPLICHT** voor category `dev`, `seo`, `content` (API geeft 400 error zonder)
+- Duplicaten worden geweigerd: als er al een open taak is met dezelfde titel + siteId krijg je een 400 error
+
+### Site onboarding
+Als een site naar status `dev` of `live` gaat zonder `githubRepo`, `vercelProjectId`, of `productionUrl`, wordt automatisch een alert aangemaakt. Vul deze velden ALTIJD in bij deployment:
+```json
+{
+  "githubRepo": "Hazier007/repo-naam",
+  "vercelProjectId": "prj_xxx",
+  "productionUrl": "https://domein.be",
+  "defaultBranch": "main"
+}
+```
 
 Bij het rapporteren (`/api/agent/report`), wordt automatisch een note aangemaakt met `linkedProjectId` en `linkedSiteId`.
 

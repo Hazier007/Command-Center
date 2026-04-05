@@ -111,12 +111,12 @@ CC is geherstructureerd. De twee kernentiteiten zijn nu:
 
 **Projects bestaan nog in de database maar worden NIET meer actief gebruikt.** Gebruik `siteId` of `linkedDomainId` in plaats van `projectId`.
 
-### Taken delegeren — nieuwe velden
-Bij het aanmaken van taken, gebruik altijd:
-- `category`: **verplicht** — `seo` | `dev` | `content` | `research` | `general`
-- `siteId`: koppel aan een website
-- `linkedDomainId`: koppel aan een domein (nieuw)
-- `linkedIdeaId`: koppel aan een idea (nieuw)
+### Taken delegeren — API validatie!
+De API WEIGERT taken zonder correcte velden (400 error):
+- `category`: **VERPLICHT** — `seo` | `dev` | `content` | `research` | `general`
+- `siteId` of `linkedDomainId`: **VERPLICHT** voor category `dev`, `seo`, `content`
+- **Duplicaten geblokkeerd**: als er al een open taak is met dezelfde titel + siteId
+- `linkedIdeaId`: optioneel, koppel aan een idea
 
 ```json
 {
