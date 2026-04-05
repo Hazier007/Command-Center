@@ -31,26 +31,61 @@ Content-Type: application/json
 
 ## Jouw verantwoordelijkheden
 
-### Content aanmaken
+### Content aanmaken (via Agent API — aanbevolen)
+Gebruik het gestandaardiseerde agent endpoint. Stuur SEO/brief/variant velden flat — ze worden automatisch in `metadata` JSON verpakt.
 ```
-POST https://command-center-web-one.vercel.app/api/content
+POST https://command-center-web-one.vercel.app/api/agent/content
+Authorization: Bearer hazier-cc-2026-04061979
 Content-Type: application/json
 
 {
+  "source": "ink",
   "title": "BTW tarieven Belgie 2026 - Compleet overzicht",
   "body": "# BTW tarieven Belgie 2026\n\nIn Belgie zijn er drie BTW-tarieven...",
   "type": "blogpost",
-  "status": "review",
-  "author": "ink",
   "targetSite": "btw-calculator.be",
   "targetPath": "/blog/btw-tarieven-belgie-2026",
   "linkedKeyword": "btw tarieven belgie",
   "linkedTaskId": "<taak-id-van-radar>",
-  "needsApproval": true,
-  "approvalSource": "ink"
+  "linkedSiteId": "<site-id>",
+  "language": "nl",
+  "handoffStatus": "ready-for-review",
+  "summary": "Compleet overzicht van alle BTW-tarieven in Belgie voor 2026.",
+  "metaTitle": "BTW tarieven Belgie 2026 - Compleet overzicht",
+  "metaDescription": "Ontdek de drie BTW-tarieven in Belgie: 6%, 12% en 21%. Inclusief uitzonderingen en voorbeelden.",
+  "searchIntent": "informational",
+  "targetAudience": "ZZP'ers en kleine ondernemers in Belgie",
+  "tone": "helder, informatief, betrouwbaar",
+  "wordCountTarget": 2000
 }
 ```
-Het veld `wordCount` wordt automatisch berekend.
+`wordCount`, `needsApproval`, en `status` worden automatisch ingevuld (status=review, needsApproval=true).
+
+### Metadata velden (flat meesturen, worden automatisch in JSON verpakt)
+| Veld | Type | Beschrijving |
+|------|------|-------------|
+| `metaTitle` | string | SEO title tag (<60 chars) |
+| `metaDescription` | string | Meta description (<155 chars) |
+| `searchIntent` | string | informational/commercial/transactional/navigational |
+| `keywordDifficulty` | number | KD score (0-100) |
+| `secondaryKeywords` | string[] | Extra keywords |
+| `targetAudience` | string | Doelgroep omschrijving |
+| `tone` | string | Gewenste tone of voice |
+| `guidelines` | string | Extra schrijfrichtlijnen |
+| `wordCountTarget` | number | Doel woordentelling |
+| `contentBlocks` | array | Gestructureerde secties: `[{ type, heading, body, order }]` |
+| `variants` | array | A/B varianten: `[{ label, body, isControl }]` |
+| `performanceSnapshot` | object | `{ ctr, bounceRate, avgPosition, impressions }` |
+
+### Handoff Status
+Gebruik `handoffStatus` om de publicatie-status bij te houden:
+| Status | Betekenis |
+|--------|-----------|
+| `not-ready` | Nog in bewerking (default) |
+| `ready-for-review` | Klaar voor Bart's review |
+| `ready-for-publishing` | Goedgekeurd, klaar om live te gaan |
+| `handed-off` | Overgedragen aan FORGE voor implementatie |
+| `published` | Live op de site |
 
 ### Bestaande content updaten
 ```
@@ -59,7 +94,8 @@ Content-Type: application/json
 
 {
   "body": "Bijgewerkte content hier...",
-  "status": "review"
+  "status": "review",
+  "handoffStatus": "ready-for-review"
 }
 ```
 
@@ -68,6 +104,9 @@ Content-Type: application/json
 GET https://command-center-web-one.vercel.app/api/content?author=ink&status=draft
 GET https://command-center-web-one.vercel.app/api/content?status=rejected
 GET https://command-center-web-one.vercel.app/api/content?targetSite=btw-calculator.be
+GET https://command-center-web-one.vercel.app/api/content?linkedSiteId=<site-id>
+GET https://command-center-web-one.vercel.app/api/content?language=nl
+GET https://command-center-web-one.vercel.app/api/content?handoffStatus=ready-for-review
 ```
 
 ## Content types
@@ -76,13 +115,18 @@ GET https://command-center-web-one.vercel.app/api/content?targetSite=btw-calcula
 |------|---------|-----------|
 | `blogpost` | SEO content, informatief | 800-2500 woorden, H2/H3 structuur |
 | `landingpage` | Conversie-pagina | Kort, krachtig, CTA-gericht |
+| `article` | Algemeen artikel | Informatief, goed gestructureerd |
 | `review` | Productreview | Eerlijk, gestructureerd, pros/cons |
+| `product-review` | Diepgaande review | Specs, vergelijking, verdict |
+| `buyers-guide` | Koopgids | Vergelijkend, adviserend |
 | `meta` | Title tags, meta descriptions | Title <60 chars, desc <155 chars |
 | `faq` | FAQ secties | Vraag-antwoord format, schema markup ready |
 | `social` | Social media posts | Platform-specifiek, kort |
+| `brief` | Content brief voor team | Doelgroep, tone, richtlijnen, keywords |
+| `outline` | Artikel outline/structuur | H2/H3 structuur met key points |
+| `seo-rewrite` | Bestaande content herschrijven voor SEO | Behoud structuur, verbeter keywords |
+| `brand-messaging` | Brand voice, taglines, USPs | Consistent met merkidentiteit |
 | `page` | Standaard pagina | Afhankelijk van context |
-| `product-review` | Diepgaande review | Specs, vergelijking, verdict |
-| `buyers-guide` | Koopgids | Vergelijkend, adviserend |
 
 ## Schrijfstijl
 
@@ -153,7 +197,8 @@ Gebruik `POST /api/agent/decision` met verplichte velden: `title`, `context`, `o
 |---------|----------|------|
 | GET | `/api/agent/my-tasks?agent=ink` | Jouw openstaande taken |
 | POST | `/api/agent/report` | Taak voortgang rapporteren |
-| GET/POST | `/api/content` | Content lezen/aanmaken |
+| **POST** | **`/api/agent/content`** | **Content aanmaken met metadata (aanbevolen)** |
+| GET | `/api/content` | Content lezen (met filters) |
 | PATCH | `/api/content/<id>` | Content bijwerken |
 | PATCH | `/api/content/bulk` | Bulk status update |
 | POST | `/api/agent/note` | Notitie/feedback/analyse toevoegen |

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Plus, Edit, Trash2, FileText, User, Globe, Calendar, CheckCircle, XCircle, Rocket, MessageSquare, Eye, EyeOff, ChevronDown, ChevronRight } from "lucide-react"
+import { Plus, Edit, Trash2, FileText, User, Globe, Calendar, CheckCircle, XCircle, Rocket, MessageSquare, Eye, EyeOff, ChevronDown, ChevronRight, Languages, ArrowRightCircle } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 
@@ -21,6 +21,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { contentStorage, projectsStorage, type ContentItem, type Project } from "@/lib/storage"
+import { InkContentCard } from "@/components/ink-content-card"
 
 export default function ContentPage() {
   const [content, setContent] = useState<ContentItem[]>([])
@@ -193,11 +194,32 @@ export default function ContentPage() {
   const getTypeColor = (type: ContentItem['type']) => {
     switch (type) {
       case 'article': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-200'
+      case 'blogpost': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-200'
       case 'product-review': return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-200'
       case 'buyers-guide': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200'
+      case 'landingpage': return 'bg-rose-100 text-rose-800 dark:bg-rose-900/20 dark:text-rose-200'
+      case 'review': return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-200'
+      case 'meta': return 'bg-sky-100 text-sky-800 dark:bg-sky-900/20 dark:text-sky-200'
+      case 'faq': return 'bg-teal-100 text-teal-800 dark:bg-teal-900/20 dark:text-teal-200'
+      case 'social': return 'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-200'
+      case 'brief': return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-200'
+      case 'outline': return 'bg-violet-100 text-violet-800 dark:bg-violet-900/20 dark:text-violet-200'
+      case 'seo-rewrite': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-200'
+      case 'brand-messaging': return 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/20 dark:text-fuchsia-200'
       case 'page': return 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-200'
       case 'other': return 'bg-slate-100 text-slate-800 dark:bg-slate-900/20 dark:text-slate-200'
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200'
+    }
+  }
+
+  const getHandoffColor = (status: string) => {
+    switch (status) {
+      case 'not-ready': return 'bg-gray-100 text-gray-600 dark:bg-gray-900/20 dark:text-gray-400'
+      case 'ready-for-review': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200'
+      case 'ready-for-publishing': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200'
+      case 'handed-off': return 'bg-violet-100 text-violet-800 dark:bg-violet-900/20 dark:text-violet-200'
+      case 'published': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200'
+      default: return 'bg-gray-100 text-gray-600 dark:bg-gray-900/20 dark:text-gray-400'
     }
   }
 
@@ -285,8 +307,18 @@ export default function ContentPage() {
                       className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     >
                       <option value="article">Article</option>
+                      <option value="blogpost">Blogpost</option>
+                      <option value="landingpage">Landing Page</option>
                       <option value="product-review">Product Review</option>
                       <option value="buyers-guide">Buyers Guide</option>
+                      <option value="review">Review</option>
+                      <option value="meta">Meta</option>
+                      <option value="faq">FAQ</option>
+                      <option value="social">Social</option>
+                      <option value="brief">Brief</option>
+                      <option value="outline">Outline</option>
+                      <option value="seo-rewrite">SEO Rewrite</option>
+                      <option value="brand-messaging">Brand Messaging</option>
                       <option value="page">Page</option>
                       <option value="other">Other</option>
                     </select>
@@ -416,8 +448,18 @@ export default function ContentPage() {
               >
                 <option value="all">Alle types</option>
                 <option value="article">Article</option>
+                <option value="blogpost">Blogpost</option>
+                <option value="landingpage">Landing Page</option>
                 <option value="product-review">Product Review</option>
                 <option value="buyers-guide">Buyers Guide</option>
+                <option value="review">Review</option>
+                <option value="meta">Meta</option>
+                <option value="faq">FAQ</option>
+                <option value="social">Social</option>
+                <option value="brief">Brief</option>
+                <option value="outline">Outline</option>
+                <option value="seo-rewrite">SEO Rewrite</option>
+                <option value="brand-messaging">Brand Messaging</option>
                 <option value="page">Page</option>
                 <option value="other">Other</option>
               </select>
@@ -450,6 +492,21 @@ export default function ContentPage() {
                           {item.status === 'live' && 'Live'}
                           {item.status === 'draft' && 'Draft'}
                         </Badge>
+                        {item.handoffStatus && item.handoffStatus !== 'not-ready' && (
+                          <Badge className={`text-[10px] ${getHandoffColor(item.handoffStatus)}`}>
+                            <ArrowRightCircle className="h-2.5 w-2.5 mr-0.5" />
+                            {item.handoffStatus}
+                          </Badge>
+                        )}
+                        {item.language && (
+                          <Badge variant="outline" className="text-[10px]">
+                            <Languages className="h-2.5 w-2.5 mr-0.5" />
+                            {item.language.toUpperCase()}
+                          </Badge>
+                        )}
+                        {item.linkedKeyword && (
+                          <span className="hidden md:inline text-xs text-muted-foreground">{item.linkedKeyword}</span>
+                        )}
                         {item.targetSite && (
                           <div className="hidden md:flex items-center gap-1 text-sm text-muted-foreground">
                             <Globe className="h-3 w-3" />
@@ -506,18 +563,28 @@ export default function ContentPage() {
                       </div>
                     )}
 
+                    {/* Summary excerpt */}
+                    {item.summary && expandedContent !== item.id && (
+                      <div className="px-4 pb-1">
+                        <p className="text-xs text-muted-foreground line-clamp-1">{item.summary}</p>
+                      </div>
+                    )}
+
                     {/* Expanded full-width content preview */}
                     {expandedContent === item.id && (
                       <div className="border-t px-4 py-4">
+                        {item.metadata && <InkContentCard metadata={item.metadata} wordCount={item.wordCount} />}
                         <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg overflow-y-auto max-h-[70vh] prose prose-sm dark:prose-invert max-w-none prose-headings:text-base prose-headings:font-semibold prose-p:text-sm prose-table:text-xs prose-th:p-2 prose-td:p-2 prose-table:border prose-th:border prose-td:border">
                           <ReactMarkdown remarkPlugins={[remarkGfm]}>{item.body}</ReactMarkdown>
                         </div>
                       </div>
                     )}
 
-                    {/* Footer: date */}
-                    <div className="px-4 pb-2 text-xs text-muted-foreground">
-                      Aangemaakt {new Date(item.createdAt).toLocaleDateString('nl-BE')}
+                    {/* Footer: date + word count */}
+                    <div className="px-4 pb-2 text-xs text-muted-foreground flex gap-3">
+                      <span>Aangemaakt {new Date(item.createdAt).toLocaleDateString('nl-BE')}</span>
+                      {item.wordCount && item.wordCount > 0 && <span>{item.wordCount.toLocaleString()} woorden</span>}
+                      {item.version && item.version > 1 && <span>v{item.version}</span>}
                     </div>
                   </Card>
                 ))}

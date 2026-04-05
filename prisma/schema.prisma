@@ -343,6 +343,17 @@ model Content {
   linkedTaskId    String?  // task that triggered this content
   wordCount       Int?     // auto-calculated on save
 
+  // INK structured content extensions
+  linkedSiteId    String?  // proper FK to Site
+  linkedDomainId  String?  // FK to domain
+  linkedContentId String?  // self-ref for content-updates (which content does this replace?)
+  metadata        Json?    // structured data: seoMeta, contentBlocks, variants, brief, performance
+  language        String?  // 'nl' | 'en' | 'fr' | 'de'
+  handoffStatus   String?  // 'not-ready' | 'ready-for-review' | 'ready-for-publishing' | 'handed-off' | 'published'
+  version         Int      @default(1) // version tracking
+  parentId        String?  // previous version (for versioning chain)
+  summary         String?  // short summary / excerpt
+
   // Relations
   project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
   task    Task?    @relation(fields: [linkedTaskId], references: [id], onDelete: SetNull)
@@ -428,6 +439,96 @@ model Activity {
   project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
 
   @@map("activities")
+}
+
+// ─── Agent Reports ─────────────────────────────────────────────────
+
+model AgentReport {
+  id          String   @id @default(cuid())
+  agent       String   // 'forge' | 'atlas' | 'radar' | 'ink' | 'ledger' | 'spark'
+  reportType  String   // FORGE: implementation-update | build-report | deploy-report | ... ATLAS: daily-brief | sprint-review | ... LEDGER: finance_snapshot | forecast_report | ...
+  title       String
+  summary     String?  // kort voor lijstweergave
+  body        String?  // volledige tekst (markdown fallback)
+  status      String   @default("done")    // draft | in-progress | blocked | done | shipped | failed | published | archived
+  outcome     String?  // success | partial | blocked | failed | review-needed
+  priority    String   @default("medium")  // low | medium | high | critical
+  category    String   @default("dev")     // dev | seo | content | research | general | financial | strategy
+
+  // Approval
+  needsApproval   Boolean  @default(false)
+  approvalReason  String?
+
+  // Linking (polymorf, nullable)
+  linkedTaskId      String?
+  linkedSiteId      String?
+  linkedSprintId    String?
+  linkedContentId   String?
+  linkedIdeaId      String?
+  linkedDomainId    String?
+  parentReportId    String?  // chained reports / follow-ups
+
+  // Execution context — FORGE
+  environment   String?  // local | preview | staging | production
+  repo          String?  // bv. Hazier007/datumberekenen
+  branch        String?  // git branch
+
+  // Period context — LEDGER + ATLAS
+  periodType    String?  // weekly | monthly | quarterly | ad_hoc | daily
+  periodLabel   String?  // bv. 2026-04, 2026-W14, 2026-04-05
+  currency      String?  // EUR | USD
+
+  // Structured data (all agents pack their structured fields here)
+  metadata      Json?
+
+  // Timestamps
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("agent_reports")
+}
+
+// ─── SEO Reports (RADAR) ──────────────────────────────────────────
+
+model SeoReport {
+  id        String   @id @default(cuid())
+  subtype   String   // site_audit | keyword_snapshot | traffic_analysis | domain_evaluation | opportunity_scan | signal
+  agent     String   @default("radar")
+  title     String
+  summary   String?
+  status    String   @default("final")  // draft | final | archived
+
+  // Approval
+  needsApproval  Boolean  @default(false)
+
+  // Linking
+  linkedSiteId    String?
+  linkedDomainId  String?
+  linkedTaskId    String?
+  linkedContentId String?
+  linkedIdeaId    String?
+  runId           String?  // batch tracing: alle rapporten van één cron-run
+
+  // SEO Metrics (top-level voor filtering/sortering)
+  seoScore           Int?     // 0-100
+  topKeyword         String?
+  topPosition        Float?
+  monthlyClicks      Int?
+  monthlyImpressions Int?
+  avgCtr             Float?
+  quickWinCount      Int?
+  dataSource         String?  // gsc | bing | dataforseo | manual | combined
+  periodDays         Int?     // 28, 7, etc.
+
+  // Structured data (keywords, recommendations, signals, metrics, rawData)
+  metadata    Json?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("seo_reports")
 }
 
 // ─── New Agent & Revenue Models ─────────────────────────────────────

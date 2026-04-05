@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { validateAgentToken, unauthorizedResponse } from '@/lib/agent-auth'
 
-type AgentAction = 'task' | 'idea' | 'alert' | 'note' | 'decision' | 'context' | 'domain-eval' | 'research'
+type AgentAction = 'task' | 'idea' | 'alert' | 'note' | 'decision' | 'context' | 'domain-eval' | 'research' | 'content' | 'agent-report' | 'seo-report'
 
 async function logAgentAction(source: string, action: string, payload: unknown) {
   await prisma.agentLog.create({
@@ -308,12 +308,190 @@ async function handleResearch(body: Record<string, unknown>) {
   return research
 }
 
+// POST /api/agent/content — Create content (INK structured content with metadata)
+async function handleContent(body: Record<string, unknown>) {
+  const { source, title } = body
+
+  if (!body.body && !body.type) {
+    throw new ValidationError('body en type zijn verplicht voor content. Stuur minstens: source, title, body, type.')
+  }
+
+  // Pack structured fields into metadata JSON (same pattern as SPARK research)
+  const INK_METADATA_FIELDS = [
+    'metaTitle', 'metaDescription', 'searchIntent', 'keywordDifficulty', 'secondaryKeywords',
+    'targetAudience', 'tone', 'guidelines', 'wordCountTarget',
+    'contentBlocks', 'variants', 'performanceSnapshot', 'structuredData',
+  ]
+
+  const metadata: Record<string, unknown> = {}
+  for (const field of INK_METADATA_FIELDS) {
+    if (body[field] !== undefined) metadata[field] = body[field]
+  }
+
+  // Auto-calculate word count
+  const bodyText = (body.body as string) || ''
+  const wordCount = bodyText.trim() ? bodyText.trim().split(/\s+/).length : 0
+
+  const content = await prisma.content.create({
+    data: {
+      title: title as string,
+      body: bodyText,
+      type: (body.type as string) || 'article',
+      status: (body.status as string) || 'review',
+      author: source as string,
+      targetSite: body.targetSite as string | undefined,
+      targetPath: body.targetPath as string | undefined,
+      projectId: body.projectId as string | undefined,
+      feedback: body.feedback as string | undefined,
+      needsApproval: (body.needsApproval as boolean) ?? true,
+      approvalSource: source as string,
+      linkedKeyword: body.linkedKeyword as string | undefined,
+      linkedTaskId: body.linkedTaskId as string | undefined,
+      wordCount,
+      // New INK fields
+      linkedSiteId: body.linkedSiteId as string | undefined,
+      linkedDomainId: body.linkedDomainId as string | undefined,
+      linkedContentId: body.linkedContentId as string | undefined,
+      metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
+      language: body.language as string | undefined,
+      handoffStatus: (body.handoffStatus as string) || 'not-ready',
+      version: (body.version as number) || 1,
+      parentId: body.parentId as string | undefined,
+      summary: body.summary as string | undefined,
+    },
+    include: {
+      project: { select: { id: true, name: true } },
+      task: { select: { id: true, title: true, status: true } },
+    },
+  })
+
+  await logAgentAction(source as string, 'content', { contentId: content.id, title, type: body.type, wordCount })
+  return content
+}
+
+// POST /api/agent/agent-report — Create structured developer report (FORGE + all agents)
+async function handleAgentReport(body: Record<string, unknown>) {
+  const { source, title, reportType } = body
+
+  if (!reportType) {
+    throw new ValidationError('reportType is verplicht. Kies uit: implementation-update, build-report, deploy-report, bug-analysis, architecture-note, handoff-note, release-note, blocker-report, qa-summary, performance-report, technical-plan.')
+  }
+
+  // Pack structured fields into metadata JSON (same pattern as SPARK/INK)
+  // Combined fields from FORGE, LEDGER, and ATLAS — all agents use the same AgentReport model
+  const ALL_METADATA_FIELDS = [
+    // FORGE fields
+    'commitSha', 'vercelProjectId', 'deployTarget', 'deployStatus', 'durationMs',
+    'changeScope', 'userImpact', 'productionImpact', 'backwardCompatible',
+    'createdBy', 'reviewedBy', 'tags',
+    'implementedItems', 'affectedFiles', 'checks', 'metrics',
+    'blockers', 'handoff', 'artifacts',
+    // LEDGER fields
+    'comparisons', 'breakdown', 'alerts', 'assumptions', 'recommendations', 'source',
+    // ATLAS fields
+    'audience', 'currentState', 'confidence', 'approvalType',
+    'relatedTaskIds', 'relatedDecisionIds',
+    'doneItems', 'liveItems', 'priorities', 'questions',
+    'rawMarkdown',
+  ]
+
+  const metadata: Record<string, unknown> = {}
+  for (const field of ALL_METADATA_FIELDS) {
+    if (body[field] !== undefined) metadata[field] = body[field]
+  }
+
+  const report = await prisma.agentReport.create({
+    data: {
+      agent: source as string,
+      reportType: reportType as string,
+      title: title as string,
+      summary: body.summary as string | undefined,
+      body: body.body as string | undefined,
+      status: (body.status as string) || 'done',
+      outcome: body.outcome as string | undefined,
+      priority: (body.priority as string) || 'medium',
+      category: (body.category as string) || 'dev',
+      needsApproval: (body.needsApproval as boolean) || false,
+      approvalReason: body.approvalReason as string | undefined,
+      linkedTaskId: body.linkedTaskId as string | undefined,
+      linkedSiteId: body.linkedSiteId as string | undefined,
+      linkedSprintId: body.linkedSprintId as string | undefined,
+      linkedContentId: body.linkedContentId as string | undefined,
+      linkedIdeaId: body.linkedIdeaId as string | undefined,
+      linkedDomainId: body.linkedDomainId as string | undefined,
+      parentReportId: body.parentReportId as string | undefined,
+      environment: body.environment as string | undefined,
+      repo: body.repo as string | undefined,
+      branch: body.branch as string | undefined,
+      periodType: body.periodType as string | undefined,
+      periodLabel: body.periodLabel as string | undefined,
+      currency: body.currency as string | undefined,
+      metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
+      startedAt: body.startedAt ? new Date(body.startedAt as string) : undefined,
+      completedAt: body.completedAt ? new Date(body.completedAt as string) : undefined,
+    },
+  })
+
+  await logAgentAction(source as string, 'agent-report', { reportId: report.id, title, reportType })
+  return report
+}
+
+// POST /api/agent/seo-report — Create SEO report (RADAR time-series snapshots)
+async function handleSeoReport(body: Record<string, unknown>) {
+  const { source, title, subtype } = body
+
+  if (!subtype) {
+    throw new ValidationError('subtype is verplicht. Kies uit: site_audit, keyword_snapshot, traffic_analysis, domain_evaluation, opportunity_scan, signal.')
+  }
+
+  // Pack structured fields into metadata JSON
+  const RADAR_METADATA_FIELDS = [
+    'metrics', 'keywords', 'recommendations', 'signals', 'rawData',
+    'approvedBy', 'approvedAt',
+  ]
+
+  const metadata: Record<string, unknown> = {}
+  for (const field of RADAR_METADATA_FIELDS) {
+    if (body[field] !== undefined) metadata[field] = body[field]
+  }
+
+  const report = await prisma.seoReport.create({
+    data: {
+      subtype: subtype as string,
+      agent: (source as string) || 'radar',
+      title: title as string,
+      summary: body.summary as string | undefined,
+      status: (body.status as string) || 'final',
+      needsApproval: (body.needsApproval as boolean) || false,
+      linkedSiteId: body.linkedSiteId as string | undefined,
+      linkedDomainId: body.linkedDomainId as string | undefined,
+      linkedTaskId: body.linkedTaskId as string | undefined,
+      linkedContentId: body.linkedContentId as string | undefined,
+      linkedIdeaId: body.linkedIdeaId as string | undefined,
+      runId: body.runId as string | undefined,
+      seoScore: body.seoScore as number | undefined,
+      topKeyword: body.topKeyword as string | undefined,
+      topPosition: body.topPosition as number | undefined,
+      monthlyClicks: body.monthlyClicks as number | undefined,
+      monthlyImpressions: body.monthlyImpressions as number | undefined,
+      avgCtr: body.avgCtr as number | undefined,
+      quickWinCount: body.quickWinCount as number | undefined,
+      dataSource: body.dataSource as string | undefined,
+      periodDays: body.periodDays as number | undefined,
+      metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
+    },
+  })
+
+  await logAgentAction(source as string, 'seo-report', { reportId: report.id, title, subtype })
+  return report
+}
+
 // GET /api/agent/context — Get full CC context
 async function handleContext() {
   const last7Days = new Date()
   last7Days.setDate(last7Days.getDate() - 7)
 
-  const [projects, tasks, sites, alerts, nowItems, ideas, recentActivity, costs, kpis, recentKeywords, unreadMessages, latestSnapshot, activeDomains, sprints, recentDecisions] = await Promise.all([
+  const [projects, tasks, sites, alerts, nowItems, ideas, recentActivity, costs, kpis, recentKeywords, unreadMessages, latestSnapshot, activeDomains, sprints, recentDecisions, recentReports, recentSeoReports] = await Promise.all([
     prisma.project.findMany({ where: { status: 'active' }, orderBy: { updatedAt: 'desc' } }),
     prisma.task.findMany({ where: { status: { notIn: ['done', 'cancelled'] } }, orderBy: { createdAt: 'desc' }, take: 50, include: { project: true, site: true } }),
     prisma.site.findMany({ orderBy: { domain: 'asc' } }),
@@ -329,6 +507,8 @@ async function handleContext() {
     prisma.domainOpportunity.findMany({ where: { status: { in: ['evaluating', 'active', 'developing'] } }, orderBy: { createdAt: 'desc' }, take: 10 }),
     prisma.sprint.findMany({ orderBy: { week: 'desc' }, take: 2 }),
     prisma.decision.findMany({ where: { createdAt: { gte: last7Days } }, orderBy: { createdAt: 'desc' }, take: 20 }),
+    prisma.agentReport.findMany({ where: { createdAt: { gte: last7Days } }, orderBy: { createdAt: 'desc' }, take: 20 }),
+    prisma.seoReport.findMany({ where: { createdAt: { gte: last7Days } }, orderBy: { createdAt: 'desc' }, take: 20 }),
   ])
 
   // Finance summary for context
@@ -355,6 +535,8 @@ async function handleContext() {
     activeDomains,
     sprints,
     recentDecisions,
+    recentReports,
+    recentSeoReports,
     finance: {
       totalMRR: Math.round((clientMRR + siteMRR) * 100) / 100,
       clientMRR: Math.round(clientMRR * 100) / 100,
@@ -413,6 +595,18 @@ export async function POST(
       case 'research':
         if (!body.title) return NextResponse.json({ error: 'Missing required field: title' }, { status: 400 })
         result = await handleResearch(body)
+        break
+      case 'content':
+        if (!body.title) return NextResponse.json({ error: 'Missing required field: title' }, { status: 400 })
+        result = await handleContent(body)
+        break
+      case 'agent-report':
+        if (!body.title) return NextResponse.json({ error: 'Missing required field: title' }, { status: 400 })
+        result = await handleAgentReport(body)
+        break
+      case 'seo-report':
+        if (!body.title) return NextResponse.json({ error: 'Missing required field: title' }, { status: 400 })
+        result = await handleSeoReport(body)
         break
       default:
         return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 })

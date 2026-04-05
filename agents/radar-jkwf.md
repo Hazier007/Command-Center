@@ -93,6 +93,86 @@ Content-Type: application/json
 }
 ```
 
+### Gestructureerde SEO reports aanmaken (aanbevolen)
+Gebruik het agent SEO report endpoint voor rijke, gestructureerde SEO-output. Stuur structured velden flat — ze worden automatisch in `metadata` JSON verpakt.
+```
+POST https://command-center-web-one.vercel.app/api/agent/seo-report
+Authorization: Bearer hazier-cc-2026-04061979
+Content-Type: application/json
+
+{
+  "source": "radar",
+  "subtype": "site_audit",
+  "title": "SEO Audit: btw-calculator.be — April 2026",
+  "summary": "Score 78/100. Top keyword 'btw berekenen' positie 4. 3 quick wins gevonden.",
+  "linkedSiteId": "<site-id>",
+  "runId": "run_2026-04-05_06h",
+  "seoScore": 78,
+  "topKeyword": "btw berekenen",
+  "topPosition": 4.2,
+  "monthlyClicks": 2400,
+  "monthlyImpressions": 34000,
+  "avgCtr": 0.071,
+  "quickWinCount": 3,
+  "dataSource": "gsc",
+  "periodDays": 28,
+  "metrics": {
+    "clicks": 2400,
+    "impressions": 34000,
+    "ctr": 0.071,
+    "avgPosition": 12.4,
+    "indexedPages": 15,
+    "domainAuthority": 18,
+    "mobileScore": 92,
+    "pageSpeedScore": 88,
+    "seoScore": 78
+  },
+  "keywords": [
+    { "keyword": "btw berekenen", "position": 4.2, "clicks": 890, "impressions": 12400, "ctr": 0.072, "trend": "improving", "source": "gsc" },
+    { "keyword": "btw percentage belgie", "position": 8.1, "clicks": 180, "impressions": 3200, "ctr": 0.056, "trend": "stable", "source": "gsc", "isQuickWin": true }
+  ],
+  "recommendations": [
+    { "priority": "high", "type": "content_gap", "keyword": "btw tarieven 2026", "currentPosition": 15, "targetPosition": 5, "action": "Blogpost schrijven over BTW tarieven 2026", "assignTo": "ink", "effort": "medium", "estimatedImpact": "high" }
+  ],
+  "signals": [
+    { "type": "quick_win_cluster", "count": 3, "severity": "opportunity", "detectedAt": "2026-04-05T06:00:00Z" }
+  ]
+}
+```
+
+### Report subtypes
+| Subtype | Wanneer |
+|---------|---------|
+| `site_audit` | Volledige SEO audit van een site |
+| `keyword_snapshot` | Keyword ranking snapshot (periodiek) |
+| `traffic_analysis` | Traffic en engagement analyse |
+| `domain_evaluation` | Domein waardebepaling |
+| `opportunity_scan` | Quick win en kansen scan |
+| `signal` | Automatisch gedetecteerd signaal (daling, stijging, expiratie) |
+
+### Metadata velden (flat meesturen, automatisch in JSON verpakt)
+| Veld | Type | Beschrijving |
+|------|------|-------------|
+| `metrics` | object | `{ clicks, impressions, ctr, avgPosition, indexedPages, domainAuthority, mobileScore, pageSpeedScore, seoScore, crawlErrors }` |
+| `keywords` | array | `[{ keyword, position, clicks, impressions, ctr, trend, source, isQuickWin }]` |
+| `recommendations` | array | `[{ priority, type, keyword, currentPosition, targetPosition, action, assignTo, effort, estimatedImpact }]` |
+| `signals` | array | `[{ type, keyword, domain, previousPosition, currentPosition, delta, count, severity, detectedAt, expirationDate, daysRemaining }]` |
+| `rawData` | object | Ruwe brondata voor debugging |
+
+### Top-level kolommen (voor filtering/sortering)
+| Veld | Type | Beschrijving |
+|------|------|-------------|
+| `seoScore` | Int (0-100) | Algemene SEO score |
+| `topKeyword` | String | Belangrijkste keyword |
+| `topPosition` | Float | Positie op top keyword |
+| `monthlyClicks` | Int | Totaal clicks in periode |
+| `monthlyImpressions` | Int | Totaal impressies in periode |
+| `avgCtr` | Float | Gemiddelde CTR (0-1) |
+| `quickWinCount` | Int | Aantal quick win keywords |
+| `dataSource` | String | gsc / bing / dataforseo / manual / combined |
+| `periodDays` | Int | Periode in dagen (7, 28, etc.) |
+| `runId` | String | Batch ID voor groepering |
+
 ### Taken voor INK aanmaken
 Content nodig op basis van keyword research:
 ```
@@ -199,5 +279,9 @@ Gebruik `POST /api/agent/decision` met verplichte velden: `title`, `context`, `o
 | POST | `/api/agent/note` | Notitie/feedback/analyse toevoegen |
 | POST | `/api/agent/decision` | Beslissing vastleggen |
 | POST | `/api/agent/alert` | SEO alert (daling, expiratie) |
+| **POST** | **`/api/agent/seo-report`** | **Gestructureerd SEO report aanmaken (aanbevolen)** |
+| GET | `/api/seo-reports` | SEO reports lezen (met filters) |
+| GET | `/api/seo-reports/<id>` | SEO report detail |
+| PATCH | `/api/seo-reports/<id>` | SEO report bijwerken |
 | GET/POST/PATCH | `/api/agent/message` | Berichten lezen/sturen |
 | GET | `/api/domain-opportunities` | Domein portfolio inzien |

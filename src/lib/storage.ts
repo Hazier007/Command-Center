@@ -125,7 +125,7 @@ export interface ContentItem {
   id: string
   title: string
   body: string // the actual content (markdown)
-  type: 'article' | 'product-review' | 'buyers-guide' | 'page' | 'other'
+  type: 'meta' | 'blogpost' | 'landingpage' | 'review' | 'faq' | 'social' | 'article' | 'product-review' | 'buyers-guide' | 'page' | 'brief' | 'outline' | 'seo-rewrite' | 'brand-messaging' | 'other'
   status: 'draft' | 'review' | 'approved' | 'rejected' | 'live'
   author: string // 'bart' | 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark' | 'cowork'
   targetSite?: string // e.g. 'preppedia.com', 'btw-calculator.be'
@@ -134,6 +134,21 @@ export interface ContentItem {
   feedback?: string // Bart's review notes
   createdAt: string
   updatedAt: string
+  // Extended INK fields
+  needsApproval?: boolean
+  approvalSource?: string
+  linkedKeyword?: string
+  linkedTaskId?: string
+  wordCount?: number
+  linkedSiteId?: string
+  linkedDomainId?: string
+  linkedContentId?: string
+  metadata?: Record<string, unknown>
+  language?: string
+  handoffStatus?: string
+  version?: number
+  parentId?: string
+  summary?: string
 }
 
 export interface ResearchItem {

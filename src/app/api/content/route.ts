@@ -10,11 +10,26 @@ export async function GET(request: Request) {
     const targetSite = searchParams.get('targetSite')
     const type = searchParams.get('type')
 
-    const where: Record<string, string> = {}
+    const linkedSiteId = searchParams.get('linkedSiteId')
+    const language = searchParams.get('language')
+    const handoffStatus = searchParams.get('handoffStatus')
+    const search = searchParams.get('search')
+
+    const where: Record<string, unknown> = {}
     if (author) where.author = author
     if (status) where.status = status
     if (targetSite) where.targetSite = targetSite
     if (type) where.type = type
+    if (linkedSiteId) where.linkedSiteId = linkedSiteId
+    if (language) where.language = language
+    if (handoffStatus) where.handoffStatus = handoffStatus
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { body: { contains: search, mode: 'insensitive' } },
+        { summary: { contains: search, mode: 'insensitive' } },
+      ]
+    }
 
     const content = await prisma.content.findMany({
       where,
@@ -59,6 +74,15 @@ export async function POST(request: Request) {
         linkedKeyword: data.linkedKeyword,
         linkedTaskId: data.linkedTaskId,
         wordCount,
+        linkedSiteId: data.linkedSiteId,
+        linkedDomainId: data.linkedDomainId,
+        linkedContentId: data.linkedContentId,
+        metadata: data.metadata,
+        language: data.language,
+        handoffStatus: data.handoffStatus,
+        version: data.version || 1,
+        parentId: data.parentId,
+        summary: data.summary,
       },
       include: {
         project: { select: { id: true, name: true } },

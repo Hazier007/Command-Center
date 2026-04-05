@@ -49,6 +49,83 @@ Content-Type: application/json
 
 ## Jouw verantwoordelijkheden
 
+### Gestructureerde strategy reports aanmaken (aanbevolen)
+Gebruik het agent report endpoint voor rijke, gestructureerde operationele output. Stuur structured velden flat — ze worden automatisch in `metadata` JSON verpakt.
+```
+POST https://command-center-web-one.vercel.app/api/agent/agent-report
+Authorization: Bearer hazier-cc-2026-04061979
+Content-Type: application/json
+
+{
+  "source": "atlas",
+  "reportType": "daily-brief",
+  "title": "Daily Brief — 5 april 2026",
+  "summary": "3 taken afgerond, 1 blocker, 2 beslissingen nodig.",
+  "body": "Volledige markdown beschrijving hier...",
+  "status": "done",
+  "priority": "high",
+  "category": "general",
+  "periodType": "daily",
+  "periodLabel": "2026-04-05",
+  "linkedSprintId": "<sprint-id>",
+  "audience": ["bart"],
+  "currentState": "on-track",
+  "confidence": 0.85,
+  "doneItems": [
+    { "label": "btw-calculator SEO audit", "agent": "radar", "description": "Score 78/100, 3 quick wins", "impact": "SEO verbetering verwacht", "linkedTaskId": "<task-id>" }
+  ],
+  "blockers": [
+    { "label": "Vercel deploy timeout", "severity": "high", "description": "Build faalt op collectpro.be", "impact": "Productie update geblokkeerd", "owner": "forge", "suggestedNextStep": "Build cache resetten" }
+  ],
+  "liveItems": [
+    { "label": "opzegtermijn-berekenen", "url": "https://datumberekenen.be/opzegtermijn-berekenen", "type": "page", "description": "Nieuwe SEO landingspagina" }
+  ],
+  "priorities": [
+    { "rank": 1, "label": "collectpro.be deploy fixen", "owner": "forge", "reason": "Productie geblokkeerd" },
+    { "rank": 2, "label": "BTW content schrijven", "owner": "ink", "reason": "Quick win SEO kans" }
+  ],
+  "questions": [
+    { "question": "Moeten we Luwaert contract verlengen?", "options": ["Verlengen", "Heronderhandelen", "Niet verlengen"], "reason": "Contract loopt af over 25 dagen", "requiredBy": "2026-04-10" }
+  ],
+  "recommendations": [
+    { "title": "Focus verschuiven naar SEO quick wins", "description": "3 keywords op positie 8-15 met hoog volume", "type": "priority", "needsApproval": false }
+  ],
+  "metrics": { "openTasks": 12, "completedToday": 3, "blockedTasks": 1, "pendingDecisions": 2 }
+}
+```
+
+### Report types
+| Type | Wanneer |
+|------|---------|
+| `daily-brief` | Dagelijks overzicht voor Bart |
+| `operational-summary` | Operationeel overzicht (ad hoc) |
+| `sprint-plan` | Sprint planning (maandag) |
+| `sprint-review` | Sprint review (vrijdag) |
+| `priority-update` | Prioriteiten verschuiving |
+| `blocker-report` | Blokkade analyse met actieplan |
+| `decision-support` | Beslissingsondersteuning met opties |
+| `executive-summary` | Wekelijks/maandelijks samenvatting |
+| `project-status` | Project status update |
+| `agent-coordination` | Team coordinatie en afstemming |
+
+### Metadata velden (flat meesturen, automatisch in JSON verpakt)
+| Veld | Type | Beschrijving |
+|------|------|-------------|
+| `audience` | array | Wie moet dit lezen: `["bart"]`, `["forge", "radar"]` |
+| `currentState` | string | on-track / at-risk / blocked / pending-review / done |
+| `confidence` | number | 0-1 betrouwbaarheid van de status |
+| `approvalType` | string | budget / priority-shift / roadmap-change / launch / strategy |
+| `doneItems` | array | `[{ label, agent, description, impact, linkedTaskId }]` |
+| `blockers` | array | `[{ label, severity, description, impact, owner, suggestedNextStep }]` |
+| `liveItems` | array | `[{ label, url, type, description }]` |
+| `priorities` | array | `[{ rank, label, owner, reason, needsApproval }]` |
+| `questions` | array | `[{ question, options, reason, requiredBy }]` |
+| `recommendations` | array | `[{ title, description, type, needsApproval }]` |
+| `metrics` | object | Vrije key-value metrics |
+| `rawMarkdown` | string | Markdown fallback voor ongestructureerde content |
+| `relatedTaskIds` | array | Gerelateerde taak IDs |
+| `relatedDecisionIds` | array | Gerelateerde beslissing IDs |
+
 ### Wekelijkse sprint
 - Maak elke maandag een nieuwe sprint aan
 - Format: `2026-W14` (ISO week)
@@ -234,7 +311,10 @@ Na afronding van een taak of sprint:
 | POST | `/api/agent/alert` | Alert aanmaken |
 | POST | `/api/agent/note` | Notitie/feedback/analyse toevoegen |
 | POST | `/api/agent/decision` | Beslissing vastleggen |
-| POST | `/api/agent/report` | Taak voortgang rapporteren |
+| POST | `/api/agent/report` | Taak voortgang rapporteren (legacy) |
+| **POST** | **`/api/agent/agent-report`** | **Gestructureerd strategy report aanmaken (aanbevolen)** |
+| GET | `/api/agent-reports` | Reports lezen (met filters) |
+| PATCH | `/api/agent-reports/<id>` | Report bijwerken |
 | GET/POST/PATCH | `/api/agent/message` | Berichten lezen/sturen |
 | GET/POST | `/api/sprints` | Sprint beheer |
 | PATCH | `/api/sprints/<id>` | Sprint bijwerken |

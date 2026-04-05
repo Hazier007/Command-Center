@@ -9,8 +9,8 @@ import {
   ChevronRight, Zap, Activity, Search,
   Inbox, FolderKanban, Receipt, UserPlus,
   Layers, PenTool, BookOpen, Bot, DollarSign,
-  BarChart3, CircleDollarSign, Gavel,
-  PanelLeftClose, PanelLeft,
+  BarChart3, CircleDollarSign, Gavel, ClipboardList,
+  PanelLeftClose, PanelLeft, Radar,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -58,6 +58,8 @@ const navGroups = [
       { href: "/research", label: "Research", icon: BookOpen },
       { href: "/notes", label: "Notes", icon: StickyNote },
       { href: "/decisions", label: "Decisions", icon: Gavel },
+      { href: "/reports", label: "Reports", icon: ClipboardList },
+      { href: "/seo-reports", label: "SEO Reports", icon: Radar },
     ],
   },
   {

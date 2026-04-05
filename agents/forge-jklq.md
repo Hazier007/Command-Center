@@ -31,6 +31,97 @@ Content-Type: application/json
 
 ## Jouw verantwoordelijkheden
 
+### Gestructureerde reports aanmaken (aanbevolen)
+Gebruik het agent report endpoint voor rijke, gestructureerde dev-output. Stuur structured velden flat — ze worden automatisch in `metadata` JSON verpakt.
+```
+POST https://command-center-web-one.vercel.app/api/agent/agent-report
+Authorization: Bearer hazier-cc-2026-04061979
+Content-Type: application/json
+
+{
+  "source": "forge",
+  "reportType": "deploy-report",
+  "title": "datumberekenen.be — /opzegtermijn-berekenen live op preview",
+  "summary": "Nieuwe SEO landingspagina gebouwd, build geslaagd, preview deployment klaar voor review.",
+  "body": "Volledige markdown beschrijving hier...",
+  "status": "done",
+  "outcome": "success",
+  "priority": "high",
+  "category": "dev",
+  "linkedTaskId": "<task-id>",
+  "linkedSiteId": "<site-id>",
+  "environment": "preview",
+  "repo": "Hazier007/datumberekenen",
+  "branch": "master",
+  "commitSha": "abc123def456",
+  "vercelProjectId": "prj_xxx",
+  "deployTarget": "preview",
+  "deployStatus": "success",
+  "changeScope": "medium",
+  "productionImpact": false,
+  "backwardCompatible": true,
+  "implementedItems": [
+    { "type": "page", "label": "/opzegtermijn-berekenen", "status": "implemented", "notes": "SEO landingspagina" }
+  ],
+  "affectedFiles": [
+    { "path": "app/opzegtermijn-berekenen/page.tsx", "changeType": "created" }
+  ],
+  "checks": [
+    { "name": "build", "status": "passed", "details": "Next.js build geslaagd" },
+    { "name": "lint", "status": "passed" }
+  ],
+  "metrics": {
+    "buildTimeMs": 48211,
+    "lighthouse": { "performance": 94, "seo": 100, "accessibility": 98, "bestPractices": 100 }
+  },
+  "handoff": {
+    "nextOwner": "ink",
+    "nextAction": "CTA-copy en FAQ-tekst finetunen",
+    "risks": ["SERP CTR hangt af van title/meta iteratie"]
+  },
+  "artifacts": {
+    "previewUrl": "https://datumberekenen-preview.vercel.app/opzegtermijn-berekenen"
+  },
+  "tags": ["nextjs", "vercel", "seo", "landing-page"]
+}
+```
+
+### Report types
+| Type | Wanneer |
+|------|---------|
+| `implementation-update` | Voortgangsrapport over gebouwde features |
+| `technical-plan` | Voorgestelde technische aanpak (approval nodig) |
+| `build-report` | Build resultaten (checks, lighthouse, errors) |
+| `deploy-report` | Deploy resultaten naar preview/staging/productie |
+| `bug-analysis` | Bug triage met root cause en fix plan |
+| `architecture-note` | Architectuurbeslissing met rationale |
+| `handoff-note` | Overdracht naar andere agent (INK, RADAR, etc.) |
+| `release-note` | Releasesamenvatting voor changelog |
+| `blocker-report` | Blokkade met severity en actie nodig |
+| `qa-summary` | QA/test resultaten |
+| `performance-report` | Performance analyse (lighthouse, CWV, bundle size) |
+
+### Metadata velden (flat meesturen, automatisch in JSON verpakt)
+| Veld | Type | Beschrijving |
+|------|------|-------------|
+| `commitSha` | string | Git commit hash |
+| `vercelProjectId` | string | Vercel project ID |
+| `deployTarget` | string | none/preview/staging/production |
+| `deployStatus` | string | not-started/building/success/failed |
+| `durationMs` | number | Duurtijd in milliseconden |
+| `changeScope` | string | small/medium/large/architectural |
+| `userImpact` | string | none/internal/low/medium/high |
+| `productionImpact` | boolean | Raakt productie? |
+| `backwardCompatible` | boolean | Backward compatible? |
+| `implementedItems` | array | `[{ type, label, status, notes }]` |
+| `affectedFiles` | array | `[{ path, changeType }]` |
+| `checks` | array | `[{ name, status, details }]` |
+| `metrics` | object | Build/lighthouse/performance metrics |
+| `blockers` | array | `[{ type, label, severity, actionNeeded }]` |
+| `handoff` | object | `{ nextOwner, nextAction, risks }` |
+| `artifacts` | object | `{ previewUrl, deployUrl, logUrl, pullRequestUrl }` |
+| `tags` | array | Vrije labels voor filtering |
+
 ### Site deployment tracking
 Na elke deployment, update de site:
 ```
@@ -153,12 +244,15 @@ Gebruik `POST /api/agent/decision` met verplichte velden: `title`, `context`, `o
 | Methode | Endpoint | Doel |
 |---------|----------|------|
 | GET | `/api/agent/my-tasks?agent=forge` | Jouw openstaande taken |
-| POST | `/api/agent/report` | Taak voortgang rapporteren |
+| POST | `/api/agent/report` | Taak voortgang rapporteren (legacy) |
+| **POST** | **`/api/agent/agent-report`** | **Gestructureerd report aanmaken (aanbevolen)** |
 | POST | `/api/agent/task` | Subtaak aanmaken |
 | POST | `/api/agent/note` | Notitie/feedback/analyse toevoegen |
 | POST | `/api/agent/decision` | Beslissing vastleggen |
 | POST | `/api/agent/alert` | Build/deploy alert |
 | GET/POST/PATCH | `/api/agent/message` | Berichten lezen/sturen |
+| GET | `/api/agent-reports` | Reports lezen (met filters) |
+| PATCH | `/api/agent-reports/<id>` | Report bijwerken |
 | PATCH | `/api/sites/<id>` | Site deployment info updaten |
 | GET | `/api/sites` | Alle sites ophalen |
 | GET/POST | `/api/tasks` | Taken beheren |
