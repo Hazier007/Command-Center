@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 interface Skill {
   id: string; name: string; description: string; emoji: string
   needsSite?: boolean
+  needsNicheInput?: boolean // For lead hunting: niche + stad input
   agents: { name: string; color: string }[]
   tasks: { agent: string; title: string; category: string; priority?: string; description?: string }[]
 }
@@ -142,6 +143,53 @@ const categories: SkillCategory[] = [
     ],
   },
   {
+    title: "Hazier Sales", emoji: "🔶",
+    skills: [
+      {
+        id: "lead-hunting", name: "Lead Hunting", emoji: "🎯", needsNicheInput: true,
+        description: "Niche + stad → prospects zoeken met slechte websites → demo site bouwen → rapport + outreach mail genereren.",
+        agents: [
+          { name: "RADAR", color: "bg-blue-500/15 text-blue-400" },
+          { name: "SPARK", color: "bg-[#F5911E]/15 text-[#F5911E]" },
+          { name: "FORGE", color: "bg-green-500/15 text-green-400" },
+          { name: "INK", color: "bg-purple-500/15 text-purple-400" },
+        ],
+        tasks: [
+          { agent: "RADAR", title: "Lead prospecting: bedrijven zoeken met slechte/geen website", category: "research", priority: "high", description: "Zoek 10-15 bedrijven in de opgegeven niche + stad die geen website hebben, een verouderde site, of niet vindbaar zijn op Google. Beoordeel elke prospect op: website kwaliteit (1-10), Google zichtbaarheid, en geschatte waarde. Lever een gerankt rapport." },
+          { agent: "SPARK", title: "Lead kwalificatie: potentieel en ROI inschatting per prospect", category: "research", description: "Evalueer de top-5 prospects op: omzetpotentieel, bereidheid tot investering, concurrentiepositie. Schat de waarde van een website voor elk bedrijf. Lever een lead scorecard." },
+          { agent: "FORGE", title: "Demo website bouwen voor top prospect als voorbeeld", category: "dev", priority: "high", description: "Bouw een professionele Next.js demo site voor de #1 prospect. Gebruik de dropservice-site-builder structuur: lead form, regio paginas, SEO content, FAQ, kosten tabel. Deploy op Vercel als demo link." },
+          { agent: "INK", title: "Outreach pakket: rapport + gepersonaliseerde mail + offerte", category: "content", priority: "high", description: "Schrijf per top-3 prospect: (1) een website analyse rapport met verbeterpunten, (2) een gepersonaliseerde outreach email die de demo site toont, (3) een Hazier offerte template met prijzen. Toon ROI: wat kost geen website hen per maand aan gemiste klanten." },
+        ],
+      },
+      {
+        id: "klant-onboarding", name: "Klant Onboarding", emoji: "🤝",
+        description: "Nieuwe klant → project setup, intake rapport, eerste maand planning, welkomstmail.",
+        agents: [
+          { name: "ATLAS", color: "bg-blue-500/15 text-blue-300" },
+          { name: "FORGE", color: "bg-green-500/15 text-green-400" },
+          { name: "INK", color: "bg-purple-500/15 text-purple-400" },
+        ],
+        tasks: [
+          { agent: "ATLAS", title: "Klant onboarding: project setup + eerste maand planning", category: "general", priority: "high", description: "Maak een project plan voor de nieuwe klant. Definieer milestones voor maand 1-3, wijs taken toe aan het team, en stel KPIs in." },
+          { agent: "FORGE", title: "Technische setup: repo, Vercel project, DNS, analytics", category: "dev", description: "Maak GitHub repo, Vercel project, configureer custom domein, installeer GA4 + GSC. Documenteer de technische setup." },
+          { agent: "INK", title: "Welkomstmail + intake rapport schrijven voor klant", category: "content", description: "Schrijf een professionele welkomstmail en een intake rapport met: huidige situatie, doelstellingen, aanpak, en timeline." },
+        ],
+      },
+      {
+        id: "portfolio-showcase", name: "Portfolio Showcase", emoji: "🏆",
+        description: "Verzamel resultaten van alle klanten → case studies + portfolio pagina voor hazier.be.",
+        agents: [
+          { name: "RADAR", color: "bg-blue-500/15 text-blue-400" },
+          { name: "INK", color: "bg-purple-500/15 text-purple-400" },
+        ],
+        tasks: [
+          { agent: "RADAR", title: "Klant resultaten verzamelen: traffic, rankings, leads per site", category: "seo", description: "Haal voor elke actieve klant de resultaten op: traffic groei, keyword rankings, leads gegenereerd. Maak een data rapport per klant." },
+          { agent: "INK", title: "Case studies schrijven + portfolio pagina content", category: "content", priority: "high", description: "Schrijf 3 case studies op basis van RADAR data. Format: uitdaging → aanpak → resultaat. Plus portfolio pagina content voor hazier.be." },
+        ],
+      },
+    ],
+  },
+  {
     title: "Technisch & Ops", emoji: "🔧",
     skills: [
       {
@@ -212,6 +260,76 @@ function SitePicker({ sites, onSelect, onCancel }: { sites: Site[]; onSelect: (s
   )
 }
 
+// ─── Niche Input Modal (Lead Hunting) ─────────────────────────
+function NicheInputModal({ onSubmit, onCancel }: { onSubmit: (niche: string, stad: string) => void; onCancel: () => void }) {
+  const [niche, setNiche] = useState("")
+  const [stad, setStad] = useState("")
+
+  const suggestedNiches = ["Slotenmaker", "Dakdekker", "Loodgieter", "Elektricien", "Tuinaanleg", "Schilder", "Schoorsteenveger", "Glazenwasser", "Airco installatie", "Zonnepanelen"]
+  const suggestedSteden = ["Gent", "Antwerpen", "Brugge", "Mechelen", "Leuven", "Brussel", "Hasselt", "Kortrijk", "Aalst", "Oostende"]
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onCancel}>
+      <div className="w-full max-w-md rounded-2xl border border-[#F5911E]/20 bg-zinc-900 p-5 shadow-2xl animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-2xl">🎯</span>
+          <div>
+            <h3 className="text-[14px] font-bold text-white">Lead Hunting</h3>
+            <p className="text-[11px] text-zinc-500">Welke niche en stad wil je targeten?</p>
+          </div>
+        </div>
+
+        {/* Niche */}
+        <div className="mb-3">
+          <label className="text-[10px] font-bold uppercase text-zinc-500 mb-1.5 block">Niche / Service</label>
+          <input
+            type="text"
+            value={niche}
+            onChange={(e) => setNiche(e.target.value)}
+            placeholder="bv. Slotenmaker, Dakdekker, Loodgieter..."
+            className="w-full rounded-lg border border-white/[0.08] bg-zinc-800/60 px-3 py-2.5 text-[12px] text-white placeholder-zinc-500 outline-none focus:border-[#F5911E]/40"
+            autoFocus
+          />
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {suggestedNiches.map((n) => (
+              <button key={n} onClick={() => setNiche(n)} className={cn("rounded-md px-2 py-1 text-[9px] font-medium transition-colors", niche === n ? "bg-[#F5911E]/20 text-[#F5911E]" : "bg-zinc-800 text-zinc-500 hover:text-zinc-300")}>{n}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* Stad */}
+        <div className="mb-4">
+          <label className="text-[10px] font-bold uppercase text-zinc-500 mb-1.5 block">Stad / Regio</label>
+          <input
+            type="text"
+            value={stad}
+            onChange={(e) => setStad(e.target.value)}
+            placeholder="bv. Gent, Antwerpen, Brugge..."
+            className="w-full rounded-lg border border-white/[0.08] bg-zinc-800/60 px-3 py-2.5 text-[12px] text-white placeholder-zinc-500 outline-none focus:border-[#F5911E]/40"
+          />
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {suggestedSteden.map((s) => (
+              <button key={s} onClick={() => setStad(s)} className={cn("rounded-md px-2 py-1 text-[9px] font-medium transition-colors", stad === s ? "bg-[#F5911E]/20 text-[#F5911E]" : "bg-zinc-800 text-zinc-500 hover:text-zinc-300")}>{s}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => { if (niche.trim() && stad.trim()) onSubmit(niche.trim(), stad.trim()) }}
+            disabled={!niche.trim() || !stad.trim()}
+            className="flex-1 rounded-lg bg-[#F5911E]/20 py-2.5 text-[12px] font-bold text-[#F5911E] hover:bg-[#F5911E]/30 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            🎯 Start Lead Hunting →
+          </button>
+          <button onClick={onCancel} className="rounded-lg bg-zinc-800 px-4 py-2.5 text-[11px] font-bold text-zinc-400 hover:text-white transition-colors">Annuleren</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Success Toast ────────────────────────────────────────────
 function SuccessToast({ skill, taskCount, onClose }: { skill: string; taskCount: number; onClose: () => void }) {
   useEffect(() => { const t = setTimeout(onClose, 4000); return () => clearTimeout(t) }, [onClose])
@@ -234,6 +352,7 @@ export default function CoworkPage() {
   const { activeBusiness } = useBusinessContext()
   const [sites, setSites] = useState<Site[]>([])
   const [pendingSkill, setPendingSkill] = useState<Skill | null>(null)
+  const [nicheSkill, setNicheSkill] = useState<Skill | null>(null)
   const [toast, setToast] = useState<{ skill: string; count: number } | null>(null)
   const [executing, setExecuting] = useState<string | null>(null)
 
@@ -241,12 +360,15 @@ export default function CoworkPage() {
     fetch("/api/sites").then((r) => r.json()).then((d) => { if (Array.isArray(d)) setSites(d) }).catch(() => {})
   }, [])
 
-  const executeSkill = async (skill: Skill, site?: Site) => {
+  const executeSkill = async (skill: Skill, site?: Site, context?: { niche?: string; stad?: string }) => {
     setExecuting(skill.id)
+    const prefix = site ? `[${site.domain}]` : context?.niche ? `[${context.niche} · ${context.stad}]` : ""
     try {
       const results = await Promise.all(
-        skill.tasks.map((task) =>
-          fetch("/api/agent/task", {
+        skill.tasks.map((task) => {
+          let desc = task.description || ""
+          if (context?.niche) desc = `Niche: ${context.niche}\nStad: ${context.stad}\n\n${desc}`
+          return fetch("/api/agent/task", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -254,8 +376,8 @@ export default function CoworkPage() {
             },
             body: JSON.stringify({
               source: "cowork",
-              title: site ? `[${site.domain}] ${task.title}` : task.title,
-              description: task.description || "",
+              title: prefix ? `${prefix} ${task.title}` : task.title,
+              description: desc,
               category: task.category,
               priority: task.priority || "medium",
               assignedTo: task.agent.toLowerCase(),
@@ -263,7 +385,7 @@ export default function CoworkPage() {
               needsApproval: true,
             }),
           }).then((r) => r.json()).catch((e) => ({ error: e.message }))
-        )
+        })
       )
       const successCount = results.filter((r) => r.id).length
       setToast({ skill: skill.name, count: successCount })
@@ -274,7 +396,9 @@ export default function CoworkPage() {
   }
 
   const handleSkillClick = (skill: Skill) => {
-    if (skill.needsSite) {
+    if (skill.needsNicheInput) {
+      setNicheSkill(skill)
+    } else if (skill.needsSite) {
       setPendingSkill(skill)
     } else {
       executeSkill(skill)
@@ -352,6 +476,14 @@ export default function CoworkPage() {
           sites={sites}
           onSelect={(site) => { executeSkill(pendingSkill, site); setPendingSkill(null) }}
           onCancel={() => setPendingSkill(null)}
+        />
+      )}
+
+      {/* Niche Input Modal (Lead Hunting) */}
+      {nicheSkill && (
+        <NicheInputModal
+          onSubmit={(niche, stad) => { executeSkill(nicheSkill, undefined, { niche, stad }); setNicheSkill(null) }}
+          onCancel={() => setNicheSkill(null)}
         />
       )}
 
