@@ -572,9 +572,11 @@ model DomainOpportunity {
 
   // Extended fields for Domeinen hub
   linkedIdeaId   String?  // SPARK can link an idea evaluation
-  businessUnit   String?  // 'agency' | 'rankrent' | 'affiliate' | 'tools' | 'leadgen'
+  businessUnit   String?  // 'hazier' | 'agency' | 'rankrent' | 'affiliate' | 'tools' | 'leadgen'
   hasIdea        Boolean  @default(false) // quick filter: has linked idea
   category       String?  // 'parking' | 'prospect' | 'acquired' | 'forsale'
+  renewalDate    DateTime?
+  provider       String?  // 'hazier' | 'transip' | 'combell' | 'godaddy' | 'cloudflare' | 'other'
 
   @@map("domain_opportunities")
 }
@@ -677,6 +679,86 @@ model Decision {
   updatedAt   DateTime @updatedAt
 
   @@map("decisions")
+}
+
+// ─── Crypto Bot Models ───────────────────────────────────────────────
+
+model BotConfig {
+  id             String   @id @default(cuid())
+  coin           String   // BTC, ETH, SOL, etc.
+  market         String   // BTC-EUR, ETH-EUR, etc.
+  active         Boolean  @default(true)
+  trailingPct    Float    @default(0.15)  // trailing stop %
+  dcaSteps       Int      @default(4)     // hoeveel DCA herinkoop stappen
+  dcaStepPct     Float    @default(0.05)  // % daling per DCA stap
+  dcaStepWeight  Float    @default(0.25)  // fractie per DCA stap
+  coreHoldPct    Float    @default(0.60)  // % core positie (nooit verkopen)
+  tradePct       Float    @default(0.30)  // % trade positie
+  cashPct        Float    @default(0.10)  // % cash reserve
+  targetAlloc    Float?   // doel % van totaal portfolio
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  trades         BotTrade[]
+
+  @@unique([coin])
+  @@map("bot_configs")
+}
+
+model BotTrade {
+  id          String   @id @default(cuid())
+  configId    String
+  config      BotConfig @relation(fields: [configId], references: [id])
+  coin        String   // BTC, ETH, etc.
+  market      String   // BTC-EUR
+  side        String   // buy | sell
+  type        String   // trailing_stop | dca_rebuy | manual | rebalance
+  amount      Float    // hoeveelheid coin
+  price       Float    // prijs per coin in EUR
+  totalEur    Float    // totaal in EUR
+  reason      String?  // "trailing stop hit at 12%", "DCA step 2/4 at -10%"
+  orderId     String?  // Bitvavo order ID
+  status      String   @default("filled") // pending | filled | failed | cancelled
+  createdAt   DateTime @default(now())
+
+  @@index([coin, createdAt])
+  @@map("bot_trades")
+}
+
+model BotPosition {
+  id            String   @id @default(cuid())
+  coin          String   @unique
+  market        String
+  totalAmount   Float    @default(0)  // totaal coins in bezit
+  avgBuyPrice   Float    @default(0)  // gemiddelde aankoopprijs
+  highestPrice  Float    @default(0)  // hoogste prijs (voor trailing stop)
+  currentPrice  Float    @default(0)  // laatste bekende prijs
+  currentValue  Float    @default(0)  // huidige waarde in EUR
+  pnlEur        Float    @default(0)  // P&L in EUR
+  pnlPct        Float    @default(0)  // P&L in %
+  status        String   @default("holding") // holding | trailing | sold | dca_rebuy
+  dcaStep       Int      @default(0)  // huidige DCA herinkoop stap (0=geen)
+  soldAt        Float?   // prijs waarop verkocht (na trailing stop)
+  soldAmount    Float?   // hoeveel verkocht
+  lastTickAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("bot_positions")
+}
+
+model BotSnapshot {
+  id            String   @id @default(cuid())
+  totalValue    Float    // totale portfolio waarde in EUR
+  totalPnlEur   Float    // totale P&L in EUR
+  totalPnlPct   Float    // totale P&L in %
+  cashBalance   Float    @default(0)  // cash beschikbaar
+  positions     Json     // snapshot van alle posities
+  fearGreed     Int?     // Fear & Greed index op dat moment
+  btcDominance  Float?   // BTC dominance %
+  createdAt     DateTime @default(now())
+
+  @@map("bot_snapshots")
 }
 
 model Lead {

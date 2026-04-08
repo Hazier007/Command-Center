@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Zap, DollarSign, ClipboardList, Globe, Bot, Brain, Settings } from "lucide-react"
+import { Zap, DollarSign, ClipboardList, Globe, Bot, Brain, Settings, TrendingUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
@@ -11,6 +11,7 @@ const navItems = [
   { href: "/werk", icon: ClipboardList, label: "Werk", accent: false },
   { href: "/portfolio", icon: Globe, label: "Portfolio", accent: false },
   { href: "/agents", icon: Bot, label: "Agents", accent: false },
+  { href: "/crypto", icon: TrendingUp, label: "Crypto", accent: false },
 ]
 
 const coworkItem = { href: "/cowork", icon: Brain, label: "Cowork", accent: true }

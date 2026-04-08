@@ -11,6 +11,10 @@
     {
       "path": "/api/cron/seo-scan",
       "schedule": "0 7 * * 1"
+    },
+    {
+      "path": "/api/bot/tick",
+      "schedule": "*/15 * * * *"
     }
   ]
 }
