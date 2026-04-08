@@ -415,7 +415,8 @@ export default function WerkPage() {
     })
   }
 
-  const tasksByStatus = (status: string) => tasks.filter((t) => t.status === status).slice(0, 12)
+  const tasksByStatus = (status: string) => tasks.filter((t) => t.status === status)
+  const taskCountByStatus = (status: string) => tasks.filter((t) => t.status === status).length
   const contentByStatus = (status: string) => content.filter((c) => c.status === status)
   const leadsByStatus = (status: string) => leads.filter((l) => l.status === status)
 
@@ -461,16 +462,19 @@ export default function WerkPage() {
       {tab === "taken" && (
         <div className="grid grid-cols-5 gap-3">
           {TASK_COLUMNS.map((col) => {
-            const colTasks = tasksByStatus(col.key)
+            const allColTasks = tasksByStatus(col.key)
+            const totalCount = allColTasks.length
+            const colTasks = allColTasks.slice(0, 20)
+            const hasMore = totalCount > 20
             return (
-              <div key={col.key} className="rounded-xl border border-white/[0.06] bg-zinc-800/20 p-3">
-                <div className="flex items-center justify-between mb-3 pb-3 border-b border-white/[0.06]">
+              <div key={col.key} className="rounded-xl border border-white/[0.06] bg-zinc-800/20 p-3 flex flex-col max-h-[70vh]">
+                <div className="flex items-center justify-between mb-3 pb-3 border-b border-white/[0.06] shrink-0">
                   <span className={cn("flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide", col.color)}>
                     {col.icon} {col.label}
                   </span>
-                  <span className="rounded-full bg-zinc-700/50 px-2 py-0.5 text-[9px] text-zinc-400">{colTasks.length}</span>
+                  <span className="rounded-full bg-zinc-700/50 px-2 py-0.5 text-[9px] text-zinc-400">{totalCount}</span>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 overflow-y-auto flex-1 scrollbar-thin">
                   {colTasks.map((task) => (
                     <div
                       key={task.id}
@@ -499,7 +503,8 @@ export default function WerkPage() {
                       </div>
                     </div>
                   ))}
-                  {colTasks.length === 0 && <p className="text-center text-[11px] text-zinc-600 py-4">{loading ? "Laden..." : "Geen taken"}</p>}
+                  {hasMore && <p className="text-center text-[10px] text-zinc-500 py-2">+ {totalCount - 20} meer</p>}
+                  {totalCount === 0 && <p className="text-center text-[11px] text-zinc-600 py-4">{loading ? "Laden..." : "Geen taken"}</p>}
                 </div>
               </div>
             )
