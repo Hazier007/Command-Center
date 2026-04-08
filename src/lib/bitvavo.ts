@@ -39,7 +39,8 @@ export interface TickerPrice {
 }
 
 export async function getPrice(market: string): Promise<TickerPrice> {
-  const res = await fetch(`${BASE_URL}/${market}/ticker/price`)
+  const res = await fetch(`${BASE_URL}/ticker/price?market=${market}`)
+  if (!res.ok) throw new Error(`getPrice ${market}: ${res.status}`)
   return res.json() as Promise<TickerPrice>
 }
 
@@ -62,7 +63,8 @@ export interface Ticker24h {
 }
 
 export async function getTicker24h(market: string): Promise<Ticker24h> {
-  const res = await fetch(`${BASE_URL}/${market}/ticker/24h`)
+  const res = await fetch(`${BASE_URL}/ticker/24h?market=${market}`)
+  if (!res.ok) throw new Error(`getTicker24h ${market}: ${res.status}`)
   return res.json() as Promise<Ticker24h>
 }
 
