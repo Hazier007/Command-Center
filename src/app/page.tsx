@@ -114,8 +114,9 @@ export default function CockpitPage() {
     setProcessingIds((s) => new Set(s).add(item.id))
     try {
       const endpoint = item.type === "content" ? `/api/content/${item.id}` : `/api/tasks/${item.id}`
-      const body = item.type === "content" ? { status: "approved" } : { status: "done" }
-      await fetch(endpoint, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+      const body = item.type === "content" ? { status: "approved" } : { status: "done", needsApproval: false }
+      const res = await fetch(endpoint, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+      if (!res.ok) throw new Error("PATCH failed")
       // Remove from state so it disappears immediately
       if (item.type === "content") setContent((prev) => prev.filter((c) => c.id !== item.id))
       else setTasks((prev) => prev.filter((t) => t.id !== item.id))
@@ -128,9 +129,10 @@ export default function CockpitPage() {
     setProcessingIds((s) => new Set(s).add(item.id))
     try {
       const endpoint = item.type === "content" ? `/api/content/${item.id}` : `/api/tasks/${item.id}`
-      const body = item.type === "content" ? { status: "draft" } : { status: "todo" }
-      await fetch(endpoint, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
-      // Remove from approval view (status changed, no longer in review)
+      const body = item.type === "content" ? { status: "draft" } : { status: "todo", needsApproval: false }
+      const res = await fetch(endpoint, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+      if (!res.ok) throw new Error("PATCH failed")
+      // Remove from approval view (status changed + needsApproval cleared)
       if (item.type === "content") setContent((prev) => prev.map((c) => c.id === item.id ? { ...c, status: "draft" } : c))
       else setTasks((prev) => prev.map((t) => t.id === item.id ? { ...t, status: "todo", needsApproval: false } : t))
       if (selectedItem?.id === item.id) setSelectedItem(null)
