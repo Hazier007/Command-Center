@@ -64,6 +64,10 @@ export default function CryptoPage() {
   const [ticking, setTicking] = useState(false)
   const [tickResult, setTickResult] = useState<string | null>(null)
   const [selectedCoin, setSelectedCoin] = useState<string | null>(null)
+  const [buyModal, setBuyModal] = useState<{ coin: string; market: string } | null>(null)
+  const [buyAmount, setBuyAmount] = useState("")
+  const [buying, setBuying] = useState(false)
+  const [buyResult, setBuyResult] = useState<string | null>(null)
 
   useEffect(() => {
     loadData()
@@ -104,6 +108,49 @@ export default function CryptoPage() {
     setTicking(false)
   }
 
+  // Sync met Bitvavo
+  const [syncing, setSyncing] = useState(false)
+  async function syncPositions() {
+    setSyncing(true)
+    setTickResult(null)
+    try {
+      const res = await fetch("/api/bot/sync", { method: "POST" })
+      const data = await res.json()
+      if (data.success) {
+        setTickResult(data.results?.map((r: { coin: string; detail: string }) => `${r.coin}: ${r.detail}`).join("\n") || "Sync voltooid")
+        loadData()
+      } else {
+        setTickResult(`❌ ${data.error}`)
+      }
+    } catch { setTickResult("❌ Sync fout") }
+    setSyncing(false)
+  }
+
+  // Initial buy
+  async function handleBuy() {
+    if (!buyModal || !buyAmount) return
+    const eur = parseFloat(buyAmount)
+    if (isNaN(eur) || eur < 5) { setBuyResult("Minimum €5"); return }
+    setBuying(true)
+    setBuyResult(null)
+    try {
+      const res = await fetch("/api/bot/buy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ coin: buyModal.coin, amountEur: eur }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setBuyResult(`✅ ${data.filled.toFixed(6)} ${buyModal.coin} gekocht @ €${data.price.toFixed(2)}`)
+        loadData()
+        setTimeout(() => { setBuyModal(null); setBuyResult(null); setBuyAmount("") }, 3000)
+      } else {
+        setBuyResult(`❌ ${data.error}`)
+      }
+    } catch { setBuyResult("❌ Fout bij aankoop") }
+    setBuying(false)
+  }
+
   // Config helpers
   const configForCoin = (coin: string) => configs.find((c) => c.coin === coin)
 
@@ -123,13 +170,22 @@ export default function CryptoPage() {
             Trailing stop + DCA herinkoop · Bitvavo
           </p>
         </div>
-        <button
-          onClick={runTick}
-          disabled={ticking}
-          className="rounded-lg bg-[#F5911E]/15 px-4 py-2 text-[11px] font-bold text-[#F5911E] hover:bg-[#F5911E]/25 transition-colors disabled:opacity-40"
-        >
-          {ticking ? "⏳ Bezig..." : "▶ Run Tick"}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={syncPositions}
+            disabled={syncing}
+            className="rounded-lg bg-blue-500/15 px-4 py-2 text-[11px] font-bold text-blue-400 hover:bg-blue-500/25 transition-colors disabled:opacity-40"
+          >
+            {syncing ? "⏳ Syncing..." : "🔄 Sync Bitvavo"}
+          </button>
+          <button
+            onClick={runTick}
+            disabled={ticking}
+            className="rounded-lg bg-[#F5911E]/15 px-4 py-2 text-[11px] font-bold text-[#F5911E] hover:bg-[#F5911E]/25 transition-colors disabled:opacity-40"
+          >
+            {ticking ? "⏳ Bezig..." : "▶ Run Tick"}
+          </button>
+        </div>
       </div>
 
       {/* Tick result toast */}
@@ -277,6 +333,12 @@ export default function CryptoPage() {
                         </div>
                       </>
                     )}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setBuyModal({ coin: pos.coin, market: pos.market }); setBuyAmount(""); setBuyResult(null) }}
+                      className="col-span-4 rounded-lg bg-green-500/15 px-3 py-2 text-[11px] font-bold text-green-400 hover:bg-green-500/25 transition-colors"
+                    >
+                      + Bijkopen {pos.coin}
+                    </button>
                   </div>
                 )}
               </div>
@@ -322,6 +384,70 @@ export default function CryptoPage() {
         </div>
       )}
 
+      {/* ───── BUY MODAL ───── */}
+      {buyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setBuyModal(null)}>
+          <div className="w-full max-w-sm rounded-2xl border border-white/[0.08] bg-zinc-900 p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-[16px] font-bold text-white mb-1">
+              {(() => { const cc = coinColors[buyModal.coin] || defaultCoin; return <span className={cc.text}>{cc.icon}</span> })()}
+              {" "}Koop {buyModal.coin}
+            </h3>
+            <p className="text-[11px] text-zinc-500 mb-4">Market order via Bitvavo · {buyModal.market}</p>
+
+            <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1 block">Bedrag in EUR</label>
+            <div className="flex gap-2 mb-3">
+              <input
+                type="number"
+                min={5}
+                step={5}
+                value={buyAmount}
+                onChange={(e) => setBuyAmount(e.target.value)}
+                placeholder="bijv. 100"
+                className="flex-1 rounded-lg border border-white/[0.1] bg-zinc-800 px-3 py-2 text-[14px] font-bold text-white placeholder-zinc-600 focus:border-green-500/50 focus:outline-none"
+                autoFocus
+              />
+              <span className="flex items-center text-[14px] font-bold text-zinc-500">EUR</span>
+            </div>
+
+            <div className="flex gap-2 mb-4">
+              {[25, 50, 100, 250, 500].map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setBuyAmount(String(v))}
+                  className={cn("rounded-md px-2.5 py-1 text-[10px] font-bold transition-colors",
+                    buyAmount === String(v) ? "bg-green-500/20 text-green-400" : "bg-zinc-800 text-zinc-500 hover:text-white"
+                  )}
+                >
+                  €{v}
+                </button>
+              ))}
+            </div>
+
+            {buyResult && (
+              <p className={cn("text-[11px] font-semibold mb-3 p-2 rounded-lg",
+                buyResult.startsWith("✅") ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"
+              )}>{buyResult}</p>
+            )}
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setBuyModal(null)}
+                className="flex-1 rounded-lg bg-zinc-800 px-4 py-2.5 text-[11px] font-bold text-zinc-400 hover:text-white transition-colors"
+              >
+                Annuleren
+              </button>
+              <button
+                onClick={handleBuy}
+                disabled={buying || !buyAmount}
+                className="flex-1 rounded-lg bg-green-500/20 px-4 py-2.5 text-[11px] font-bold text-green-400 hover:bg-green-500/30 transition-colors disabled:opacity-40"
+              >
+                {buying ? "⏳ Kopen..." : `Koop ${buyModal.coin}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ───── CONFIG TAB ───── */}
       {tab === "config" && (
         <div className="space-y-4">
@@ -356,6 +482,12 @@ export default function CryptoPage() {
                     <div><span className="text-zinc-500">Trade:</span> <span className="text-white font-semibold">{(cfg.tradePct * 100).toFixed(0)}%</span></div>
                     <div><span className="text-zinc-500">Doel alloc:</span> <span className="text-white font-semibold">{cfg.targetAlloc ? `${cfg.targetAlloc}%` : "—"}</span></div>
                   </div>
+                  <button
+                    onClick={() => { setBuyModal({ coin: cfg.coin, market: cfg.market }); setBuyAmount(""); setBuyResult(null) }}
+                    className="mt-3 w-full rounded-lg bg-green-500/10 px-3 py-1.5 text-[10px] font-bold text-green-400 hover:bg-green-500/20 transition-colors"
+                  >
+                    + Koop {cfg.coin}
+                  </button>
                 </div>
               )
             }) : (
