@@ -18,10 +18,11 @@ import {
 interface Task {
   id: string; title: string; status: string; assignee?: string; priority?: string
   needsApproval?: boolean; approvalSource?: string; createdAt: string
+  description?: string; category?: string; siteDomain?: string
 }
 interface ContentItem {
   id: string; title: string; status: string; author?: string; targetSite?: string
-  wordCount?: number; createdAt: string
+  wordCount?: number; createdAt: string; body?: string
 }
 interface Site {
   id: string; domain: string; status: string; category?: string
@@ -60,6 +61,7 @@ export default function CockpitPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set())
+  const [selectedItem, setSelectedItem] = useState<{ id: string; type: "content" | "task" } | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -84,10 +86,10 @@ export default function CockpitPage() {
   const contentInReview = content.filter((c) => c.status === "review")
   const totalRevenue = sites.reduce((sum, s) => sum + (s.monthlyRevenue || 0), 0)
 
-  // Approval items
+  // Approval items — full list, no slice
   const approvalTasks = tasks.filter((t) => t.status === "review" || t.needsApproval)
   const approvalContent = content.filter((c) => c.status === "review")
-  const approvalItems = [
+  const allApprovalItems = [
     ...approvalContent.map((c) => ({
       id: c.id, type: "content" as const, title: c.title,
       meta: `${c.author || "INK"} · ${c.targetSite || ""} · ${c.wordCount || 0}w`,
@@ -98,29 +100,40 @@ export default function CockpitPage() {
       meta: `${t.assignee || "?"} · ${t.approvalSource || "agent"}`,
       icon: "📋", color: "bg-blue-500/15",
     })),
-  ].slice(0, 5)
+  ]
+  const approvalCount = allApprovalItems.length
+  const [showAllApprovals, setShowAllApprovals] = useState(false)
+  const approvalItems = showAllApprovals ? allApprovalItems : allApprovalItems.slice(0, 8)
+
+  // Selected detail data
+  const selectedTask = selectedItem?.type === "task" ? tasks.find((t) => t.id === selectedItem.id) : null
+  const selectedContent = selectedItem?.type === "content" ? content.find((c) => c.id === selectedItem.id) : null
 
   // Approve / Reject handlers
-  async function handleApprove(item: typeof approvalItems[0]) {
+  async function handleApprove(item: { id: string; type: "content" | "task" }) {
     setProcessingIds((s) => new Set(s).add(item.id))
     try {
       const endpoint = item.type === "content" ? `/api/content/${item.id}` : `/api/tasks/${item.id}`
       const body = item.type === "content" ? { status: "approved" } : { status: "done" }
       await fetch(endpoint, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+      // Remove from state so it disappears immediately
       if (item.type === "content") setContent((prev) => prev.filter((c) => c.id !== item.id))
-      else setTasks((prev) => prev.map((t) => t.id === item.id ? { ...t, status: "done", needsApproval: false } : t))
+      else setTasks((prev) => prev.filter((t) => t.id !== item.id))
+      if (selectedItem?.id === item.id) setSelectedItem(null)
     } catch { /* silent */ }
     setProcessingIds((s) => { const n = new Set(s); n.delete(item.id); return n })
   }
 
-  async function handleReject(item: typeof approvalItems[0]) {
+  async function handleReject(item: { id: string; type: "content" | "task" }) {
     setProcessingIds((s) => new Set(s).add(item.id))
     try {
       const endpoint = item.type === "content" ? `/api/content/${item.id}` : `/api/tasks/${item.id}`
       const body = item.type === "content" ? { status: "draft" } : { status: "todo" }
       await fetch(endpoint, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+      // Remove from approval view (status changed, no longer in review)
       if (item.type === "content") setContent((prev) => prev.map((c) => c.id === item.id ? { ...c, status: "draft" } : c))
       else setTasks((prev) => prev.map((t) => t.id === item.id ? { ...t, status: "todo", needsApproval: false } : t))
+      if (selectedItem?.id === item.id) setSelectedItem(null)
     } catch { /* silent */ }
     setProcessingIds((s) => { const n = new Set(s); n.delete(item.id); return n })
   }
@@ -154,7 +167,7 @@ export default function CockpitPage() {
         </h1>
         <p className="text-[13px] text-zinc-500 mt-1">
           {new Date().toLocaleDateString("nl-BE", { weekday: "long", day: "numeric", month: "long" })}
-          {approvalItems.length > 0 && ` — ${approvalItems.length} items wachten op jouw beslissing`}
+          {approvalCount > 0 && ` — ${approvalCount} items wachten op jouw beslissing`}
         </p>
       </div>
 
@@ -176,21 +189,30 @@ export default function CockpitPage() {
       </div>
 
       {/* Approval Inbox */}
-      {approvalItems.length > 0 && (
+      {approvalCount > 0 && (
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="flex items-center gap-2 text-[15px] font-bold text-white">
               📥 Jouw beslissingen
               <span className="flex h-[20px] min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
-                {approvalItems.length}
+                {approvalCount}
               </span>
             </h2>
+            {approvalCount > 8 && (
+              <button onClick={() => setShowAllApprovals(!showAllApprovals)} className="text-[11px] text-zinc-500 hover:text-[#F5911E] transition-colors">
+                {showAllApprovals ? "Minder tonen" : `Alles tonen (${approvalCount})`}
+              </button>
+            )}
           </div>
           <div className="space-y-1.5">
             {approvalItems.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-zinc-800/30 p-3.5 transition-all hover:border-[#F5911E]/20 cursor-pointer"
+                onClick={() => setSelectedItem({ id: item.id, type: item.type })}
+                className={cn(
+                  "flex items-center gap-3 rounded-xl border bg-zinc-800/30 p-3.5 transition-all cursor-pointer",
+                  selectedItem?.id === item.id ? "border-[#F5911E]/40 bg-[#F5911E]/5" : "border-white/[0.06] hover:border-[#F5911E]/20"
+                )}
               >
                 <span className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[15px]", item.color)}>
                   {item.icon}
@@ -217,6 +239,108 @@ export default function CockpitPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Detail Modal */}
+      {selectedItem && (selectedTask || selectedContent) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setSelectedItem(null)}>
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg rounded-2xl border border-white/[0.08] bg-zinc-900 p-6 shadow-2xl">
+            {/* Header */}
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1 min-w-0">
+                <span className={cn("inline-block rounded px-2 py-0.5 text-[9px] font-semibold uppercase mb-2", selectedTask ? "bg-blue-500/15 text-blue-400" : "bg-purple-500/15 text-purple-400")}>
+                  {selectedTask ? "Taak" : "Content"}
+                </span>
+                <h3 className="text-[18px] font-bold text-white leading-snug">
+                  {selectedTask?.title || selectedContent?.title}
+                </h3>
+              </div>
+              <button onClick={() => setSelectedItem(null)} className="ml-3 rounded-lg p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-white transition-colors">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Details */}
+            <div className="space-y-3 mb-5">
+              {selectedTask && (
+                <>
+                  {selectedTask.description && (
+                    <div>
+                      <p className="text-[10px] uppercase text-zinc-500 mb-1">Beschrijving</p>
+                      <p className="text-[12px] text-zinc-300 leading-relaxed whitespace-pre-wrap">{selectedTask.description}</p>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-[10px] uppercase text-zinc-500 mb-1">Agent</p>
+                      <p className="text-[12px] text-white">{selectedTask.assignee || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase text-zinc-500 mb-1">Prioriteit</p>
+                      <p className="text-[12px] text-white">{selectedTask.priority || "normaal"}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase text-zinc-500 mb-1">Categorie</p>
+                      <p className="text-[12px] text-white">{selectedTask.category || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase text-zinc-500 mb-1">Aangemaakt</p>
+                      <p className="text-[12px] text-white">{new Date(selectedTask.createdAt).toLocaleDateString("nl-BE")}</p>
+                    </div>
+                  </div>
+                </>
+              )}
+              {selectedContent && (
+                <>
+                  {selectedContent.body && (
+                    <div>
+                      <p className="text-[10px] uppercase text-zinc-500 mb-1">Inhoud</p>
+                      <div className="max-h-[300px] overflow-y-auto rounded-lg bg-zinc-800/50 p-3">
+                        <p className="text-[12px] text-zinc-300 leading-relaxed whitespace-pre-wrap">{selectedContent.body.slice(0, 2000)}{selectedContent.body.length > 2000 ? "..." : ""}</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-[10px] uppercase text-zinc-500 mb-1">Auteur</p>
+                      <p className="text-[12px] text-white">{selectedContent.author || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase text-zinc-500 mb-1">Site</p>
+                      <p className="text-[12px] text-white">{selectedContent.targetSite || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase text-zinc-500 mb-1">Woorden</p>
+                      <p className="text-[12px] text-white">{selectedContent.wordCount || 0}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase text-zinc-500 mb-1">Aangemaakt</p>
+                      <p className="text-[12px] text-white">{new Date(selectedContent.createdAt).toLocaleDateString("nl-BE")}</p>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2">
+              <button
+                disabled={processingIds.has(selectedItem.id)}
+                onClick={() => handleApprove(selectedItem)}
+                className="flex-1 rounded-lg bg-green-500/15 py-2.5 text-[12px] font-semibold text-green-400 transition-colors hover:bg-green-500 hover:text-white disabled:opacity-40"
+              >
+                Goedkeuren
+              </button>
+              <button
+                disabled={processingIds.has(selectedItem.id)}
+                onClick={() => handleReject(selectedItem)}
+                className="flex-1 rounded-lg bg-red-500/15 py-2.5 text-[12px] font-semibold text-red-400 transition-colors hover:bg-red-500 hover:text-white disabled:opacity-40"
+              >
+                Afwijzen
+              </button>
+            </div>
           </div>
         </div>
       )}
