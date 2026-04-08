@@ -36,6 +36,7 @@ const TASK_COLUMNS = [
   { key: "todo", label: "To Do", icon: "○", color: "text-zinc-400" },
   { key: "in-progress", label: "In Progress", icon: "◉", color: "text-blue-400" },
   { key: "review", label: "Review", icon: "⏳", color: "text-yellow-400" },
+  { key: "on-hold", label: "On-hold", icon: "⏸", color: "text-orange-400" },
   { key: "done", label: "Done", icon: "✓", color: "text-green-400" },
 ]
 
@@ -74,7 +75,7 @@ const priorityConfig: Record<string, { dot: string; label: string }> = {
 }
 
 // ─── Detail Modal ─────────────────────────────────────────────
-function TaskDetailModal({ task, onClose }: { task: Task; onClose: () => void }) {
+function TaskDetailModal({ task, onClose, onUpdate }: { task: Task; onClose: () => void; onUpdate: () => void }) {
   const pr = priorityConfig[task.priority || "medium"] || priorityConfig.medium
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
@@ -160,14 +161,13 @@ function TaskDetailModal({ task, onClose }: { task: Task; onClose: () => void })
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 pt-3 border-t border-white/[0.06]">
+        <div className="flex flex-wrap gap-2 pt-3 border-t border-white/[0.06]">
           {task.status === "review" && (
             <>
               <button
                 onClick={async () => {
                   await fetch(`/api/tasks/${task.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "done" }) })
-                  onClose()
-                  window.location.reload()
+                  onClose(); onUpdate()
                 }}
                 className="rounded-lg bg-green-500/15 px-4 py-2 text-[11px] font-bold text-green-400 hover:bg-green-500/25 transition-colors"
               >
@@ -176,8 +176,7 @@ function TaskDetailModal({ task, onClose }: { task: Task; onClose: () => void })
               <button
                 onClick={async () => {
                   await fetch(`/api/tasks/${task.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "todo" }) })
-                  onClose()
-                  window.location.reload()
+                  onClose(); onUpdate()
                 }}
                 className="rounded-lg bg-red-500/15 px-4 py-2 text-[11px] font-bold text-red-400 hover:bg-red-500/25 transition-colors"
               >
@@ -189,14 +188,58 @@ function TaskDetailModal({ task, onClose }: { task: Task; onClose: () => void })
             <button
               onClick={async () => {
                 await fetch(`/api/tasks/${task.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "in-progress" }) })
-                onClose()
-                window.location.reload()
+                onClose(); onUpdate()
               }}
               className="rounded-lg bg-blue-500/15 px-4 py-2 text-[11px] font-bold text-blue-400 hover:bg-blue-500/25 transition-colors"
             >
               ▶ Start
             </button>
           )}
+          {task.status === "in-progress" && (
+            <button
+              onClick={async () => {
+                await fetch(`/api/tasks/${task.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "review" }) })
+                onClose(); onUpdate()
+              }}
+              className="rounded-lg bg-yellow-500/15 px-4 py-2 text-[11px] font-bold text-yellow-400 hover:bg-yellow-500/25 transition-colors"
+            >
+              ⏳ Naar Review
+            </button>
+          )}
+          {/* On-hold */}
+          {task.status !== "on-hold" && task.status !== "done" && (
+            <button
+              onClick={async () => {
+                await fetch(`/api/tasks/${task.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "on-hold" }) })
+                onClose(); onUpdate()
+              }}
+              className="rounded-lg bg-orange-500/15 px-4 py-2 text-[11px] font-bold text-orange-400 hover:bg-orange-500/25 transition-colors"
+            >
+              ⏸ On-hold
+            </button>
+          )}
+          {task.status === "on-hold" && (
+            <button
+              onClick={async () => {
+                await fetch(`/api/tasks/${task.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "todo" }) })
+                onClose(); onUpdate()
+              }}
+              className="rounded-lg bg-blue-500/15 px-4 py-2 text-[11px] font-bold text-blue-400 hover:bg-blue-500/25 transition-colors"
+            >
+              ▶ Heractiveren
+            </button>
+          )}
+          {/* Delete */}
+          <button
+            onClick={async () => {
+              if (!confirm("Taak definitief verwijderen?")) return
+              await fetch(`/api/tasks/${task.id}`, { method: "DELETE" })
+              onClose(); onUpdate()
+            }}
+            className="rounded-lg bg-red-500/10 px-4 py-2 text-[11px] font-bold text-red-400/70 hover:bg-red-500/25 hover:text-red-400 transition-colors"
+          >
+            🗑 Verwijderen
+          </button>
           <button onClick={onClose} className="ml-auto rounded-lg bg-zinc-800 px-4 py-2 text-[11px] font-bold text-zinc-400 hover:text-white transition-colors">
             Sluiten
           </button>
@@ -262,6 +305,71 @@ function ContentDetailModal({ item, onClose }: { item: ContentItem; onClose: () 
   )
 }
 
+// ─── Research Detail Modal ────────────────────────────────────
+function ResearchDetailModal({ item, onClose }: { item: Research; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border border-white/[0.08] bg-zinc-900 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-[16px] font-bold text-white leading-tight">{item.title}</h2>
+            {item.createdAt && <p className="text-[10px] text-zinc-500 mt-1">{new Date(item.createdAt).toLocaleDateString("nl-BE", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</p>}
+          </div>
+          <button onClick={onClose} className="ml-3 rounded-lg p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors">✕</button>
+        </div>
+
+        {/* Badges */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {item.type && <span className="rounded px-2 py-1 text-[9px] font-bold uppercase bg-cyan-500/15 text-cyan-400">{item.type}</span>}
+          {item.author && <span className={cn("rounded px-2 py-1 text-[9px] font-bold uppercase", agentColors[item.author.toLowerCase()] || "bg-zinc-700 text-zinc-400")}>{item.author}</span>}
+          {item.status && <span className={cn("rounded px-2 py-1 text-[9px] font-bold uppercase",
+            item.status === "final" ? "bg-green-500/15 text-green-400" :
+            item.status === "review" ? "bg-yellow-500/15 text-yellow-400" :
+            "bg-zinc-700/50 text-zinc-400"
+          )}>{item.status}</span>}
+        </div>
+
+        {/* Summary */}
+        {item.summary && (
+          <div className="mb-4">
+            <p className="text-[10px] font-bold uppercase text-zinc-500 mb-1.5">Samenvatting</p>
+            <div className="rounded-lg border border-cyan-500/10 bg-cyan-500/5 p-3">
+              <p className="text-[12px] text-cyan-100 leading-relaxed">{item.summary}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Body */}
+        {item.body && (
+          <div className="mb-4">
+            <p className="text-[10px] font-bold uppercase text-zinc-500 mb-1.5">Volledig rapport</p>
+            <div className="rounded-lg border border-white/[0.06] bg-zinc-800/40 p-4 max-h-[400px] overflow-y-auto">
+              <div className="text-[12px] text-zinc-300 leading-relaxed whitespace-pre-wrap">{item.body}</div>
+            </div>
+          </div>
+        )}
+
+        {/* Tags */}
+        {item.tags && (
+          <div className="mb-4">
+            <p className="text-[10px] font-bold uppercase text-zinc-500 mb-1.5">Tags</p>
+            <div className="flex flex-wrap gap-1.5">
+              {item.tags.split(",").map((tag, i) => (
+                <span key={i} className="rounded-full px-2.5 py-0.5 text-[10px] bg-zinc-800 text-zinc-400 border border-white/[0.06]">{tag.trim()}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="flex gap-2 pt-3 border-t border-white/[0.06]">
+          <button onClick={onClose} className="ml-auto rounded-lg bg-zinc-800 px-4 py-2 text-[11px] font-bold text-zinc-400 hover:text-white transition-colors">Sluiten</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Page ─────────────────────────────────────────────────────
 export default function WerkPage() {
   const { activeBusiness } = useBusinessContext()
@@ -273,6 +381,7 @@ export default function WerkPage() {
   const [tab, setTab] = useState("taken")
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [selectedContent, setSelectedContent] = useState<ContentItem | null>(null)
+  const [selectedResearch, setSelectedResearch] = useState<Research | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -290,6 +399,21 @@ export default function WerkPage() {
       })
       .finally(() => setLoading(false))
   }, [])
+
+  // Refresh data without full page reload
+  function refreshData() {
+    Promise.all([
+      fetch("/api/tasks").then((r) => r.json()).catch(() => []),
+      fetch("/api/content").then((r) => r.json()).catch(() => []),
+      fetch("/api/leads").then((r) => r.json()).catch(() => []),
+      fetch("/api/research").then((r) => r.json()).catch(() => []),
+    ]).then(([t, c, l, r]) => {
+      setTasks(Array.isArray(t) ? t : [])
+      setContent(Array.isArray(c) ? c : [])
+      setLeads(Array.isArray(l) ? l : [])
+      setResearch(Array.isArray(r) ? r : Array.isArray(r?.data) ? r.data : [])
+    })
+  }
 
   const tasksByStatus = (status: string) => tasks.filter((t) => t.status === status).slice(0, 12)
   const contentByStatus = (status: string) => content.filter((c) => c.status === status)
@@ -335,7 +459,7 @@ export default function WerkPage() {
 
       {/* ───── TAKEN TAB: Kanban ───── */}
       {tab === "taken" && (
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-5 gap-3">
           {TASK_COLUMNS.map((col) => {
             const colTasks = tasksByStatus(col.key)
             return (
@@ -472,7 +596,7 @@ export default function WerkPage() {
       {tab === "research" && (
         <div className="grid grid-cols-3 gap-3">
           {research.length > 0 ? research.slice(0, 15).map((r) => (
-            <div key={r.id} className="rounded-xl border border-white/[0.06] bg-zinc-800/30 p-4 transition-all hover:border-cyan-500/20 hover:-translate-y-0.5 cursor-pointer">
+            <div key={r.id} onClick={() => setSelectedResearch(r)} className="rounded-xl border border-white/[0.06] bg-zinc-800/30 p-4 transition-all hover:border-cyan-500/20 hover:-translate-y-0.5 cursor-pointer">
               <div className="flex items-center justify-between mb-2">
                 <span className="rounded px-2 py-0.5 text-[8px] font-bold uppercase bg-cyan-500/15 text-cyan-400">{r.type || "research"}</span>
                 {r.author && <span className={cn("rounded px-1.5 py-0.5 text-[8px] font-bold uppercase", agentColors[r.author.toLowerCase()] || "bg-zinc-700 text-zinc-400")}>{r.author}</span>}
@@ -489,8 +613,9 @@ export default function WerkPage() {
       )}
 
       {/* Modals */}
-      {selectedTask && <TaskDetailModal task={selectedTask} onClose={() => setSelectedTask(null)} />}
+      {selectedTask && <TaskDetailModal task={selectedTask} onClose={() => setSelectedTask(null)} onUpdate={refreshData} />}
       {selectedContent && <ContentDetailModal item={selectedContent} onClose={() => setSelectedContent(null)} />}
+      {selectedResearch && <ResearchDetailModal item={selectedResearch} onClose={() => setSelectedResearch(null)} />}
     </div>
   )
 }
