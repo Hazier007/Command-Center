@@ -159,6 +159,50 @@ export function calculateRSI(closes: number[], period = 14): number {
   return 100 - 100 / (1 + rs)
 }
 
+// ─── Fear & Greed Index (alternative.me) ─────────────────────────
+export interface FearGreedData {
+  value: number           // 0-100
+  classification: string  // "Extreme Fear", "Fear", "Neutral", "Greed", "Extreme Greed"
+}
+
+export async function getFearGreed(): Promise<FearGreedData> {
+  try {
+    const res = await fetch("https://api.alternative.me/fng/?limit=1", { next: { revalidate: 3600 } })
+    const json = await res.json() as { data: Array<{ value: string; value_classification: string }> }
+    const entry = json.data?.[0]
+    return {
+      value: entry ? parseInt(entry.value) : 50,
+      classification: entry?.value_classification || "Neutral",
+    }
+  } catch {
+    return { value: 50, classification: "Neutral" }
+  }
+}
+
+// ─── Volume analyse ──────────────────────────────────────────────
+// Vergelijk 24h volume met gemiddelde van afgelopen 7 dagen (via dagcandles)
+export async function getVolumeRatio(market: string): Promise<number> {
+  try {
+    // Haal 8 dag-candles op (7 dagen + vandaag)
+    const candles = await getCandles(market, "1d", 8)
+    if (candles.length < 2) return 1
+
+    // Huidige 24h volume
+    const ticker = await getTicker24h(market)
+    const currentVolume = parseFloat(ticker.volumeQuote)
+
+    // Gemiddeld volume over de vorige 7 dagen (exclusief vandaag)
+    const historicalVolumes = candles.slice(1).map((c) => parseFloat(c.volume))
+    const avgVolume = historicalVolumes.length > 0
+      ? historicalVolumes.reduce((a, b) => a + b, 0) / historicalVolumes.length
+      : currentVolume
+
+    return avgVolume > 0 ? currentVolume / avgVolume : 1
+  } catch {
+    return 1 // fallback: neutraal
+  }
+}
+
 // ─── Check if API is configured ──────────────────────────────────
 export function isConfigured(): boolean {
   return Boolean(API_KEY && API_SECRET)

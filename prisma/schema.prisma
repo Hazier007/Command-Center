@@ -737,9 +737,10 @@ model BotPosition {
   pnlEur        Float    @default(0)  // P&L in EUR
   pnlPct        Float    @default(0)  // P&L in %
   status        String   @default("holding") // holding | trailing | sold | dca_rebuy
-  dcaStep       Int      @default(0)  // huidige DCA herinkoop stap (0=geen)
-  soldAt        Float?   // prijs waarop verkocht (na trailing stop)
-  soldAmount    Float?   // hoeveel verkocht
+  dcaStep           Int      @default(0)  // huidige DCA herinkoop stap (0=geen)
+  profitStepsTaken  Int      @default(0)  // hoeveel profit-take tiers al genomen
+  soldAt            Float?   // prijs waarop verkocht (na trailing stop)
+  soldAmount        Float?   // hoeveel verkocht
   lastTickAt    DateTime?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

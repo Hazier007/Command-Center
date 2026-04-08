@@ -51,6 +51,8 @@ const statusConfig: Record<string, { label: string; color: string }> = {
   trailing: { label: "Trailing", color: "bg-yellow-500/15 text-yellow-400" },
   sold: { label: "Verkocht", color: "bg-red-500/15 text-red-400" },
   dca_rebuy: { label: "DCA Herinkoop", color: "bg-cyan-500/15 text-cyan-400" },
+  profit_take: { label: "Profit Take", color: "bg-emerald-500/15 text-emerald-400" },
+  rebalance: { label: "Rebalance", color: "bg-purple-500/15 text-purple-400" },
 }
 
 // ─── Page ──────────────────────────────────────────────────────
@@ -100,8 +102,8 @@ export default function CryptoPage() {
     try {
       const res = await fetch("/api/bot/tick", { method: "POST" })
       const data = await res.json()
-      setTickResult(data.results?.map((r: { coin: string; action: string; detail?: string }) =>
-        `${r.coin}: ${r.action}${r.detail ? ` — ${r.detail}` : ""}`
+      setTickResult(data.results?.map((r: { coin: string; action: string; detail?: string; layers?: string[] }) =>
+        `${r.coin}: ${r.action}${r.detail ? ` — ${r.detail}` : ""}${r.layers?.length ? `\n  └ ${r.layers.join(" | ")}` : ""}`
       ).join("\n") || "Geen resultaten")
       loadData()
     } catch { setTickResult("Error bij tick") }
@@ -151,8 +153,37 @@ export default function CryptoPage() {
     setBuying(false)
   }
 
+  // Rebalance
+  const [rebalancing, setRebalancing] = useState(false)
+  async function runRebalance() {
+    setRebalancing(true)
+    setTickResult(null)
+    try {
+      const res = await fetch("/api/bot/rebalance", { method: "POST" })
+      const data = await res.json()
+      if (data.success) {
+        setTickResult(data.results?.map((r: { coin: string; action: string; detail?: string }) =>
+          `${r.coin}: ${r.action}${r.detail ? ` — ${r.detail}` : ""}`
+        ).join("\n") || "Rebalance voltooid — geen aanpassingen nodig")
+        loadData()
+      } else {
+        setTickResult(`❌ ${data.error}`)
+      }
+    } catch { setTickResult("❌ Rebalance fout") }
+    setRebalancing(false)
+  }
+
   // Config helpers
   const configForCoin = (coin: string) => configs.find((c) => c.coin === coin)
+
+  // Fear & Greed uit laatste snapshot
+  const latestFg = snapshots.length > 0 ? (snapshots[0] as Snapshot & { fearGreed?: number }).fearGreed : null
+  const fgColor = latestFg !== null && latestFg !== undefined
+    ? latestFg > 75 ? "text-green-400" : latestFg > 55 ? "text-lime-400" : latestFg > 40 ? "text-yellow-400" : latestFg > 20 ? "text-orange-400" : "text-red-400"
+    : "text-zinc-500"
+  const fgLabel = latestFg !== null && latestFg !== undefined
+    ? latestFg > 75 ? "Extreme Greed" : latestFg > 55 ? "Greed" : latestFg > 40 ? "Neutral" : latestFg > 20 ? "Fear" : "Extreme Fear"
+    : "—"
 
   const tabs = [
     { id: "portfolio" as const, label: "💰 Portfolio", count: positions.length },
@@ -176,7 +207,14 @@ export default function CryptoPage() {
             disabled={syncing}
             className="rounded-lg bg-blue-500/15 px-4 py-2 text-[11px] font-bold text-blue-400 hover:bg-blue-500/25 transition-colors disabled:opacity-40"
           >
-            {syncing ? "⏳ Syncing..." : "🔄 Sync Bitvavo"}
+            {syncing ? "⏳ Syncing..." : "🔄 Sync"}
+          </button>
+          <button
+            onClick={runRebalance}
+            disabled={rebalancing}
+            className="rounded-lg bg-purple-500/15 px-4 py-2 text-[11px] font-bold text-purple-400 hover:bg-purple-500/25 transition-colors disabled:opacity-40"
+          >
+            {rebalancing ? "⏳ ..." : "⚖️ Rebalance"}
           </button>
           <button
             onClick={runTick}
@@ -217,10 +255,11 @@ export default function CryptoPage() {
           </p>
         </div>
         <div className="rounded-xl border border-white/[0.06] bg-zinc-800/30 p-4">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">Posities</p>
-          <p className="text-[26px] font-extrabold tracking-tight text-white mt-1 tabular-nums">
-            {loading ? "..." : positions.length}
+          <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">Fear & Greed</p>
+          <p className={cn("text-[26px] font-extrabold tracking-tight mt-1 tabular-nums", fgColor)}>
+            {loading ? "..." : latestFg ?? "—"}
           </p>
+          <p className={cn("text-[10px] font-semibold mt-0.5", fgColor)}>{fgLabel}</p>
         </div>
       </div>
 
