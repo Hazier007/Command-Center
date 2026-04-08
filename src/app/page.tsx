@@ -59,6 +59,7 @@ export default function CockpitPage() {
   const [sites, setSites] = useState<Site[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
+  const [processingIds, setProcessingIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     Promise.all([
@@ -98,6 +99,31 @@ export default function CockpitPage() {
       icon: "📋", color: "bg-blue-500/15",
     })),
   ].slice(0, 5)
+
+  // Approve / Reject handlers
+  async function handleApprove(item: typeof approvalItems[0]) {
+    setProcessingIds((s) => new Set(s).add(item.id))
+    try {
+      const endpoint = item.type === "content" ? `/api/content/${item.id}` : `/api/tasks/${item.id}`
+      const body = item.type === "content" ? { status: "approved" } : { status: "done" }
+      await fetch(endpoint, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+      if (item.type === "content") setContent((prev) => prev.filter((c) => c.id !== item.id))
+      else setTasks((prev) => prev.map((t) => t.id === item.id ? { ...t, status: "done", needsApproval: false } : t))
+    } catch { /* silent */ }
+    setProcessingIds((s) => { const n = new Set(s); n.delete(item.id); return n })
+  }
+
+  async function handleReject(item: typeof approvalItems[0]) {
+    setProcessingIds((s) => new Set(s).add(item.id))
+    try {
+      const endpoint = item.type === "content" ? `/api/content/${item.id}` : `/api/tasks/${item.id}`
+      const body = item.type === "content" ? { status: "draft" } : { status: "todo" }
+      await fetch(endpoint, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+      if (item.type === "content") setContent((prev) => prev.map((c) => c.id === item.id ? { ...c, status: "draft" } : c))
+      else setTasks((prev) => prev.map((t) => t.id === item.id ? { ...t, status: "todo", needsApproval: false } : t))
+    } catch { /* silent */ }
+    setProcessingIds((s) => { const n = new Set(s); n.delete(item.id); return n })
+  }
 
   // Top projects
   const topProjects = projects
@@ -174,10 +200,18 @@ export default function CockpitPage() {
                   <p className="text-[10px] text-zinc-500">{item.meta}</p>
                 </div>
                 <div className="flex gap-1.5 shrink-0">
-                  <button className="rounded-md bg-green-500/15 px-2.5 py-1 text-[10px] font-semibold text-green-400 transition-colors hover:bg-green-500 hover:text-white">
+                  <button
+                    disabled={processingIds.has(item.id)}
+                    onClick={(e) => { e.stopPropagation(); handleApprove(item) }}
+                    className="rounded-md bg-green-500/15 px-2.5 py-1 text-[10px] font-semibold text-green-400 transition-colors hover:bg-green-500 hover:text-white disabled:opacity-40"
+                  >
                     <CheckCircle2 className="h-3 w-3" />
                   </button>
-                  <button className="rounded-md bg-red-500/15 px-2.5 py-1 text-[10px] font-semibold text-red-400 transition-colors hover:bg-red-500 hover:text-white">
+                  <button
+                    disabled={processingIds.has(item.id)}
+                    onClick={(e) => { e.stopPropagation(); handleReject(item) }}
+                    className="rounded-md bg-red-500/15 px-2.5 py-1 text-[10px] font-semibold text-red-400 transition-colors hover:bg-red-500 hover:text-white disabled:opacity-40"
+                  >
                     <X className="h-3 w-3" />
                   </button>
                 </div>

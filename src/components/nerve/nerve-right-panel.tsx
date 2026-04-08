@@ -26,17 +26,45 @@ interface RevenueStream {
 
 // ─── Revenue Tracker ───────────────────────────────────────────
 function RevenueTracker() {
-  const totalMRR = 4196
+  const [totalMRR, setTotalMRR] = useState(0)
+  const [streams, setStreams] = useState<RevenueStream[]>([])
   const target = 100000
+
+  useEffect(() => {
+    // Fetch sites to calculate MRR from actual data
+    Promise.all([
+      fetch("/api/sites").then((r) => r.json()).catch(() => []),
+      fetch("/api/revenue").then((r) => r.json()).catch(() => []),
+    ]).then(([sites, revenue]) => {
+      const siteArr = Array.isArray(sites) ? sites : []
+      const revArr = Array.isArray(revenue) ? revenue : []
+
+      // Calculate MRR from sites
+      const siteMRR = siteArr.reduce((sum: number, s: { monthlyRevenue?: number }) => sum + (s.monthlyRevenue || 0), 0)
+
+      // Group revenue by stream/category
+      const streamMap: Record<string, number> = { Agency: 0, AdSense: 0, "Lead Gen": 0, Affiliate: 0 }
+      for (const s of siteArr) {
+        const cat = (s as { category?: string }).category?.toLowerCase() || ""
+        const rev = (s as { monthlyRevenue?: number }).monthlyRevenue || 0
+        if (cat.includes("client") || cat.includes("agency")) streamMap.Agency += rev
+        else if (cat.includes("adsense") || cat.includes("tool")) streamMap.AdSense += rev
+        else if (cat.includes("lead")) streamMap["Lead Gen"] += rev
+        else if (cat.includes("affiliate")) streamMap.Affiliate += rev
+        else streamMap.AdSense += rev // default to AdSense for tool sites
+      }
+
+      // If no site data, try revenue API
+      const finalMRR = siteMRR > 0 ? siteMRR : revArr.reduce((sum: number, r: { amount?: number }) => sum + (r.amount || 0), 0)
+      setTotalMRR(finalMRR)
+
+      const colors: Record<string, string> = { Agency: "bg-blue-400", AdSense: "bg-green-400", "Lead Gen": "bg-purple-400", Affiliate: "bg-yellow-400" }
+      setStreams(Object.entries(streamMap).filter(([, v]) => v > 0).map(([name, amount]) => ({ name, amount, color: colors[name] || "bg-zinc-400" })))
+    })
+  }, [])
+
   const pct = (totalMRR / target) * 100
   const gap = target - totalMRR
-
-  const streams: RevenueStream[] = [
-    { name: "Agency", amount: 1796, color: "bg-blue-400" },
-    { name: "AdSense", amount: 1830, color: "bg-green-400" },
-    { name: "Lead Gen", amount: 549, color: "bg-purple-400" },
-    { name: "Affiliate", amount: 180, color: "bg-yellow-400" },
-  ]
 
   return (
     <div className="rounded-xl border border-white/[0.06] bg-gradient-to-br from-zinc-800/40 to-zinc-900/40 p-5">
@@ -238,7 +266,6 @@ export function NerveRightPanel() {
   return (
     <aside className="hidden xl:flex w-[340px] shrink-0 flex-col gap-5 overflow-y-auto border-l border-white/[0.06] bg-zinc-900/60 p-5 scrollbar-thin">
       <RevenueTracker />
-      <NowSection />
       <AgentPulse />
     </aside>
   )
