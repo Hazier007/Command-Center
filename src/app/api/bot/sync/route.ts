@@ -26,13 +26,45 @@ export async function POST() {
         const currentPrice = parseFloat(ticker.price)
         const currentValue = amount * currentPrice
 
+        // ─── Haal trade history op en bereken gewogen gemiddelde ──
+        // Op basis van echte Bitvavo fills → meest accurate avgBuyPrice
+        let calculatedAvgPrice = currentPrice
+        let totalBought = 0
+        let totalSpent = 0
+        try {
+          const trades = await bitvavo.getTrades(config.market, 500)
+          // Werk van oud naar nieuw — FIFO methode voor gewogen gemiddelde
+          const sorted = [...trades].sort((a, b) => a.timestamp - b.timestamp)
+          for (const t of sorted) {
+            const amt = parseFloat(t.amount)
+            const px = parseFloat(t.price)
+            if (t.side === "buy") {
+              totalBought += amt
+              totalSpent += amt * px
+            } else if (t.side === "sell") {
+              // Bij verkoop: reduceer de basis proportioneel
+              if (totalBought > 0) {
+                const ratio = Math.min(amt / totalBought, 1)
+                totalSpent -= totalSpent * ratio
+                totalBought -= amt
+                if (totalBought < 0) totalBought = 0
+              }
+            }
+          }
+          if (totalBought > 0.000001) {
+            calculatedAvgPrice = totalSpent / totalBought
+          }
+        } catch {
+          // Trades niet ophaalbaar (oude trades > 24u zijn beperkt) → fallback
+          calculatedAvgPrice = currentPrice
+        }
+
         // Bestaande positie ophalen
         const existing = await prisma.botPosition.findUnique({ where: { coin: config.coin } })
 
         if (existing) {
-          // Update bestaande positie met werkelijk saldo
-          // Behoud avgBuyPrice als er al een positie was met amount > 0
-          const avgPrice = existing.totalAmount > 0 ? existing.avgBuyPrice : currentPrice
+          // Gebruik berekende avgPrice uit trade history, tenzij die 0 is
+          const avgPrice = calculatedAvgPrice > 0 ? calculatedAvgPrice : (existing.avgBuyPrice || currentPrice)
           const pnlEur = (currentPrice - avgPrice) * amount
           const pnlPct = avgPrice > 0 ? ((currentPrice - avgPrice) / avgPrice) * 100 : 0
 
@@ -56,21 +88,21 @@ export async function POST() {
             amount,
             value: currentValue,
             synced: true,
-            detail: `Updated: ${amount.toFixed(6)} ${config.coin} @ €${currentPrice.toFixed(2)} = €${currentValue.toFixed(2)}`,
+            detail: `Updated: ${amount.toFixed(6)} ${config.coin} · gem. €${avgPrice.toFixed(2)} · waarde €${currentValue.toFixed(2)}`,
           })
         } else if (amount > 0) {
-          // Maak nieuwe positie aan
+          // Maak nieuwe positie aan met berekende avgPrice
           await prisma.botPosition.create({
             data: {
               coin: config.coin,
               market: config.market,
               totalAmount: amount,
-              avgBuyPrice: currentPrice,
-              highestPrice: currentPrice,
+              avgBuyPrice: calculatedAvgPrice,
+              highestPrice: Math.max(currentPrice, calculatedAvgPrice),
               currentPrice,
               currentValue,
-              pnlEur: 0,
-              pnlPct: 0,
+              pnlEur: (currentPrice - calculatedAvgPrice) * amount,
+              pnlPct: calculatedAvgPrice > 0 ? ((currentPrice - calculatedAvgPrice) / calculatedAvgPrice) * 100 : 0,
               status: "holding",
             },
           })
@@ -80,7 +112,7 @@ export async function POST() {
             amount,
             value: currentValue,
             synced: true,
-            detail: `Created: ${amount.toFixed(6)} ${config.coin} @ €${currentPrice.toFixed(2)} = €${currentValue.toFixed(2)}`,
+            detail: `Created: ${amount.toFixed(6)} ${config.coin} · gem. €${calculatedAvgPrice.toFixed(2)} · waarde €${currentValue.toFixed(2)}`,
           })
         } else {
           results.push({

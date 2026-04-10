@@ -126,6 +126,27 @@ export async function sellAll(market: string, symbol: string): Promise<OrderResu
   return sellMarket(market, parseFloat(bal.available))
 }
 
+// ─── Trade history ───────────────────────────────────────────────
+export interface TradeHistoryItem {
+  id: string
+  orderId: string
+  timestamp: number
+  market: string
+  side: "buy" | "sell"
+  amount: string       // base currency amount
+  price: string        // quote currency per unit
+  taker: boolean
+  fee: string
+  feeCurrency: string
+  settled: boolean
+}
+
+// Haalt authenticated trade history op voor een specifieke markt
+export async function getTrades(market: string, limit = 500): Promise<TradeHistoryItem[]> {
+  const path = `/trades?market=${market}&limit=${limit}`
+  return request<TradeHistoryItem[]>("GET", path)
+}
+
 // ─── Market data helpers ──────────────────────────────────────────
 
 export interface Candle {
