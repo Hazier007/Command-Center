@@ -96,12 +96,16 @@ export interface OrderResult {
   fills: Array<{ price: string; amount: string; fee: string; feeCurrency: string }>
 }
 
+// Operator ID voor Bitvavo (verplicht sinds 2025) — identificeert onze CC bot
+const OPERATOR_ID = 1000001
+
 export async function buyMarket(market: string, amountEur: number): Promise<OrderResult> {
   return request<OrderResult>("POST", "/order", {
     market,
     side: "buy",
     orderType: "market",
     amountQuote: String(amountEur),
+    operatorId: OPERATOR_ID,
   })
 }
 
@@ -111,6 +115,7 @@ export async function sellMarket(market: string, amountCoin: number): Promise<Or
     side: "sell",
     orderType: "market",
     amount: String(amountCoin),
+    operatorId: OPERATOR_ID,
   })
 }
 
