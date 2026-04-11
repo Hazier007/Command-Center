@@ -86,8 +86,9 @@ NERVE is Bart's commando-centrum. Eén plek waar hij:
 - **Capture + Inbox knoppen verwijderd** uit de navigatie (werkten niet, rommel weg).
 - **Light theme toggle live.** Nieuwe `ThemeProvider` in `src/components/nerve/theme-context.tsx` met localStorage persist (`nerve-theme`). Zon-icoon in topnav voor dark→light, maan-icoon voor light→dark. Klasse-switch gebeurt op `<html>` zodat `:root` (light) en `.dark` blokken uit globals.css automatisch pakken.
 - **Base font size bump:** `html { font-size: 17px }` in globals.css (was 16px default). Alle Tailwind rem-waarden schalen mee — geen handmatige px-bumps nodig op honderd plekken. Tekst is ~6% groter op desktop.
-- **Mobile pass:** topnav collapsed onder `md` (hamburger knop, drawer met volledige nav). Right panel (`NerveRightPanel`) hidden onder `lg`. Main content padding `p-4 md:p-6`. Business switcher toont alleen het letter-icoon op kleine schermen, label verschijnt vanaf `sm`.
-- **NerveShell gerefactord:** flex-col ipv flex-row, topnav bovenaan, content+right-panel in een tweede flex-row daaronder. Scroll wordt netjes afgehandeld met `h-screen overflow-hidden` op buitenste, `overflow-y-auto` op main.
+- **Mobile pass:** topnav collapsed onder `md` (hamburger knop, drawer met volledige nav). Main content padding `p-4 md:p-6`. Business switcher toont alleen het letter-icoon op kleine schermen, label verschijnt vanaf `sm`.
+- **NerveShell gerefactord:** flex-col met topnav bovenaan en `<main>` full width eronder. Scroll wordt netjes afgehandeld met `h-screen overflow-hidden` op buitenste, `overflow-y-auto` op main.
+- **Full width (update 2026-04-11):** `NerveRightPanel` volledig uit de shell gehaald. De oude rechter-kolom met RevenueTracker/NowSection/PulseFeed nam op `lg+` breedte af van de hoofdinhoud waardoor Cockpit-grids te krap stonden. Nu spant alles de volledige viewport. Losse eindjes van dat panel (RevenueTracker, NowSection, PulseFeed) kunnen later als widgets op `/cockpit` of `/geld` landen als Bart ze terug wil.
 
 **Loose ends:**
 - Oude `nerve-sidebar.tsx` en `nerve-topbar.tsx` blijven in de repo staan maar worden niet meer gebruikt. Exports staan nog in `index.ts` voor backwards-compat — volgende sessie kunnen ze weg als niks ze nog importeert.
