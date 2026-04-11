@@ -1,18 +1,61 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
+import { TrendingUp, Receipt } from "lucide-react"
 import { useBusinessContext } from "@/components/nerve"
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 // ─── Types ─────────────────────────────────────────────────────
+// NOTE: The API (Prisma) returns RevenueEntry with `source` + `description` + `month`.
+// Older display code referenced `r.type` which doesn't exist, so stream filters
+// never matched. Fixed below to use `source`.
 interface RevenueEntry {
-  id: string; source: string; amount: number; type: string; recurring: boolean
-  businessId?: string; date?: string
+  id: string
+  source: string // stream key: agency|adsense|leadgen|affiliate|domain
+  description: string
+  amount: number
+  month: string
+  siteDomain?: string | null
+  recurring: boolean
+  businessId?: string
+  createdAt?: string
 }
 interface Cost {
-  id: string; name: string; amount: number; category: string
-  businessId?: string; recurring: boolean
+  id: string
+  name: string
+  amount: number
+  category: string
+  businessId?: string
+  recurring: boolean
+  billingCycle?: string | null
+  notes?: string | null
 }
+
+function currentMonth() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
+}
+
+const COST_CATEGORIES = [
+  "AI",
+  "Hosting",
+  "Database",
+  "Domains",
+  "Infrastructure",
+  "Tools",
+  "Other",
+]
 
 // ─── Revenue stream config ────────────────────────────────────
 const STREAMS = [
@@ -29,17 +72,130 @@ export default function GeldPage() {
   const [costs, setCosts] = useState<Cost[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    Promise.all([
+  // ─── Dialog state ─────────────────────────────────────────
+  const [revenueOpen, setRevenueOpen] = useState(false)
+  const [costOpen, setCostOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
+
+  const [revenueForm, setRevenueForm] = useState({
+    source: "agency",
+    description: "",
+    amount: "",
+    month: currentMonth(),
+    siteDomain: "",
+    recurring: false,
+  })
+
+  const [costForm, setCostForm] = useState({
+    name: "",
+    amount: "",
+    category: "Tools",
+    recurring: true,
+    billingCycle: "monthly",
+    notes: "",
+  })
+
+  const refetch = useCallback(() => {
+    return Promise.all([
       fetch("/api/revenue").then((r) => r.json()).catch(() => []),
       fetch("/api/costs").then((r) => r.json()).catch(() => []),
-    ])
-      .then(([r, c]) => {
-        setRevenue(Array.isArray(r) ? r : [])
-        setCosts(Array.isArray(c) ? c : [])
-      })
-      .finally(() => setLoading(false))
+    ]).then(([r, c]) => {
+      setRevenue(Array.isArray(r) ? r : [])
+      setCosts(Array.isArray(c) ? c : [])
+    })
   }, [])
+
+  useEffect(() => {
+    refetch().finally(() => setLoading(false))
+  }, [refetch])
+
+  const resetRevenueForm = () =>
+    setRevenueForm({
+      source: "agency",
+      description: "",
+      amount: "",
+      month: currentMonth(),
+      siteDomain: "",
+      recurring: false,
+    })
+  const resetCostForm = () =>
+    setCostForm({
+      name: "",
+      amount: "",
+      category: "Tools",
+      recurring: true,
+      billingCycle: "monthly",
+      notes: "",
+    })
+
+  async function submitRevenue(e: React.FormEvent) {
+    e.preventDefault()
+    setFormError(null)
+    const amount = parseFloat(revenueForm.amount)
+    if (!revenueForm.description.trim() || isNaN(amount) || amount <= 0) {
+      setFormError("Beschrijving en geldig bedrag zijn vereist.")
+      return
+    }
+    setSubmitting(true)
+    try {
+      const res = await fetch("/api/revenue", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          source: revenueForm.source,
+          description: revenueForm.description.trim(),
+          amount,
+          month: revenueForm.month || currentMonth(),
+          siteDomain: revenueForm.siteDomain.trim() || undefined,
+          recurring: revenueForm.recurring,
+        }),
+      })
+      if (!res.ok) throw new Error("POST faalde")
+      await refetch()
+      resetRevenueForm()
+      setRevenueOpen(false)
+    } catch (err) {
+      console.error(err)
+      setFormError("Opslaan mislukt. Probeer opnieuw.")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function submitCost(e: React.FormEvent) {
+    e.preventDefault()
+    setFormError(null)
+    const amount = parseFloat(costForm.amount)
+    if (!costForm.name.trim() || isNaN(amount) || amount <= 0) {
+      setFormError("Naam en geldig bedrag zijn vereist.")
+      return
+    }
+    setSubmitting(true)
+    try {
+      const res = await fetch("/api/costs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: costForm.name.trim(),
+          amount,
+          category: costForm.category,
+          recurring: costForm.recurring,
+          billingCycle: costForm.recurring ? costForm.billingCycle : "one_time",
+          notes: costForm.notes.trim() || undefined,
+        }),
+      })
+      if (!res.ok) throw new Error("POST faalde")
+      await refetch()
+      resetCostForm()
+      setCostOpen(false)
+    } catch (err) {
+      console.error(err)
+      setFormError("Opslaan mislukt. Probeer opnieuw.")
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   // Filter by business if not "all"
   const filteredRevenue = activeBusiness.id === "all"
@@ -55,11 +211,11 @@ export default function GeldPage() {
   const target = 100000
   const progress = Math.min((totalRevenue / target) * 100, 100)
 
-  // Revenue per stream
+  // Revenue per stream — filter on `source` (prev. `type`, which doesn't exist on schema)
   const revenueByStream = STREAMS.map((s) => ({
     ...s,
     amount: filteredRevenue
-      .filter((r) => r.type === s.key)
+      .filter((r) => r.source === s.key)
       .reduce((sum, r) => sum + r.amount, 0),
   }))
 
@@ -76,16 +232,43 @@ export default function GeldPage() {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
       {/* Header */}
-      <div>
-        <h1 className="text-[26px] font-extrabold tracking-tight text-white">
-          💰 Geld
-        </h1>
-        <p className="text-[13px] text-zinc-500">
-          Revenue, kosten &amp; gap naar €100K
-          {activeBusiness.id !== "all" && (
-            <span className="ml-2 text-[#F5911E]">· {activeBusiness.name}</span>
-          )}
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-[26px] font-extrabold tracking-tight text-white">
+            💰 Geld
+          </h1>
+          <p className="text-[13px] text-zinc-500">
+            Revenue, kosten &amp; gap naar €100K
+            {activeBusiness.id !== "all" && (
+              <span className="ml-2 text-[#F5911E]">· {activeBusiness.name}</span>
+            )}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            onClick={() => {
+              setFormError(null)
+              setRevenueOpen(true)
+            }}
+            className="bg-[#F5911E] text-white hover:bg-[#F5911E]/90"
+          >
+            <TrendingUp className="h-3.5 w-3.5 mr-1.5" />
+            Inkomst toevoegen
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setFormError(null)
+              setCostOpen(true)
+            }}
+            className="border-white/10 bg-zinc-800/50 text-white hover:bg-zinc-800"
+          >
+            <Receipt className="h-3.5 w-3.5 mr-1.5" />
+            Uitgave toevoegen
+          </Button>
+        </div>
       </div>
 
       {/* Top metrics */}
@@ -204,7 +387,7 @@ export default function GeldPage() {
         <div className="space-y-1.5">
           {filteredRevenue.length > 0 ? (
             filteredRevenue.slice(0, 10).map((r) => {
-              const stream = STREAMS.find((s) => s.key === r.type)
+              const stream = STREAMS.find((s) => s.key === r.source)
               return (
                 <div
                   key={r.id}
@@ -213,10 +396,11 @@ export default function GeldPage() {
                   <span className="text-[14px]">{stream?.icon || "💰"}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-[11px] font-medium text-white truncate">
-                      {r.source}
+                      {r.description || r.source}
                     </p>
                     <p className="text-[9px] text-zinc-500">
-                      {stream?.label || r.type}
+                      {stream?.label || r.source}
+                      {r.siteDomain && ` · ${r.siteDomain}`}
                       {r.recurring && " · recurring"}
                     </p>
                   </div>
@@ -233,6 +417,264 @@ export default function GeldPage() {
           )}
         </div>
       </div>
+
+      {/* ── Inkomst toevoegen dialog ─────────────────────── */}
+      <Dialog open={revenueOpen} onOpenChange={setRevenueOpen}>
+        <DialogContent className="bg-zinc-900 border-white/10 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-white">Inkomst toevoegen</DialogTitle>
+            <DialogDescription className="text-zinc-500">
+              Nieuwe revenue entry. Gaat direct in de database.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={submitRevenue} className="space-y-4">
+            <div>
+              <label className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block mb-1.5">
+                Stream
+              </label>
+              <div className="grid grid-cols-4 gap-2">
+                {STREAMS.map((s) => (
+                  <button
+                    key={s.key}
+                    type="button"
+                    onClick={() => setRevenueForm((f) => ({ ...f, source: s.key }))}
+                    className={cn(
+                      "rounded-lg border px-2 py-2 text-[11px] font-medium transition-colors",
+                      revenueForm.source === s.key
+                        ? "border-[#F5911E] bg-[#F5911E]/10 text-[#F5911E]"
+                        : "border-white/10 bg-zinc-800/50 text-zinc-400 hover:bg-zinc-800"
+                    )}
+                  >
+                    {s.icon} {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block mb-1.5">
+                Omschrijving *
+              </label>
+              <Input
+                value={revenueForm.description}
+                onChange={(e) =>
+                  setRevenueForm((f) => ({ ...f, description: e.target.value }))
+                }
+                placeholder="bv. Hazier retainer Kristof Ponnet"
+                className="bg-zinc-800/50 border-white/10 text-white"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block mb-1.5">
+                  Bedrag (€) *
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={revenueForm.amount}
+                  onChange={(e) =>
+                    setRevenueForm((f) => ({ ...f, amount: e.target.value }))
+                  }
+                  placeholder="450"
+                  className="bg-zinc-800/50 border-white/10 text-white"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block mb-1.5">
+                  Maand
+                </label>
+                <Input
+                  type="month"
+                  value={revenueForm.month}
+                  onChange={(e) =>
+                    setRevenueForm((f) => ({ ...f, month: e.target.value }))
+                  }
+                  className="bg-zinc-800/50 border-white/10 text-white"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block mb-1.5">
+                Site / domein (optioneel)
+              </label>
+              <Input
+                value={revenueForm.siteDomain}
+                onChange={(e) =>
+                  setRevenueForm((f) => ({ ...f, siteDomain: e.target.value }))
+                }
+                placeholder="bv. loonberekening.be"
+                className="bg-zinc-800/50 border-white/10 text-white"
+              />
+            </div>
+
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={revenueForm.recurring}
+                onChange={(e) =>
+                  setRevenueForm((f) => ({ ...f, recurring: e.target.checked }))
+                }
+                className="h-4 w-4 rounded border-white/20 bg-zinc-800 accent-[#F5911E]"
+              />
+              <span className="text-[12px] text-zinc-300">
+                Recurring (telt mee in MRR)
+              </span>
+            </label>
+
+            {formError && (
+              <p className="text-[11px] text-red-400">{formError}</p>
+            )}
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setRevenueOpen(false)}
+                disabled={submitting}
+                className="border-white/10 bg-zinc-800/50 text-white hover:bg-zinc-800"
+              >
+                Annuleren
+              </Button>
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="bg-[#F5911E] text-white hover:bg-[#F5911E]/90"
+              >
+                {submitting ? "Opslaan..." : "Opslaan"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Uitgave toevoegen dialog ─────────────────────── */}
+      <Dialog open={costOpen} onOpenChange={setCostOpen}>
+        <DialogContent className="bg-zinc-900 border-white/10 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-white">Uitgave toevoegen</DialogTitle>
+            <DialogDescription className="text-zinc-500">
+              Nieuwe kost. Recurring kosten tellen elke maand mee.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={submitCost} className="space-y-4">
+            <div>
+              <label className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block mb-1.5">
+                Naam *
+              </label>
+              <Input
+                value={costForm.name}
+                onChange={(e) =>
+                  setCostForm((f) => ({ ...f, name: e.target.value }))
+                }
+                placeholder="bv. Vercel Pro"
+                className="bg-zinc-800/50 border-white/10 text-white"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block mb-1.5">
+                  Bedrag (€) *
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={costForm.amount}
+                  onChange={(e) =>
+                    setCostForm((f) => ({ ...f, amount: e.target.value }))
+                  }
+                  placeholder="20"
+                  className="bg-zinc-800/50 border-white/10 text-white"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block mb-1.5">
+                  Categorie
+                </label>
+                <select
+                  value={costForm.category}
+                  onChange={(e) =>
+                    setCostForm((f) => ({ ...f, category: e.target.value }))
+                  }
+                  className="w-full h-9 rounded-md border border-white/10 bg-zinc-800/50 px-3 text-[13px] text-white"
+                >
+                  {COST_CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={costForm.recurring}
+                  onChange={(e) =>
+                    setCostForm((f) => ({ ...f, recurring: e.target.checked }))
+                  }
+                  className="h-4 w-4 rounded border-white/20 bg-zinc-800 accent-[#F5911E]"
+                />
+                <span className="text-[12px] text-zinc-300">Recurring</span>
+              </label>
+              {costForm.recurring && (
+                <select
+                  value={costForm.billingCycle}
+                  onChange={(e) =>
+                    setCostForm((f) => ({ ...f, billingCycle: e.target.value }))
+                  }
+                  className="h-8 rounded-md border border-white/10 bg-zinc-800/50 px-3 text-[12px] text-white"
+                >
+                  <option value="monthly">Per maand</option>
+                  <option value="yearly">Per jaar</option>
+                </select>
+              )}
+            </div>
+
+            <div>
+              <label className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block mb-1.5">
+                Notities
+              </label>
+              <Textarea
+                value={costForm.notes}
+                onChange={(e) =>
+                  setCostForm((f) => ({ ...f, notes: e.target.value }))
+                }
+                rows={2}
+                className="bg-zinc-800/50 border-white/10 text-white text-[13px]"
+              />
+            </div>
+
+            {formError && (
+              <p className="text-[11px] text-red-400">{formError}</p>
+            )}
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setCostOpen(false)}
+                disabled={submitting}
+                className="border-white/10 bg-zinc-800/50 text-white hover:bg-zinc-800"
+              >
+                Annuleren
+              </Button>
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="bg-[#F5911E] text-white hover:bg-[#F5911E]/90"
+              >
+                {submitting ? "Opslaan..." : "Opslaan"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

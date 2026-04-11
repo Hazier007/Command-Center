@@ -1,9 +1,9 @@
 "use client"
 
 import { createContext, useContext, useState } from "react"
-import { NerveSidebar } from "./nerve-sidebar"
-import { NerveTopbar } from "./nerve-topbar"
+import { NerveTopNav } from "./nerve-topnav"
 import { NerveRightPanel } from "./nerve-right-panel"
+import { ThemeProvider } from "./theme-context"
 
 // ─── Business Context ──────────────────────────────────────────
 export type BusinessId = "hazier" | "collectpro" | "events" | "all"
@@ -50,22 +50,25 @@ export function NerveShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <BusinessContext.Provider value={{ activeBusiness, setActiveBusiness }}>
-      <div className="flex h-screen overflow-hidden bg-zinc-950">
-        {/* Sidebar */}
-        <NerveSidebar />
+    <ThemeProvider>
+      <BusinessContext.Provider value={{ activeBusiness, setActiveBusiness }}>
+        <div className="flex h-screen flex-col overflow-hidden bg-zinc-950">
+          {/* Top navigation */}
+          <NerveTopNav />
 
-        {/* Center column: topbar + main content */}
-        <div className="flex flex-1 flex-col min-w-0">
-          <NerveTopbar />
-          <main className="flex-1 overflow-y-auto p-6 scrollbar-thin">
-            {children}
-          </main>
+          {/* Content row: main + right panel */}
+          <div className="flex flex-1 min-h-0 overflow-hidden">
+            <main className="flex-1 overflow-y-auto p-4 md:p-6 scrollbar-thin min-w-0">
+              {children}
+            </main>
+
+            {/* Right panel — hidden below lg */}
+            <div className="hidden lg:block shrink-0">
+              <NerveRightPanel />
+            </div>
+          </div>
         </div>
-
-        {/* Right panel */}
-        <NerveRightPanel />
-      </div>
-    </BusinessContext.Provider>
+      </BusinessContext.Provider>
+    </ThemeProvider>
   )
 }

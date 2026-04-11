@@ -1,4 +1,6 @@
 export { NerveShell, useBusinessContext, BUSINESSES, type BusinessId, type Business } from "./nerve-shell"
 export { NerveSidebar } from "./nerve-sidebar"
 export { NerveTopbar } from "./nerve-topbar"
+export { NerveTopNav } from "./nerve-topnav"
 export { NerveRightPanel } from "./nerve-right-panel"
+export { ThemeProvider, useTheme, type Theme } from "./theme-context"

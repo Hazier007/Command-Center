@@ -121,8 +121,31 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    /* NERVE base font bump — was default 16px, now 17px for better readability */
+    font-size: 17px;
+  }
   body {
     @apply bg-background text-foreground;
+  }
+  /* Smoother scrollbar for main area */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.15);
   }
 }
 

@@ -36,7 +36,27 @@ export async function PATCH(
         subtasks: { select: { id: true, title: true, status: true, assignee: true } },
       },
     })
-    
+
+    // ── Auto-publish trigger ─────────────────────────────
+    // When a task that was dispatched by "Stuur naar FORGE voor publicatie"
+    // transitions to `done`, auto-bump any linked content that's in
+    // `publish_requested` state to `published`. This closes the loop so
+    // Bart doesn't have to manually remember to flip the content status.
+    if (data.status === 'done') {
+      try {
+        await prisma.content.updateMany({
+          where: {
+            linkedTaskId: id,
+            status: 'publish_requested',
+          },
+          data: { status: 'published' },
+        })
+      } catch (triggerErr) {
+        console.error('Auto-publish trigger failed:', triggerErr)
+        // Intentionally don't fail the whole request — task update succeeded.
+      }
+    }
+
     return NextResponse.json(task)
   } catch (error) {
     console.error('Error updating task:', error)

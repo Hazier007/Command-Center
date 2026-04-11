@@ -50,13 +50,18 @@ export async function PATCH(
     const research = await prisma.research.update({
       where: { id },
       data: {
-        title: data.title,
-        body: data.body,
-        type: data.type,
-        author: data.author,
-        projectId: data.projectId,
-        tags: data.tags,
-        status: data.status,
+        ...(data.title !== undefined && { title: data.title }),
+        ...(data.body !== undefined && { body: data.body }),
+        ...(data.type !== undefined && { type: data.type }),
+        ...(data.author !== undefined && { author: data.author }),
+        ...(data.projectId !== undefined && { projectId: data.projectId }),
+        ...(data.tags !== undefined && { tags: data.tags }),
+        ...(data.status !== undefined && { status: data.status }),
+        ...(data.summary !== undefined && { summary: data.summary }),
+        ...(data.linkedSiteId !== undefined && { linkedSiteId: data.linkedSiteId }),
+        ...(data.linkedDomainId !== undefined && { linkedDomainId: data.linkedDomainId }),
+        ...(data.linkedIdeaId !== undefined && { linkedIdeaId: data.linkedIdeaId }),
+        ...(data.linkedTaskId !== undefined && { linkedTaskId: data.linkedTaskId }),
       },
       include: {
         project: {

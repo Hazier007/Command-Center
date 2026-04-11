@@ -9,15 +9,19 @@ interface Task {
   id: string; title: string; description?: string; status: string
   assignee?: string; priority?: string; category?: string
   source?: string; dueDate?: string; needsApproval?: boolean
-  siteId?: string; createdAt?: string; updatedAt?: string
+  siteId?: string; linkedDomainId?: string; createdAt?: string; updatedAt?: string
   site?: { id: string; domain: string }
   subtasks?: string
 }
+interface SiteLite { id: string; domain: string }
+interface DomainLite { id: string; domain: string }
 interface ContentItem {
   id: string; title: string; status: string; type?: string
   author?: string; targetSite?: string; wordCount?: number
   body?: string; feedback?: string; linkedKeyword?: string
   needsApproval?: boolean; createdAt?: string
+  linkedTaskId?: string | null
+  task?: { id: string; title: string; status: string } | null
 }
 interface Lead {
   id: string; name: string; company?: string; email?: string
@@ -29,6 +33,8 @@ interface Research {
   id: string; title: string; type?: string; author?: string
   status?: string; summary?: string; body?: string
   tags?: string; createdAt?: string
+  linkedSiteId?: string | null
+  linkedDomainId?: string | null
 }
 
 // ─── Config ───────────────────────────────────────────────────
@@ -44,6 +50,7 @@ const CONTENT_STATUSES = [
   { key: "draft", label: "Draft", color: "text-zinc-400" },
   { key: "review", label: "Review", color: "text-yellow-400" },
   { key: "approved", label: "Approved", color: "text-green-400" },
+  { key: "publish_requested", label: "Bij FORGE", color: "text-[#F5911E]" },
   { key: "published", label: "Published", color: "text-cyan-400" },
 ]
 
@@ -250,7 +257,7 @@ function TaskDetailModal({ task, onClose, onUpdate }: { task: Task; onClose: () 
 }
 
 // ─── Content Detail Modal ─────────────────────────────────────
-function ContentDetailModal({ item, onClose }: { item: ContentItem; onClose: () => void }) {
+function ContentDetailModal({ item, onClose, onUpdate }: { item: ContentItem; onClose: () => void; onUpdate: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div className="w-full max-w-lg max-h-[80vh] overflow-y-auto rounded-2xl border border-white/[0.08] bg-zinc-900 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
@@ -266,10 +273,11 @@ function ContentDetailModal({ item, onClose }: { item: ContentItem; onClose: () 
           {item.author && <span className={cn("rounded px-2 py-1 text-[9px] font-bold uppercase", agentColors[item.author.toLowerCase()] || "bg-zinc-700 text-zinc-400")}>{item.author}</span>}
           <span className={cn("rounded px-2 py-1 text-[9px] font-bold uppercase",
             item.status === "published" ? "bg-cyan-500/15 text-cyan-400" :
+            item.status === "publish_requested" ? "bg-[#F5911E]/15 text-[#F5911E]" :
             item.status === "approved" ? "bg-green-500/15 text-green-400" :
             item.status === "review" ? "bg-yellow-500/15 text-yellow-400" :
             "bg-zinc-700/50 text-zinc-400"
-          )}>{item.status}</span>
+          )}>{item.status === "publish_requested" ? "Bij FORGE" : item.status}</span>
           {item.wordCount && <span className="rounded px-2 py-1 text-[9px] font-bold uppercase bg-zinc-700/50 text-zinc-400">{item.wordCount} woorden</span>}
         </div>
         {item.linkedKeyword && (
@@ -291,13 +299,107 @@ function ContentDetailModal({ item, onClose }: { item: ContentItem; onClose: () 
             </div>
           </div>
         )}
-        <div className="flex gap-2 pt-3 border-t border-white/[0.06]">
+        <div className="flex flex-wrap gap-2 pt-3 border-t border-white/[0.06]">
           {item.status === "review" && (
             <>
-              <button onClick={async () => { await fetch(`/api/content/${item.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "approved" }) }); onClose(); window.location.reload() }} className="rounded-lg bg-green-500/15 px-4 py-2 text-[11px] font-bold text-green-400 hover:bg-green-500/25 transition-colors">✓ Goedkeuren</button>
-              <button onClick={async () => { await fetch(`/api/content/${item.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "draft" }) }); onClose(); window.location.reload() }} className="rounded-lg bg-red-500/15 px-4 py-2 text-[11px] font-bold text-red-400 hover:bg-red-500/25 transition-colors">✕ Afwijzen</button>
+              <button onClick={async () => { await fetch(`/api/content/${item.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "approved" }) }); onClose(); onUpdate() }} className="rounded-lg bg-green-500/15 px-4 py-2 text-[11px] font-bold text-green-400 hover:bg-green-500/25 transition-colors">✓ Goedkeuren</button>
+              <button onClick={async () => { await fetch(`/api/content/${item.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "draft" }) }); onClose(); onUpdate() }} className="rounded-lg bg-red-500/15 px-4 py-2 text-[11px] font-bold text-red-400 hover:bg-red-500/25 transition-colors">✕ Afwijzen</button>
             </>
           )}
+          {item.status === "approved" && (
+            <button
+              onClick={async () => {
+                if (!confirm(`Publicatie-taak voor "${item.title}" aanmaken voor FORGE?\n\nDe content gaat naar "Bij FORGE" tot FORGE de taak op done zet — dan wordt ze automatisch gepubliceerd.`)) return
+                // Step 1: create the FORGE publish task
+                const descLines = [
+                  `Publicatie van content-item "${item.title}"`,
+                  "",
+                  item.targetSite ? `Site: ${item.targetSite}` : null,
+                  item.linkedKeyword ? `Keyword: ${item.linkedKeyword}` : null,
+                  item.wordCount ? `Woordenaantal: ${item.wordCount}` : null,
+                  "",
+                  "⚠ Zodra deze taak op 'done' staat, wordt de gelinkte content automatisch gepubliceerd.",
+                ].filter(Boolean).join("\n")
+                const taskRes = await fetch(`/api/tasks`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    title: `🚀 Publiceren: ${item.title}`,
+                    description: descLines,
+                    status: "todo",
+                    priority: "medium",
+                    category: "content",
+                    assignee: "forge",
+                    source: "bart",
+                  }),
+                })
+                if (!taskRes.ok) {
+                  alert("Taak aanmaken mislukt — content niet doorgezet.")
+                  return
+                }
+                const task = await taskRes.json()
+                // Step 2: link content to task + move to publish_requested
+                await fetch(`/api/content/${item.id}`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    status: "publish_requested",
+                    linkedTaskId: task.id,
+                  }),
+                })
+                onClose(); onUpdate()
+              }}
+              className="rounded-lg bg-[#F5911E]/15 px-4 py-2 text-[11px] font-bold text-[#F5911E] hover:bg-[#F5911E]/25 transition-colors"
+            >
+              🚀 Stuur naar FORGE voor publicatie
+            </button>
+          )}
+          {item.status === "publish_requested" && (
+            <>
+              <span className="rounded-lg bg-[#F5911E]/10 border border-[#F5911E]/20 px-3 py-2 text-[10px] text-[#F5911E]">
+                ⏳ In wachtrij bij FORGE (task #{item.task?.id?.slice(0, 6) || "—"})
+              </span>
+              <button
+                onClick={async () => {
+                  if (!confirm("Content uit de FORGE-wachtrij halen en terugzetten naar approved?")) return
+                  await fetch(`/api/content/${item.id}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status: "approved", linkedTaskId: null }),
+                  })
+                  onClose(); onUpdate()
+                }}
+                className="rounded-lg bg-zinc-700/50 px-4 py-2 text-[11px] font-bold text-zinc-400 hover:bg-zinc-700 transition-colors"
+              >
+                ↩ Intrekken
+              </button>
+            </>
+          )}
+          {item.status === "published" && (
+            <button
+              onClick={async () => {
+                await fetch(`/api/content/${item.id}`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ status: "approved" }),
+                })
+                onClose(); onUpdate()
+              }}
+              className="rounded-lg bg-zinc-700/50 px-4 py-2 text-[11px] font-bold text-zinc-400 hover:bg-zinc-700 transition-colors"
+            >
+              ↩ Terugzetten naar approved
+            </button>
+          )}
+          <button
+            onClick={async () => {
+              if (!confirm("Content definitief verwijderen?")) return
+              await fetch(`/api/content/${item.id}`, { method: "DELETE" })
+              onClose(); onUpdate()
+            }}
+            className="rounded-lg bg-red-500/10 px-4 py-2 text-[11px] font-bold text-red-400/70 hover:bg-red-500/25 hover:text-red-400 transition-colors"
+          >
+            🗑 Verwijderen
+          </button>
           <button onClick={onClose} className="ml-auto rounded-lg bg-zinc-800 px-4 py-2 text-[11px] font-bold text-zinc-400 hover:text-white transition-colors">Sluiten</button>
         </div>
       </div>
@@ -306,7 +408,83 @@ function ContentDetailModal({ item, onClose }: { item: ContentItem; onClose: () 
 }
 
 // ─── Research Detail Modal ────────────────────────────────────
-function ResearchDetailModal({ item, onClose }: { item: Research; onClose: () => void }) {
+function ResearchDetailModal({
+  item,
+  sites,
+  domains,
+  onClose,
+  onUpdate,
+}: {
+  item: Research
+  sites: SiteLite[]
+  domains: DomainLite[]
+  onClose: () => void
+  onUpdate: () => void
+}) {
+  const [linkedSiteId, setLinkedSiteId] = useState<string>(item.linkedSiteId || "")
+  const [linkedDomainId, setLinkedDomainId] = useState<string>(item.linkedDomainId || "")
+  const [showTaskForm, setShowTaskForm] = useState(false)
+  const [taskTitle, setTaskTitle] = useState("")
+  const [taskAssignee, setTaskAssignee] = useState("bart")
+  const [saving, setSaving] = useState(false)
+
+  async function saveLinks() {
+    setSaving(true)
+    try {
+      await fetch(`/api/research/${item.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          linkedSiteId: linkedSiteId || null,
+          linkedDomainId: linkedDomainId || null,
+        }),
+      })
+      onClose()
+      onUpdate()
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function createTaskFromResearch() {
+    if (!taskTitle.trim()) return
+    setSaving(true)
+    try {
+      await fetch(`/api/tasks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: taskTitle.trim(),
+          description: item.summary ? `Uit research: ${item.title}\n\n${item.summary}` : `Uit research: ${item.title}`,
+          status: "todo",
+          priority: "medium",
+          category: "research",
+          assignee: taskAssignee,
+          siteId: linkedSiteId || undefined,
+          linkedDomainId: linkedDomainId || undefined,
+        }),
+      })
+      setShowTaskForm(false)
+      setTaskTitle("")
+      onClose()
+      onUpdate()
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function deleteResearch() {
+    if (!confirm(`Research "${item.title}" definitief verwijderen?`)) return
+    setSaving(true)
+    try {
+      await fetch(`/api/research/${item.id}`, { method: "DELETE" })
+      onClose()
+      onUpdate()
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border border-white/[0.08] bg-zinc-900 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
@@ -362,7 +540,104 @@ function ResearchDetailModal({ item, onClose }: { item: Research; onClose: () =>
           </div>
         )}
 
-        <div className="flex gap-2 pt-3 border-t border-white/[0.06]">
+        {/* Koppeling + acties */}
+        <div className="mb-4 rounded-lg border border-white/[0.06] bg-zinc-800/40 p-3 space-y-2.5">
+          <p className="text-[10px] font-bold uppercase text-zinc-500">Koppelingen</p>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-[9px] uppercase text-zinc-500 block mb-1">Site</label>
+              <select
+                value={linkedSiteId}
+                onChange={(e) => setLinkedSiteId(e.target.value)}
+                className="w-full h-8 rounded-md border border-white/10 bg-zinc-900 px-2 text-[11px] text-white"
+              >
+                <option value="">— geen —</option>
+                {sites.map((s) => (
+                  <option key={s.id} value={s.id}>{s.domain}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-[9px] uppercase text-zinc-500 block mb-1">Domein (opportunity)</label>
+              <select
+                value={linkedDomainId}
+                onChange={(e) => setLinkedDomainId(e.target.value)}
+                className="w-full h-8 rounded-md border border-white/10 bg-zinc-900 px-2 text-[11px] text-white"
+              >
+                <option value="">— geen —</option>
+                {domains.map((d) => (
+                  <option key={d.id} value={d.id}>{d.domain}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <button
+            onClick={saveLinks}
+            disabled={saving}
+            className="w-full rounded-md bg-[#F5911E]/15 px-3 py-1.5 text-[10px] font-bold text-[#F5911E] hover:bg-[#F5911E]/25 transition-colors disabled:opacity-50"
+          >
+            {saving ? "Opslaan..." : "💾 Koppeling opslaan"}
+          </button>
+        </div>
+
+        {showTaskForm && (
+          <div className="mb-4 rounded-lg border border-[#F5911E]/20 bg-[#F5911E]/5 p-3 space-y-2.5">
+            <p className="text-[10px] font-bold uppercase text-[#F5911E]">Nieuwe taak op basis van research</p>
+            <input
+              type="text"
+              value={taskTitle}
+              onChange={(e) => setTaskTitle(e.target.value)}
+              placeholder="Taak titel"
+              className="w-full h-8 rounded-md border border-white/10 bg-zinc-900 px-2 text-[11px] text-white"
+              autoFocus
+            />
+            <div className="flex items-center gap-2">
+              <select
+                value={taskAssignee}
+                onChange={(e) => setTaskAssignee(e.target.value)}
+                className="h-8 rounded-md border border-white/10 bg-zinc-900 px-2 text-[11px] text-white"
+              >
+                <option value="bart">Bart</option>
+                <option value="radar">RADAR</option>
+                <option value="forge">FORGE</option>
+                <option value="ink">INK</option>
+                <option value="atlas">ATLAS</option>
+                <option value="ledger">LEDGER</option>
+                <option value="spark">SPARK</option>
+              </select>
+              <button
+                onClick={createTaskFromResearch}
+                disabled={saving || !taskTitle.trim()}
+                className="rounded-md bg-[#F5911E] px-3 py-1.5 text-[10px] font-bold text-white hover:bg-[#F5911E]/90 disabled:opacity-50"
+              >
+                ➕ Aanmaken
+              </button>
+              <button
+                onClick={() => setShowTaskForm(false)}
+                className="rounded-md bg-zinc-800 px-3 py-1.5 text-[10px] font-bold text-zinc-400"
+              >
+                Annuleren
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-2 pt-3 border-t border-white/[0.06]">
+          {!showTaskForm && (
+            <button
+              onClick={() => setShowTaskForm(true)}
+              className="rounded-lg bg-[#F5911E]/15 px-4 py-2 text-[11px] font-bold text-[#F5911E] hover:bg-[#F5911E]/25 transition-colors"
+            >
+              ➕ Taak aanmaken
+            </button>
+          )}
+          <button
+            onClick={deleteResearch}
+            disabled={saving}
+            className="rounded-lg bg-red-500/10 px-4 py-2 text-[11px] font-bold text-red-400/70 hover:bg-red-500/25 hover:text-red-400 transition-colors disabled:opacity-50"
+          >
+            🗑 Verwijderen
+          </button>
           <button onClick={onClose} className="ml-auto rounded-lg bg-zinc-800 px-4 py-2 text-[11px] font-bold text-zinc-400 hover:text-white transition-colors">Sluiten</button>
         </div>
       </div>
@@ -377,11 +652,18 @@ export default function WerkPage() {
   const [content, setContent] = useState<ContentItem[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
   const [research, setResearch] = useState<Research[]>([])
+  const [sites, setSites] = useState<SiteLite[]>([])
+  const [domains, setDomains] = useState<DomainLite[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState("taken")
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [selectedContent, setSelectedContent] = useState<ContentItem | null>(null)
   const [selectedResearch, setSelectedResearch] = useState<Research | null>(null)
+
+  // Filters
+  // scopeFilter format: "" | "site:<id>" | "domain:<id>"
+  const [scopeFilter, setScopeFilter] = useState<string>("")
+  const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
     Promise.all([
@@ -389,13 +671,17 @@ export default function WerkPage() {
       fetch("/api/content").then((r) => r.json()).catch(() => []),
       fetch("/api/leads").then((r) => r.json()).catch(() => []),
       fetch("/api/research").then((r) => r.json()).catch(() => []),
+      fetch("/api/sites").then((r) => r.json()).catch(() => []),
+      fetch("/api/domain-opportunities").then((r) => r.json()).catch(() => []),
     ])
-      .then(([t, c, l, r]) => {
+      .then(([t, c, l, r, s, d]) => {
         setTasks(Array.isArray(t) ? t : [])
         setContent(Array.isArray(c) ? c : [])
         setLeads(Array.isArray(l) ? l : [])
         // Research may be paginated
         setResearch(Array.isArray(r) ? r : Array.isArray(r?.data) ? r.data : [])
+        setSites(Array.isArray(s) ? s.map((x: { id: string; domain: string }) => ({ id: x.id, domain: x.domain })) : [])
+        setDomains(Array.isArray(d) ? d.map((x: { id: string; domain: string }) => ({ id: x.id, domain: x.domain })) : [])
       })
       .finally(() => setLoading(false))
   }, [])
@@ -415,17 +701,47 @@ export default function WerkPage() {
     })
   }
 
-  const tasksByStatus = (status: string) => tasks.filter((t) => t.status === status)
-  const taskCountByStatus = (status: string) => tasks.filter((t) => t.status === status).length
+  // Scope filter helpers
+  const filterKind = scopeFilter.startsWith("site:")
+    ? "site"
+    : scopeFilter.startsWith("domain:")
+      ? "domain"
+      : null
+  const filterId = scopeFilter.includes(":") ? scopeFilter.split(":")[1] : ""
+
+  function matchesScope(t: { siteId?: string | null; linkedDomainId?: string | null }) {
+    if (!filterKind) return true
+    if (filterKind === "site") return t.siteId === filterId
+    if (filterKind === "domain") return t.linkedDomainId === filterId
+    return true
+  }
+
+  function matchesSearch(title: string) {
+    if (!searchQuery.trim()) return true
+    return title.toLowerCase().includes(searchQuery.trim().toLowerCase())
+  }
+
+  const filteredTasks = tasks.filter(
+    (t) => matchesScope({ siteId: t.siteId, linkedDomainId: t.linkedDomainId }) && matchesSearch(t.title)
+  )
+  const filteredResearch = research.filter(
+    (r) =>
+      matchesScope({ siteId: r.linkedSiteId ?? undefined, linkedDomainId: r.linkedDomainId ?? undefined }) &&
+      matchesSearch(r.title)
+  )
+
+  const tasksByStatus = (status: string) => filteredTasks.filter((t) => t.status === status)
   const contentByStatus = (status: string) => content.filter((c) => c.status === status)
   const leadsByStatus = (status: string) => leads.filter((l) => l.status === status)
 
   const tabs = [
-    { id: "taken", label: "📋 Taken", count: tasks.filter((t) => t.status !== "done").length },
+    { id: "taken", label: "📋 Taken", count: filteredTasks.filter((t) => t.status !== "done").length },
     { id: "content", label: "✒️ Content", count: content.filter((c) => c.status !== "published").length },
     { id: "pipeline", label: "🏢 Pipeline", count: leads.length },
-    { id: "research", label: "🔬 Research", count: research.length },
+    { id: "research", label: "🔬 Research", count: filteredResearch.length },
   ]
+
+  const scopeActive = Boolean(filterKind)
 
   return (
     <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -437,25 +753,82 @@ export default function WerkPage() {
         </p>
       </div>
 
-      {/* Tabs with counts */}
-      <div className="flex gap-0.5 rounded-lg border border-white/[0.06] bg-zinc-800/30 p-1 w-fit">
-        {tabs.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={cn(
-              "rounded-md px-4 py-1.5 text-[11px] font-medium transition-colors flex items-center gap-2",
-              tab === t.id ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-zinc-300"
+      {/* Tabs + filter bar */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex gap-0.5 rounded-lg border border-white/[0.06] bg-zinc-800/30 p-1 w-fit">
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={cn(
+                "rounded-md px-4 py-1.5 text-[11px] font-medium transition-colors flex items-center gap-2",
+                tab === t.id ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-zinc-300"
+              )}
+            >
+              {t.label}
+              {t.count > 0 && (
+                <span className={cn("rounded-full px-1.5 py-0.5 text-[8px] font-bold", tab === t.id ? "bg-zinc-600 text-zinc-200" : "bg-zinc-700/50 text-zinc-500")}>
+                  {t.count}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {(tab === "taken" || tab === "research") && (
+          <div className="flex flex-1 flex-wrap items-center gap-2 min-w-[300px]">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] uppercase tracking-wider text-zinc-500">Scope</span>
+              <select
+                value={scopeFilter}
+                onChange={(e) => setScopeFilter(e.target.value)}
+                className="h-8 rounded-md border border-white/10 bg-zinc-800/50 px-2 text-[11px] text-white min-w-[180px]"
+              >
+                <option value="">Alles</option>
+                {sites.length > 0 && <option disabled>── Sites ──</option>}
+                {sites.map((s) => (
+                  <option key={`s-${s.id}`} value={`site:${s.id}`}>
+                    🌐 {s.domain}
+                  </option>
+                ))}
+                {domains.length > 0 && <option disabled>── Domeinen ──</option>}
+                {domains.map((d) => (
+                  <option key={`d-${d.id}`} value={`domain:${d.id}`}>
+                    📦 {d.domain}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Zoek op titel..."
+              className="h-8 rounded-md border border-white/10 bg-zinc-800/50 px-2.5 text-[11px] text-white min-w-[180px]"
+            />
+            {(scopeActive || searchQuery) && (
+              <button
+                onClick={() => {
+                  setScopeFilter("")
+                  setSearchQuery("")
+                }}
+                className="h-8 rounded-md bg-zinc-800 px-2.5 text-[10px] font-bold text-zinc-400 hover:text-white"
+              >
+                ✕ Reset
+              </button>
             )}
-          >
-            {t.label}
-            {t.count > 0 && (
-              <span className={cn("rounded-full px-1.5 py-0.5 text-[8px] font-bold", tab === t.id ? "bg-zinc-600 text-zinc-200" : "bg-zinc-700/50 text-zinc-500")}>
-                {t.count}
+            {tab === "research" && (
+              <span className="ml-auto text-[10px] text-zinc-500">
+                {filteredResearch.length} van {research.length} getoond
               </span>
             )}
-          </button>
-        ))}
+            {tab === "taken" && (
+              <span className="ml-auto text-[10px] text-zinc-500">
+                {filteredTasks.length} van {tasks.length} getoond
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ───── TAKEN TAB: Kanban ───── */}
@@ -514,7 +887,7 @@ export default function WerkPage() {
 
       {/* ───── CONTENT TAB ───── */}
       {tab === "content" && (
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-5 gap-3">
           {CONTENT_STATUSES.map((st) => {
             const items = contentByStatus(st.key)
             return (
@@ -530,7 +903,8 @@ export default function WerkPage() {
                       onClick={() => setSelectedContent(item)}
                       className={cn(
                         "rounded-lg border border-white/[0.04] bg-zinc-800/40 p-3 cursor-pointer transition-all hover:border-purple-500/20 hover:-translate-y-0.5",
-                        st.key === "review" && "border-yellow-500/20"
+                        st.key === "review" && "border-yellow-500/20",
+                        st.key === "publish_requested" && "border-[#F5911E]/20"
                       )}
                     >
                       <p className="text-[11px] font-medium text-white leading-snug mb-1.5">{item.title}</p>
@@ -542,6 +916,11 @@ export default function WerkPage() {
                         {item.wordCount && <span className="text-[8px] text-zinc-500">{item.wordCount}w</span>}
                       </div>
                       {item.targetSite && <p className="text-[9px] text-zinc-500 mt-1">🌐 {item.targetSite}</p>}
+                      {st.key === "publish_requested" && item.task && (
+                        <p className="text-[9px] text-[#F5911E]/80 mt-1 truncate">
+                          ⏳ FORGE: {item.task.status}
+                        </p>
+                      )}
                     </div>
                   ))}
                   {items.length === 0 && <p className="text-center text-[11px] text-zinc-600 py-4">Geen content</p>}
@@ -600,27 +979,53 @@ export default function WerkPage() {
       {/* ───── RESEARCH TAB ───── */}
       {tab === "research" && (
         <div className="grid grid-cols-3 gap-3">
-          {research.length > 0 ? research.slice(0, 15).map((r) => (
-            <div key={r.id} onClick={() => setSelectedResearch(r)} className="rounded-xl border border-white/[0.06] bg-zinc-800/30 p-4 transition-all hover:border-cyan-500/20 hover:-translate-y-0.5 cursor-pointer">
-              <div className="flex items-center justify-between mb-2">
-                <span className="rounded px-2 py-0.5 text-[8px] font-bold uppercase bg-cyan-500/15 text-cyan-400">{r.type || "research"}</span>
-                {r.author && <span className={cn("rounded px-1.5 py-0.5 text-[8px] font-bold uppercase", agentColors[r.author.toLowerCase()] || "bg-zinc-700 text-zinc-400")}>{r.author}</span>}
+          {filteredResearch.length > 0 ? filteredResearch.map((r) => {
+            const site = r.linkedSiteId ? sites.find((s) => s.id === r.linkedSiteId) : null
+            const domain = r.linkedDomainId ? domains.find((d) => d.id === r.linkedDomainId) : null
+            return (
+              <div key={r.id} onClick={() => setSelectedResearch(r)} className="rounded-xl border border-white/[0.06] bg-zinc-800/30 p-4 transition-all hover:border-cyan-500/20 hover:-translate-y-0.5 cursor-pointer">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="rounded px-2 py-0.5 text-[8px] font-bold uppercase bg-cyan-500/15 text-cyan-400">{r.type || "research"}</span>
+                  {r.author && <span className={cn("rounded px-1.5 py-0.5 text-[8px] font-bold uppercase", agentColors[r.author.toLowerCase()] || "bg-zinc-700 text-zinc-400")}>{r.author}</span>}
+                </div>
+                <h4 className="text-[12px] font-bold text-white mb-1 leading-snug">{r.title}</h4>
+                {r.summary && <p className="text-[10px] text-zinc-500 leading-relaxed line-clamp-3">{r.summary}</p>}
+                {(site || domain) && (
+                  <p className="text-[9px] text-cyan-400/80 mt-2 truncate">
+                    {site && `🌐 ${site.domain}`}
+                    {domain && `📦 ${domain.domain}`}
+                  </p>
+                )}
+                {r.tags && <p className="text-[9px] text-zinc-600 mt-1">{r.tags}</p>}
+                <p className="text-[9px] text-zinc-600 mt-2">{r.createdAt ? new Date(r.createdAt).toLocaleDateString("nl-BE") : ""}</p>
               </div>
-              <h4 className="text-[12px] font-bold text-white mb-1 leading-snug">{r.title}</h4>
-              {r.summary && <p className="text-[10px] text-zinc-500 leading-relaxed line-clamp-3">{r.summary}</p>}
-              {r.tags && <p className="text-[9px] text-zinc-600 mt-2">{r.tags}</p>}
-              <p className="text-[9px] text-zinc-600 mt-2">{r.createdAt ? new Date(r.createdAt).toLocaleDateString("nl-BE") : ""}</p>
-            </div>
-          )) : (
-            <p className="col-span-3 text-center text-[11px] text-zinc-600 py-8">{loading ? "Laden..." : "Geen research gevonden"}</p>
+            )
+          }) : (
+            <p className="col-span-3 text-center text-[11px] text-zinc-600 py-8">
+              {loading ? "Laden..." : scopeActive || searchQuery ? "Geen research matcht filter" : "Geen research gevonden"}
+            </p>
           )}
         </div>
       )}
 
       {/* Modals */}
       {selectedTask && <TaskDetailModal task={selectedTask} onClose={() => setSelectedTask(null)} onUpdate={refreshData} />}
-      {selectedContent && <ContentDetailModal item={selectedContent} onClose={() => setSelectedContent(null)} />}
-      {selectedResearch && <ResearchDetailModal item={selectedResearch} onClose={() => setSelectedResearch(null)} />}
+      {selectedContent && (
+        <ContentDetailModal
+          item={selectedContent}
+          onClose={() => setSelectedContent(null)}
+          onUpdate={refreshData}
+        />
+      )}
+      {selectedResearch && (
+        <ResearchDetailModal
+          item={selectedResearch}
+          sites={sites}
+          domains={domains}
+          onClose={() => setSelectedResearch(null)}
+          onUpdate={refreshData}
+        />
+      )}
     </div>
   )
 }
