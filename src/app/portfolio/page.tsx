@@ -1,105 +1,420 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useBusinessContext } from "@/components/nerve"
 import { cn } from "@/lib/utils"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 // ─── Types ─────────────────────────────────────────────────────
 interface Site {
-  id: string; domain: string; status: string; category?: string
-  monthlyRevenue?: number; monthlyTraffic?: number; seoStatus?: string
+  id: string
+  domain: string
+  status: string
+  category?: string
+  monthlyRevenue?: number
+  monthlyTraffic?: number
+  seoStatus?: string
+  seoScore?: number
+  notes?: string
+  nextAction?: string
   businessId?: string
-}
-interface Project {
-  id: string; name: string; status: string; category: string
-  revenue?: number; ownerType?: string; clientName?: string
-  businessId?: string
-}
-
-// ─── Category config ──────────────────────────────────────────
-const categoryConfig: Record<string, { icon: string; color: string; badge: string }> = {
-  adsense:   { icon: "📊", color: "bg-green-400",  badge: "bg-green-500/15 text-green-400" },
-  affiliate: { icon: "🔗", color: "bg-pink-400",   badge: "bg-pink-500/15 text-pink-400" },
-  leadgen:   { icon: "🏠", color: "bg-purple-400", badge: "bg-purple-500/15 text-purple-400" },
-  tool:      { icon: "🛠️", color: "bg-cyan-400",   badge: "bg-cyan-500/15 text-cyan-400" },
-  directory: { icon: "📁", color: "bg-blue-400",   badge: "bg-blue-500/15 text-blue-400" },
-  client:    { icon: "🏢", color: "bg-blue-400",   badge: "bg-blue-500/15 text-blue-400" },
-  event:     { icon: "🎪", color: "bg-pink-400",   badge: "bg-pink-500/15 text-pink-400" },
-  business:  { icon: "🔶", color: "bg-[#F5911E]",  badge: "bg-[#F5911E]/15 text-[#F5911E]" },
+  topKeyword?: string
+  topPosition?: number
+  indexedPages?: number
+  hosting?: string
+  revenueType?: string
+  techStack?: string[]
+  productionUrl?: string
+  githubRepo?: string
+  deployUrl?: string
+  deployStatus?: string
+  vercelProjectId?: string
+  lastDeployAt?: string
+  revenue?: number
+  clientName?: string
+  ownerType?: string
 }
 
-const seoColors: Record<string, string> = {
-  good: "text-green-400",
-  warning: "text-yellow-400",
-  bad: "text-red-400",
+interface DomainOpportunity {
+  id: string
+  domain: string
+  status: string
+  estimatedValue?: number
+  niche?: string
+  priority?: string
+  notes?: string
+  radarNotes?: string
+  hasIdea?: boolean
+  category?: string
+  renewalDate?: string
+  provider?: string
+  businessUnit?: string
+  updatedAt?: string
 }
 
-const statusColors: Record<string, { dot: string; text: string }> = {
-  live:        { dot: "bg-green-400", text: "text-green-400" },
-  development: { dot: "bg-yellow-400", text: "text-yellow-400" },
-  planned:     { dot: "bg-zinc-500", text: "text-zinc-500" },
-  paused:      { dot: "bg-red-400", text: "text-red-400" },
+interface Task {
+  id: string
+  title: string
+  status: string
+  priority?: string
+  assignee?: string
+  dueDate?: string
+  category?: string
+  siteId?: string
+  linkedDomainId?: string
+  createdAt?: string
+}
+
+type TabView = "domains" | "sites"
+type SelectedItem =
+  | { type: "site"; data: Site }
+  | { type: "domain"; data: DomainOpportunity }
+  | null
+
+// ─── Config ────────────────────────────────────────────────────
+const AGENTS = ["atlas", "forge", "radar", "ink", "ledger", "spark", "bart"] as const
+
+const SITE_CATEGORIES = [
+  { value: "adsense", label: "AdSense" },
+  { value: "leadgen", label: "Lead Generation" },
+  { value: "affiliate", label: "Affiliate" },
+  { value: "rank-rent", label: "Rank & Rent" },
+  { value: "klant", label: "Klantsite" },
+  { value: "tool", label: "Tool / Calculator" },
+  { value: "directory", label: "Directory" },
+  { value: "business", label: "Business" },
+  { value: "event", label: "Event" },
+] as const
+
+const REVENUE_TYPES = [
+  { value: "adsense", label: "AdSense" },
+  { value: "recurring", label: "Recurring (abonnement)" },
+  { value: "leadgen", label: "Lead Generation" },
+  { value: "affiliate", label: "Affiliate" },
+  { value: "rank_rent", label: "Rank & Rent" },
+  { value: "one_time", label: "Eenmalig" },
+] as const
+
+const HOSTING_OPTIONS = [
+  { value: "vercel", label: "Vercel" },
+  { value: "cloudflare", label: "Cloudflare" },
+  { value: "hostinger", label: "Hostinger" },
+  { value: "vps", label: "VPS" },
+  { value: "other", label: "Andere" },
+] as const
+
+const SITE_STATUSES = [
+  { value: "planned", label: "Gepland" },
+  { value: "dev", label: "In ontwikkeling" },
+  { value: "staging", label: "Staging" },
+  { value: "live", label: "Live" },
+  { value: "paused", label: "Gepauzeerd" },
+  { value: "archived", label: "Gearchiveerd" },
+] as const
+
+const DOMAIN_STATUSES = [
+  { value: "parking", label: "Geparkeerd" },
+  { value: "prospect", label: "Prospect" },
+  { value: "developing", label: "In ontwikkeling" },
+  { value: "acquired", label: "Aangekocht" },
+  { value: "forsale", label: "Te koop" },
+  { value: "expired-watching", label: "Verlopen (watch)" },
+] as const
+
+const domainStatusConfig: Record<string, { label: string; dot: string; text: string }> = {
+  parking: { label: "Geparkeerd", dot: "bg-zinc-500", text: "text-zinc-400" },
+  prospect: { label: "Prospect", dot: "bg-blue-400", text: "text-blue-400" },
+  developing: { label: "In ontwikkeling", dot: "bg-[#F5911E]", text: "text-[#F5911E]" },
+  acquired: { label: "Aangekocht", dot: "bg-emerald-400", text: "text-emerald-400" },
+  forsale: { label: "Te koop", dot: "bg-yellow-400", text: "text-yellow-400" },
+  "expired-watching": { label: "Verlopen (watch)", dot: "bg-red-400", text: "text-red-400" },
+}
+
+const siteStatusConfig: Record<string, { label: string; dot: string; text: string }> = {
+  live: { label: "Live", dot: "bg-emerald-400", text: "text-emerald-400" },
+  dev: { label: "Dev", dot: "bg-yellow-400", text: "text-yellow-400" },
+  development: { label: "Dev", dot: "bg-yellow-400", text: "text-yellow-400" },
+  staging: { label: "Staging", dot: "bg-blue-400", text: "text-blue-400" },
+  planned: { label: "Gepland", dot: "bg-zinc-500", text: "text-zinc-400" },
+  paused: { label: "Gepauzeerd", dot: "bg-red-400", text: "text-red-400" },
+  archived: { label: "Archief", dot: "bg-zinc-600", text: "text-zinc-500" },
+}
+
+const priorityColors: Record<string, string> = {
+  high: "text-red-400 bg-red-500/10 border-red-500/20",
+  medium: "text-yellow-400 bg-yellow-500/10 border-yellow-500/20",
+  low: "text-zinc-400 bg-zinc-500/10 border-zinc-500/20",
+}
+
+const taskStatusColors: Record<string, string> = {
+  todo: "text-zinc-400",
+  "in-progress": "text-[#F5911E]",
+  review: "text-blue-400",
+  blocked: "text-red-400",
+  done: "text-emerald-400",
 }
 
 // ─── Component ────────────────────────────────────────────────
 export default function PortfolioPage() {
   const { activeBusiness } = useBusinessContext()
-  const [sites, setSites] = useState<Site[]>([])
-  const [projects, setProjects] = useState<Project[]>([])
-  const [loading, setLoading] = useState(true)
-  const [view, setView] = useState<"sites" | "projects">("sites")
 
-  useEffect(() => {
-    Promise.all([
-      fetch("/api/sites").then((r) => r.json()).catch(() => []),
-      fetch("/api/projects").then((r) => r.json()).catch(() => []),
-    ])
-      .then(([s, p]) => {
-        setSites(Array.isArray(s) ? s : [])
-        setProjects(Array.isArray(p) ? p : [])
-      })
-      .finally(() => setLoading(false))
+  const [sites, setSites] = useState<Site[]>([])
+  const [domains, setDomains] = useState<DomainOpportunity[]>([])
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [loading, setLoading] = useState(true)
+  const [view, setView] = useState<TabView>("domains")
+
+  const [selected, setSelected] = useState<SelectedItem>(null)
+  const [detailOpen, setDetailOpen] = useState(false)
+  const [editMode, setEditMode] = useState(false)
+  const [saving, setSaving] = useState(false)
+
+  // Edit state for sites
+  const [editSite, setEditSite] = useState<Partial<Site>>({})
+  // Edit state for domains
+  const [editDomain, setEditDomain] = useState<Partial<DomainOpportunity>>({})
+
+  const [taskModalOpen, setTaskModalOpen] = useState(false)
+  const [taskModalContext, setTaskModalContext] = useState<{
+    scope: "site" | "domain"
+    id: string
+    label: string
+  } | null>(null)
+
+  // ─── Data loading ─────────────────────────────────────────
+  const fetchAll = useCallback(async () => {
+    setLoading(true)
+    try {
+      const [sitesRes, domainsRes, tasksRes] = await Promise.all([
+        fetch("/api/sites").then((r) => r.json()).catch(() => []),
+        fetch("/api/domain-opportunities").then((r) => r.json()).catch(() => []),
+        fetch("/api/tasks").then((r) => r.json()).catch(() => []),
+      ])
+      setSites(Array.isArray(sitesRes) ? sitesRes : [])
+      setDomains(Array.isArray(domainsRes) ? domainsRes : [])
+      setTasks(Array.isArray(tasksRes) ? tasksRes : [])
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
-  // Filter by business
-  const filteredSites = activeBusiness.id === "all"
-    ? sites : sites.filter((s) => s.businessId === activeBusiness.id || !s.businessId)
-  const filteredProjects = activeBusiness.id === "all"
-    ? projects : projects.filter((p) => p.businessId === activeBusiness.id || !p.businessId)
+  useEffect(() => {
+    fetchAll()
+  }, [fetchAll])
 
-  // Stats
+  // ─── Filtering ───────────────────────────────────────────
+  const filteredSites =
+    activeBusiness.id === "all"
+      ? sites
+      : sites.filter((s) => !s.businessId || s.businessId === activeBusiness.id)
+
+  const filteredDomains =
+    activeBusiness.id === "all"
+      ? domains
+      : domains.filter((d) => !d.businessUnit || d.businessUnit === activeBusiness.id)
+
+  // Tasks helpers
+  const openTasksForSite = (siteId: string) =>
+    tasks.filter((t) => t.siteId === siteId && t.status !== "done")
+  const openTasksForDomain = (domainId: string) =>
+    tasks.filter((t) => t.linkedDomainId === domainId && t.status !== "done")
+
+  // ─── Stats ───────────────────────────────────────────────
   const liveSites = filteredSites.filter((s) => s.status === "live")
-  const totalRevenue = filteredSites.reduce((sum, s) => sum + (s.monthlyRevenue || 0), 0)
-  const totalTraffic = filteredSites.reduce((sum, s) => sum + (s.monthlyTraffic || 0), 0)
-  const activeProjects = filteredProjects.filter((p) => p.status === "active")
+  const totalMrr = filteredSites.reduce((sum, s) => sum + (s.monthlyRevenue || 0), 0)
+  const pipelineDomains = filteredDomains.filter(
+    (d) => d.status === "developing" || d.status === "prospect" || d.status === "acquired"
+  )
+  const openTasksTotal = tasks.filter((t) => t.status !== "done").length
 
+  // ─── Handlers ────────────────────────────────────────────
+  const openDetail = (item: SelectedItem) => {
+    setSelected(item)
+    setEditMode(false)
+    if (item?.type === "site") {
+      setEditSite({ ...item.data })
+    } else if (item?.type === "domain") {
+      setEditDomain({ ...item.data })
+    }
+    setDetailOpen(true)
+  }
+
+  const openTaskModalForSite = (site: Site) => {
+    setTaskModalContext({ scope: "site", id: site.id, label: site.domain })
+    setTaskModalOpen(true)
+  }
+
+  const openTaskModalForDomain = (domain: DomainOpportunity) => {
+    setTaskModalContext({ scope: "domain", id: domain.id, label: domain.domain })
+    setTaskModalOpen(true)
+  }
+
+  const handleTaskCreated = async () => {
+    setTaskModalOpen(false)
+    const fresh = await fetch("/api/tasks").then((r) => r.json()).catch(() => [])
+    setTasks(Array.isArray(fresh) ? fresh : [])
+  }
+
+  // ─── Save site edits ────────────────────────────────────
+  const handleSaveSite = async () => {
+    if (!selected || selected.type !== "site") return
+    setSaving(true)
+    try {
+      const res = await fetch(`/api/sites/${selected.data.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          category: editSite.category,
+          status: editSite.status,
+          hosting: editSite.hosting,
+          revenueType: editSite.revenueType,
+          monthlyRevenue: editSite.monthlyRevenue ? Number(editSite.monthlyRevenue) : null,
+          notes: editSite.notes,
+          nextAction: editSite.nextAction,
+          productionUrl: editSite.productionUrl,
+          githubRepo: editSite.githubRepo,
+          techStack: editSite.techStack,
+        }),
+      })
+      if (!res.ok) throw new Error("Opslaan mislukt")
+      setEditMode(false)
+      fetchAll()
+    } catch (e) {
+      alert("Fout: " + (e instanceof Error ? e.message : "onbekend"))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // ─── Save domain edits ──────────────────────────────────
+  const handleSaveDomain = async () => {
+    if (!selected || selected.type !== "domain") return
+    setSaving(true)
+    try {
+      const res = await fetch(`/api/domain-opportunities/${selected.data.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: editDomain.status,
+          priority: editDomain.priority,
+          niche: editDomain.niche,
+          category: editDomain.category,
+          estimatedValue: editDomain.estimatedValue ? Number(editDomain.estimatedValue) : null,
+          provider: editDomain.provider,
+          notes: editDomain.notes,
+        }),
+      })
+      if (!res.ok) throw new Error("Opslaan mislukt")
+      setEditMode(false)
+      fetchAll()
+    } catch (e) {
+      alert("Fout: " + (e instanceof Error ? e.message : "onbekend"))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // ─── Promote domain → site ──────────────────────────────
+  const handlePromoteDomain = async (domain: DomainOpportunity) => {
+    if (!confirm(`Promote ${domain.domain} naar Live Site?`)) return
+    try {
+      const res = await fetch("/api/sites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          domain: domain.domain,
+          status: "dev",
+          category: domain.category || "tool",
+          notes: domain.notes,
+          techStack: [],
+        }),
+      })
+      if (!res.ok) throw new Error("Kon site niet aanmaken")
+      await fetch(`/api/domain-opportunities/${domain.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "acquired" }),
+      }).catch(() => {})
+      setDetailOpen(false)
+      fetchAll()
+    } catch (e) {
+      alert("Fout bij promoten: " + (e instanceof Error ? e.message : "onbekend"))
+    }
+  }
+
+  // ─── Render ──────────────────────────────────────────────
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
       {/* Header */}
-      <div>
-        <h1 className="text-[26px] font-extrabold tracking-tight text-white">
-          🌐 Portfolio
-        </h1>
-        <p className="text-[13px] text-zinc-500">
-          Sites, projecten &amp; assets
-          {activeBusiness.id !== "all" && (
-            <span className="ml-2 text-[#F5911E]">· {activeBusiness.name}</span>
-          )}
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-[26px] font-extrabold tracking-tight text-white">Portfolio</h1>
+          <p className="text-[13px] text-zinc-500">
+            Domeinen (idee → build) &amp; live sites
+            {activeBusiness.id !== "all" && (
+              <span className="ml-2 text-[#F5911E]">· {activeBusiness.name}</span>
+            )}
+          </p>
+        </div>
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-4 gap-3">
         {[
-          { label: "Live sites", value: String(liveSites.length), sub: `${filteredSites.length} totaal` },
-          { label: "MRR portfolio", value: `€${totalRevenue.toLocaleString("nl-BE")}`, sub: "Alle sites" },
-          { label: "Maandelijks verkeer", value: totalTraffic > 1000 ? `${(totalTraffic / 1000).toFixed(1)}K` : String(totalTraffic), sub: "Sessies/maand" },
-          { label: "Actieve projecten", value: String(activeProjects.length), sub: `${filteredProjects.length} totaal` },
+          {
+            label: "Domeinen pipeline",
+            value: String(pipelineDomains.length),
+            sub: `${filteredDomains.length} totaal`,
+          },
+          {
+            label: "Live sites",
+            value: String(liveSites.length),
+            sub: `${filteredSites.length} totaal`,
+          },
+          {
+            label: "MRR portfolio",
+            value: `€${totalMrr.toLocaleString("nl-BE")}`,
+            sub: "Alle sites",
+          },
+          {
+            label: "Open tasks",
+            value: String(openTasksTotal),
+            sub: "Alle scopes",
+          },
         ].map((m) => (
-          <div key={m.label} className="rounded-xl border border-white/[0.06] bg-zinc-800/30 p-4">
-            <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">{m.label}</p>
+          <div
+            key={m.label}
+            className="rounded-xl border border-white/[0.06] bg-zinc-800/30 p-4"
+          >
+            <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
+              {m.label}
+            </p>
             <p className="text-[24px] font-extrabold tracking-tight text-white mt-1 tabular-nums">
-              {loading ? "..." : m.value}
+              {loading ? "…" : m.value}
             </p>
             <p className="text-[10px] text-zinc-600 mt-0.5">{m.sub}</p>
           </div>
@@ -108,131 +423,986 @@ export default function PortfolioPage() {
 
       {/* View toggle */}
       <div className="flex gap-0.5 rounded-lg border border-white/[0.06] bg-zinc-800/30 p-1 w-fit">
-        {(["sites", "projects"] as const).map((v) => (
+        {(
+          [
+            { id: "domains" as const, label: "🌱 Domeinen", sub: "idee → build" },
+            { id: "sites" as const, label: "🌐 Sites", sub: "live" },
+          ]
+        ).map((v) => (
           <button
-            key={v}
-            onClick={() => setView(v)}
+            key={v.id}
+            onClick={() => setView(v.id)}
             className={cn(
-              "rounded-md px-4 py-1.5 text-[11px] font-medium capitalize transition-colors",
-              view === v ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-zinc-300"
+              "rounded-md px-5 py-2 text-[11px] font-semibold transition-colors",
+              view === v.id
+                ? "bg-zinc-700 text-white"
+                : "text-zinc-500 hover:text-zinc-300"
             )}
           >
-            {v === "sites" ? "🌐 Sites" : "📂 Projecten"}
+            {v.label} <span className="text-zinc-500 ml-1 font-normal">({v.sub})</span>
           </button>
         ))}
       </div>
 
-      {/* Sites list */}
-      {view === "sites" && (
+      {/* ── Domeinen table ────────────────────────────────── */}
+      {view === "domains" && (
         <div className="rounded-xl border border-white/[0.06] bg-zinc-800/20 overflow-hidden">
-          {/* Table header */}
-          <div className="grid grid-cols-[1fr_100px_90px_90px_80px] gap-3 px-4 py-2.5 border-b border-white/[0.06] text-[9px] font-bold uppercase tracking-wider text-zinc-500">
+          <div className="grid grid-cols-[1fr_140px_100px_120px_90px_60px] gap-3 px-4 py-2.5 border-b border-white/[0.06] text-[9px] font-bold uppercase tracking-wider text-zinc-500">
             <span>Domein</span>
             <span>Status</span>
-            <span className="text-right">Revenue</span>
-            <span className="text-right">Traffic</span>
-            <span className="text-right">SEO</span>
+            <span>Prio</span>
+            <span>Niche / Categorie</span>
+            <span className="text-right">Tasks</span>
+            <span className="text-right">+</span>
           </div>
-          {/* Rows */}
           <div className="divide-y divide-white/[0.04]">
-            {filteredSites.length > 0 ? (
-              filteredSites.map((site) => {
-                const cat = categoryConfig[site.category || "tool"] || categoryConfig.tool
-                const st = statusColors[site.status] || statusColors.planned
+            {loading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="grid grid-cols-[1fr_140px_100px_120px_90px_60px] gap-3 px-4 py-3">
+                  <div className="h-4 w-2/3 rounded bg-zinc-800/60 animate-pulse" />
+                  <div className="h-4 w-20 rounded bg-zinc-800/60 animate-pulse" />
+                  <div className="h-4 w-14 rounded bg-zinc-800/60 animate-pulse" />
+                  <div className="h-4 w-24 rounded bg-zinc-800/60 animate-pulse" />
+                  <div className="h-4 w-10 rounded bg-zinc-800/60 animate-pulse ml-auto" />
+                  <div className="h-4 w-6 rounded bg-zinc-800/60 animate-pulse ml-auto" />
+                </div>
+              ))
+            ) : filteredDomains.length > 0 ? (
+              filteredDomains.map((d) => {
+                const st = domainStatusConfig[d.status] || domainStatusConfig.parking
+                const openCount = openTasksForDomain(d.id).length
                 return (
                   <div
-                    key={site.id}
-                    className="grid grid-cols-[1fr_100px_90px_90px_80px] gap-3 px-4 py-3 items-center transition-colors hover:bg-zinc-800/40 cursor-pointer"
+                    key={d.id}
+                    onClick={() => openDetail({ type: "domain", data: d })}
+                    className="grid grid-cols-[1fr_140px_100px_120px_90px_60px] gap-3 px-4 py-3 items-center transition-colors hover:bg-zinc-800/40 cursor-pointer"
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <span className="text-[13px]">{cat.icon}</span>
-                      <div className="min-w-0">
-                        <p className="text-[12px] font-semibold text-white truncate">
-                          {site.domain}
-                        </p>
-                        <span className={cn("text-[8px] font-bold uppercase rounded px-1.5 py-0.5", cat.badge)}>
-                          {site.category || "tool"}
+                    <div className="min-w-0">
+                      <p className="text-[12px] font-semibold text-white truncate">{d.domain}</p>
+                      {d.hasIdea && (
+                        <span className="text-[8px] font-bold uppercase rounded px-1.5 py-0.5 bg-[#F5911E]/15 text-[#F5911E]">
+                          Idee gelinkt
                         </span>
-                      </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span className={cn("h-1.5 w-1.5 rounded-full", st.dot)} />
-                      <span className={cn("text-[10px] capitalize", st.text)}>{site.status}</span>
+                      <span className={cn("text-[10px]", st.text)}>{st.label}</span>
                     </div>
+                    <span
+                      className={cn(
+                        "text-[9px] font-bold uppercase rounded-full px-2 py-0.5 border w-fit",
+                        priorityColors[d.priority || "low"] || priorityColors.low
+                      )}
+                    >
+                      {d.priority || "low"}
+                    </span>
+                    <p className="text-[10px] text-zinc-400 truncate">
+                      {d.niche || d.category || "—"}
+                    </p>
                     <p className="text-[11px] font-bold text-white tabular-nums text-right">
-                      €{(site.monthlyRevenue || 0).toLocaleString("nl-BE")}
+                      {openCount > 0 ? openCount : "—"}
                     </p>
-                    <p className="text-[11px] text-zinc-400 tabular-nums text-right">
-                      {(site.monthlyTraffic || 0).toLocaleString("nl-BE")}
-                    </p>
-                    <p className={cn("text-[10px] font-semibold text-right uppercase", seoColors[site.seoStatus || ""] || "text-zinc-500")}>
-                      {site.seoStatus || "—"}
-                    </p>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); openTaskModalForDomain(d) }}
+                      className="justify-self-end rounded-md bg-[#F5911E]/15 hover:bg-[#F5911E]/25 text-[#F5911E] text-[14px] font-bold w-7 h-7 flex items-center justify-center transition-colors"
+                      aria-label="Taak toevoegen"
+                    >
+                      +
+                    </button>
                   </div>
                 )
               })
             ) : (
-              <p className="text-center text-[11px] text-zinc-600 py-8">
-                {loading ? "Laden..." : "Geen sites gevonden"}
+              <p className="text-center text-[11px] text-zinc-600 py-10">
+                Nog geen domeinen in pipeline — voeg er een toe via SPARK
               </p>
             )}
           </div>
         </div>
       )}
 
-      {/* Projects grid */}
-      {view === "projects" && (
-        <div className="grid grid-cols-3 gap-3">
-          {filteredProjects.length > 0 ? (
-            filteredProjects.map((p) => {
-              const cat = categoryConfig[p.ownerType === "client" ? "client" : p.category] || categoryConfig.tool
-              const isActive = p.status === "active"
-              return (
-                <div
-                  key={p.id}
-                  className={cn(
-                    "relative overflow-hidden rounded-xl border border-white/[0.06] bg-zinc-800/30 p-4 transition-all hover:border-[#F5911E]/20 hover:-translate-y-0.5 cursor-pointer",
-                    !isActive && "opacity-60"
-                  )}
-                >
-                  <div className={cn("absolute top-0 left-0 right-0 h-[3px]", cat.color)} />
-                  <div className="flex items-center justify-between mb-2">
-                    <span className={cn("rounded px-2 py-0.5 text-[9px] font-semibold uppercase", cat.badge)}>
-                      {p.ownerType === "client" ? "Klant" : p.category}
-                    </span>
-                    <span className={cn(
-                      "h-1.5 w-1.5 rounded-full",
-                      isActive ? "bg-green-400" : "bg-zinc-500"
-                    )} />
-                  </div>
-                  <h3 className="text-[13px] font-bold text-white">{p.name}</h3>
-                  <p className="text-[11px] text-zinc-500 mb-3">
-                    {p.clientName || p.category}
-                  </p>
-                  <div className="flex gap-4">
-                    <div>
-                      <p className="text-[9px] uppercase text-zinc-500">Revenue</p>
-                      <p className="text-[13px] font-bold text-white tabular-nums">
-                        €{(p.revenue || 0).toLocaleString("nl-BE")}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] uppercase text-zinc-500">Status</p>
-                      <p className={cn("text-[13px] font-bold capitalize", isActive ? "text-green-400" : "text-zinc-500")}>
-                        {p.status}
-                      </p>
-                    </div>
-                  </div>
+      {/* ── Sites table ───────────────────────────────────── */}
+      {view === "sites" && (
+        <div className="rounded-xl border border-white/[0.06] bg-zinc-800/20 overflow-hidden">
+          <div className="grid grid-cols-[1fr_90px_90px_100px_100px_80px_70px_60px] gap-3 px-4 py-2.5 border-b border-white/[0.06] text-[9px] font-bold uppercase tracking-wider text-zinc-500">
+            <span>Site</span>
+            <span>Status</span>
+            <span>Type</span>
+            <span className="text-right">MRR</span>
+            <span className="text-right">Verkeer</span>
+            <span className="text-right">SEO</span>
+            <span className="text-right">Tasks</span>
+            <span className="text-right">+</span>
+          </div>
+          <div className="divide-y divide-white/[0.04]">
+            {loading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="grid grid-cols-[1fr_90px_90px_100px_100px_80px_70px_60px] gap-3 px-4 py-3">
+                  <div className="h-4 w-2/3 rounded bg-zinc-800/60 animate-pulse" />
+                  <div className="h-4 w-14 rounded bg-zinc-800/60 animate-pulse" />
+                  <div className="h-4 w-14 rounded bg-zinc-800/60 animate-pulse" />
+                  <div className="h-4 w-14 rounded bg-zinc-800/60 animate-pulse ml-auto" />
+                  <div className="h-4 w-14 rounded bg-zinc-800/60 animate-pulse ml-auto" />
+                  <div className="h-4 w-12 rounded bg-zinc-800/60 animate-pulse ml-auto" />
+                  <div className="h-4 w-8 rounded bg-zinc-800/60 animate-pulse ml-auto" />
+                  <div className="h-4 w-6 rounded bg-zinc-800/60 animate-pulse ml-auto" />
                 </div>
-              )
-            })
-          ) : (
-            <p className="col-span-3 text-center text-[11px] text-zinc-600 py-8">
-              {loading ? "Laden..." : "Geen projecten gevonden"}
+              ))
+            ) : filteredSites.length > 0 ? (
+              filteredSites.map((s) => {
+                const st = siteStatusConfig[s.status] || siteStatusConfig.planned
+                const openCount = openTasksForSite(s.id).length
+                const catLabel = SITE_CATEGORIES.find(c => c.value === s.category)?.label || s.category || "—"
+                return (
+                  <div
+                    key={s.id}
+                    onClick={() => openDetail({ type: "site", data: s })}
+                    className="grid grid-cols-[1fr_90px_90px_100px_100px_80px_70px_60px] gap-3 px-4 py-3 items-center transition-colors hover:bg-zinc-800/40 cursor-pointer"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-[12px] font-semibold text-white truncate">{s.domain}</p>
+                      {s.hosting && (
+                        <span className="text-[8px] font-bold uppercase rounded px-1.5 py-0.5 bg-zinc-700/60 text-zinc-400">
+                          {s.hosting}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className={cn("h-1.5 w-1.5 rounded-full", st.dot)} />
+                      <span className={cn("text-[10px]", st.text)}>{st.label}</span>
+                    </div>
+                    <span className="text-[9px] font-semibold text-zinc-400 uppercase truncate">
+                      {catLabel}
+                    </span>
+                    <p className="text-[11px] font-bold text-white tabular-nums text-right">
+                      €{(s.monthlyRevenue || 0).toLocaleString("nl-BE")}
+                    </p>
+                    <p className="text-[11px] text-zinc-400 tabular-nums text-right">
+                      {(s.monthlyTraffic || 0).toLocaleString("nl-BE")}
+                    </p>
+                    <p
+                      className={cn(
+                        "text-[10px] font-semibold text-right uppercase",
+                        s.seoStatus === "good" || s.seoStatus === "growing"
+                          ? "text-emerald-400"
+                          : s.seoStatus === "warning" || s.seoStatus === "stable"
+                            ? "text-yellow-400"
+                            : s.seoStatus === "bad" || s.seoStatus === "declining"
+                              ? "text-red-400"
+                              : "text-zinc-500"
+                      )}
+                    >
+                      {s.seoScore ? `${s.seoScore}` : s.seoStatus || "—"}
+                    </p>
+                    <p className="text-[11px] font-bold text-white tabular-nums text-right">
+                      {openCount > 0 ? openCount : "—"}
+                    </p>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); openTaskModalForSite(s) }}
+                      className="justify-self-end rounded-md bg-[#F5911E]/15 hover:bg-[#F5911E]/25 text-[#F5911E] text-[14px] font-bold w-7 h-7 flex items-center justify-center transition-colors"
+                      aria-label="Taak toevoegen"
+                    >
+                      +
+                    </button>
+                  </div>
+                )
+              })
+            ) : (
+              <p className="text-center text-[11px] text-zinc-600 py-10">
+                Nog geen sites — promote een domein of voeg er een toe
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Help hints */}
+      <div className="text-[10px] text-zinc-600 flex gap-6">
+        <span>Klik een rij voor details + taken</span>
+        <span>+ knop = direct taak aanmaken</span>
+        <span>Domein → Site zodra status live</span>
+      </div>
+
+      {/* ─── Detail panel (slide-in) ──────────────────── */}
+      <Sheet open={detailOpen} onOpenChange={(open) => { setDetailOpen(open); if (!open) setEditMode(false) }}>
+        <SheetContent className="bg-zinc-900 border-l border-white/[0.06] text-white w-full sm:max-w-lg overflow-y-auto">
+          {selected?.type === "site" && (
+            <SiteDetailPanel
+              site={selected.data}
+              editSite={editSite}
+              setEditSite={setEditSite}
+              editMode={editMode}
+              setEditMode={setEditMode}
+              saving={saving}
+              onSave={handleSaveSite}
+              tasks={openTasksForSite(selected.data.id)}
+              onAddTask={() => openTaskModalForSite(selected.data)}
+              onClose={() => setDetailOpen(false)}
+            />
+          )}
+          {selected?.type === "domain" && (
+            <DomainDetailPanel
+              domain={selected.data}
+              editDomain={editDomain}
+              setEditDomain={setEditDomain}
+              editMode={editMode}
+              setEditMode={setEditMode}
+              saving={saving}
+              onSave={handleSaveDomain}
+              onPromote={() => handlePromoteDomain(selected.data)}
+              tasks={openTasksForDomain(selected.data.id)}
+              onAddTask={() => openTaskModalForDomain(selected.data)}
+              onClose={() => setDetailOpen(false)}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {/* ─── Quick-add task modal ─────────────────────── */}
+      <QuickAddTaskModal
+        open={taskModalOpen}
+        onOpenChange={setTaskModalOpen}
+        context={taskModalContext}
+        existingTasks={tasks}
+        onCreated={handleTaskCreated}
+      />
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Site Detail Panel
+// ═══════════════════════════════════════════════════════════════
+function SiteDetailPanel({
+  site,
+  editSite,
+  setEditSite,
+  editMode,
+  setEditMode,
+  saving,
+  onSave,
+  tasks,
+  onAddTask,
+  onClose,
+}: {
+  site: Site
+  editSite: Partial<Site>
+  setEditSite: (v: Partial<Site>) => void
+  editMode: boolean
+  setEditMode: (v: boolean) => void
+  saving: boolean
+  onSave: () => void
+  tasks: Task[]
+  onAddTask: () => void
+  onClose: () => void
+}) {
+  const st = siteStatusConfig[site.status] || siteStatusConfig.planned
+  const catLabel = SITE_CATEGORIES.find(c => c.value === site.category)?.label || site.category || "—"
+  const revLabel = REVENUE_TYPES.find(r => r.value === site.revenueType)?.label || site.revenueType || "—"
+
+  return (
+    <>
+      <SheetHeader>
+        <div className="flex items-start justify-between">
+          <div>
+            <SheetTitle className="text-white text-[18px]">{site.domain}</SheetTitle>
+            <SheetDescription className="text-zinc-500 text-[12px] flex items-center gap-2 mt-1">
+              <span className={cn("h-1.5 w-1.5 rounded-full", st.dot)} />
+              {st.label} · {catLabel}
+            </SheetDescription>
+          </div>
+          <button
+            onClick={() => {
+              if (editMode) { setEditMode(false) }
+              else { setEditSite({ ...site }); setEditMode(true) }
+            }}
+            className={cn(
+              "text-[10px] font-bold uppercase px-3 py-1.5 rounded-md transition-colors",
+              editMode
+                ? "bg-zinc-700 text-zinc-300"
+                : "bg-[#F5911E]/15 text-[#F5911E] hover:bg-[#F5911E]/25"
+            )}
+          >
+            {editMode ? "Annuleren" : "Bewerken"}
+          </button>
+        </div>
+      </SheetHeader>
+
+      {/* ── KPI summary ─────────────────────────────── */}
+      <div className="grid grid-cols-3 gap-2 mt-5">
+        <MiniStat label="MRR" value={`€${(site.monthlyRevenue || 0).toLocaleString("nl-BE")}`} />
+        <MiniStat label="Verkeer" value={(site.monthlyTraffic || 0).toLocaleString("nl-BE")} />
+        <MiniStat
+          label="SEO"
+          value={site.seoScore ? String(site.seoScore) : site.seoStatus || "—"}
+          className={
+            site.seoStatus === "good" || site.seoStatus === "growing" ? "text-emerald-400" :
+            site.seoStatus === "warning" || site.seoStatus === "stable" ? "text-yellow-400" :
+            site.seoStatus === "bad" || site.seoStatus === "declining" ? "text-red-400" : ""
+          }
+        />
+      </div>
+
+      {/* ── Edit / View fields ──────────────────────── */}
+      <div className="mt-5 space-y-3 border-y border-white/[0.06] py-4">
+        {editMode ? (
+          <>
+            <FieldSelect
+              label="Status"
+              value={editSite.status || ""}
+              options={SITE_STATUSES.map(s => ({ value: s.value, label: s.label }))}
+              onChange={(v) => setEditSite({ ...editSite, status: v })}
+            />
+            <FieldSelect
+              label="Type site"
+              value={editSite.category || ""}
+              options={SITE_CATEGORIES.map(c => ({ value: c.value, label: c.label }))}
+              onChange={(v) => setEditSite({ ...editSite, category: v })}
+            />
+            <FieldSelect
+              label="Hosting"
+              value={editSite.hosting || ""}
+              options={HOSTING_OPTIONS.map(h => ({ value: h.value, label: h.label }))}
+              onChange={(v) => setEditSite({ ...editSite, hosting: v })}
+            />
+            <FieldSelect
+              label="Inkomsten type"
+              value={editSite.revenueType || ""}
+              options={REVENUE_TYPES.map(r => ({ value: r.value, label: r.label }))}
+              onChange={(v) => setEditSite({ ...editSite, revenueType: v })}
+            />
+            <FieldInput
+              label="MRR (€/maand)"
+              type="number"
+              value={String(editSite.monthlyRevenue || "")}
+              onChange={(v) => setEditSite({ ...editSite, monthlyRevenue: v ? Number(v) : undefined })}
+              placeholder="0"
+            />
+            <FieldInput
+              label="Productie URL"
+              value={editSite.productionUrl || ""}
+              onChange={(v) => setEditSite({ ...editSite, productionUrl: v })}
+              placeholder="https://..."
+            />
+            <FieldInput
+              label="GitHub repo"
+              value={editSite.githubRepo || ""}
+              onChange={(v) => setEditSite({ ...editSite, githubRepo: v })}
+              placeholder="Hazier007/..."
+            />
+            <FieldInput
+              label="Tech stack"
+              value={(editSite.techStack || []).join(", ")}
+              onChange={(v) => setEditSite({ ...editSite, techStack: v.split(",").map(s => s.trim()).filter(Boolean) })}
+              placeholder="Next.js, Tailwind, ..."
+            />
+            <div>
+              <label className="text-[9px] uppercase text-zinc-500 font-semibold tracking-wider">Notities</label>
+              <Textarea
+                value={editSite.notes || ""}
+                onChange={(e) => setEditSite({ ...editSite, notes: e.target.value })}
+                className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white text-[12px] placeholder:text-zinc-600 min-h-[60px]"
+                placeholder="Notities over deze site..."
+              />
+            </div>
+            <div>
+              <label className="text-[9px] uppercase text-zinc-500 font-semibold tracking-wider">Volgende actie</label>
+              <Input
+                value={editSite.nextAction || ""}
+                onChange={(e) => setEditSite({ ...editSite, nextAction: e.target.value })}
+                className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white text-[12px] placeholder:text-zinc-600"
+                placeholder="Wat moet er volgende gebeuren?"
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            <DetailRow label="Type site" value={catLabel} />
+            <DetailRow label="Inkomsten type" value={revLabel} />
+            <DetailRow label="Hosting" value={HOSTING_OPTIONS.find(h => h.value === site.hosting)?.label || site.hosting || "—"} />
+            <DetailRow label="Productie URL" value={site.productionUrl || "—"} link={site.productionUrl} />
+            <DetailRow label="GitHub" value={site.githubRepo || "—"} />
+            <DetailRow label="Tech stack" value={(site.techStack || []).join(", ") || "—"} />
+            {site.topKeyword && (
+              <DetailRow
+                label="Top keyword"
+                value={`${site.topKeyword}${site.topPosition ? ` (#${site.topPosition})` : ""}`}
+              />
+            )}
+            {site.nextAction && (
+              <div>
+                <p className="text-[9px] uppercase text-zinc-500 font-semibold tracking-wider mb-1">Volgende actie</p>
+                <p className="text-[12px] text-zinc-300 whitespace-pre-wrap">{site.nextAction}</p>
+              </div>
+            )}
+            {site.notes && (
+              <div>
+                <p className="text-[9px] uppercase text-zinc-500 font-semibold tracking-wider mb-1">Notities</p>
+                <p className="text-[12px] text-zinc-300 whitespace-pre-wrap">{site.notes}</p>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* ── Save button (edit mode) ─────────────────── */}
+      {editMode && (
+        <div className="mt-3">
+          <Button
+            onClick={onSave}
+            disabled={saving}
+            className="w-full bg-[#F5911E] hover:bg-[#F5911E]/90 text-black font-semibold"
+          >
+            {saving ? "Opslaan…" : "Wijzigingen opslaan"}
+          </Button>
+        </div>
+      )}
+
+      {/* ── Linked tasks ────────────────────────────── */}
+      <TaskList tasks={tasks} onAddTask={onAddTask} entityLabel="site" />
+
+      {/* ── Footer actions ──────────────────────────── */}
+      <div className="mt-6 pt-4 border-t border-white/[0.06] flex gap-2">
+        <Button
+          variant="outline"
+          onClick={onClose}
+          className="flex-1 border-white/[0.08] bg-transparent text-zinc-400 hover:bg-white/[0.04] hover:text-white"
+        >
+          Sluiten
+        </Button>
+      </div>
+    </>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Domain Detail Panel
+// ═══════════════════════════════════════════════════════════════
+function DomainDetailPanel({
+  domain,
+  editDomain,
+  setEditDomain,
+  editMode,
+  setEditMode,
+  saving,
+  onSave,
+  onPromote,
+  tasks,
+  onAddTask,
+  onClose,
+}: {
+  domain: DomainOpportunity
+  editDomain: Partial<DomainOpportunity>
+  setEditDomain: (v: Partial<DomainOpportunity>) => void
+  editMode: boolean
+  setEditMode: (v: boolean) => void
+  saving: boolean
+  onSave: () => void
+  onPromote: () => void
+  tasks: Task[]
+  onAddTask: () => void
+  onClose: () => void
+}) {
+  const st = domainStatusConfig[domain.status] || domainStatusConfig.parking
+
+  return (
+    <>
+      <SheetHeader>
+        <div className="flex items-start justify-between">
+          <div>
+            <SheetTitle className="text-white text-[18px]">{domain.domain}</SheetTitle>
+            <SheetDescription className="text-zinc-500 text-[12px] flex items-center gap-2 mt-1">
+              <span className={cn("h-1.5 w-1.5 rounded-full", st.dot)} />
+              {st.label}
+              {domain.priority && (
+                <span className={cn(
+                  "text-[8px] font-bold uppercase rounded-full px-2 py-0.5 border ml-2",
+                  priorityColors[domain.priority] || priorityColors.low
+                )}>
+                  {domain.priority}
+                </span>
+              )}
+            </SheetDescription>
+          </div>
+          <button
+            onClick={() => {
+              if (editMode) { setEditMode(false) }
+              else { setEditDomain({ ...domain }); setEditMode(true) }
+            }}
+            className={cn(
+              "text-[10px] font-bold uppercase px-3 py-1.5 rounded-md transition-colors",
+              editMode
+                ? "bg-zinc-700 text-zinc-300"
+                : "bg-[#F5911E]/15 text-[#F5911E] hover:bg-[#F5911E]/25"
+            )}
+          >
+            {editMode ? "Annuleren" : "Bewerken"}
+          </button>
+        </div>
+      </SheetHeader>
+
+      {/* ── Edit / View fields ──────────────────────── */}
+      <div className="mt-5 space-y-3 border-y border-white/[0.06] py-4">
+        {editMode ? (
+          <>
+            <FieldSelect
+              label="Status"
+              value={editDomain.status || ""}
+              options={DOMAIN_STATUSES.map(s => ({ value: s.value, label: s.label }))}
+              onChange={(v) => setEditDomain({ ...editDomain, status: v })}
+            />
+            <FieldSelect
+              label="Prioriteit"
+              value={editDomain.priority || ""}
+              options={[
+                { value: "high", label: "High" },
+                { value: "medium", label: "Medium" },
+                { value: "low", label: "Low" },
+              ]}
+              onChange={(v) => setEditDomain({ ...editDomain, priority: v })}
+            />
+            <FieldInput
+              label="Niche"
+              value={editDomain.niche || ""}
+              onChange={(v) => setEditDomain({ ...editDomain, niche: v })}
+              placeholder="bv. slotenmaker, daklekkages..."
+            />
+            <FieldInput
+              label="Categorie"
+              value={editDomain.category || ""}
+              onChange={(v) => setEditDomain({ ...editDomain, category: v })}
+              placeholder="bv. leadgen, tool, rank-rent..."
+            />
+            <FieldInput
+              label="Geschatte waarde (€)"
+              type="number"
+              value={String(editDomain.estimatedValue || "")}
+              onChange={(v) => setEditDomain({ ...editDomain, estimatedValue: v ? Number(v) : undefined })}
+              placeholder="0"
+            />
+            <FieldInput
+              label="Provider"
+              value={editDomain.provider || ""}
+              onChange={(v) => setEditDomain({ ...editDomain, provider: v })}
+              placeholder="bv. transip, combell, cloudflare..."
+            />
+            <div>
+              <label className="text-[9px] uppercase text-zinc-500 font-semibold tracking-wider">Notities</label>
+              <Textarea
+                value={editDomain.notes || ""}
+                onChange={(e) => setEditDomain({ ...editDomain, notes: e.target.value })}
+                className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white text-[12px] placeholder:text-zinc-600 min-h-[60px]"
+                placeholder="Notities, ideeën, plannen..."
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            <DetailRow label="Prioriteit" value={domain.priority || "—"} />
+            <DetailRow label="Niche" value={domain.niche || "—"} />
+            <DetailRow label="Categorie" value={domain.category || "—"} />
+            <DetailRow
+              label="Geschatte waarde"
+              value={domain.estimatedValue ? `€${domain.estimatedValue.toLocaleString("nl-BE")}` : "—"}
+            />
+            <DetailRow label="Provider" value={domain.provider || "—"} />
+            {domain.renewalDate && (
+              <DetailRow label="Verlenging" value={new Date(domain.renewalDate).toLocaleDateString("nl-BE")} />
+            )}
+            {domain.radarNotes && (
+              <div>
+                <p className="text-[9px] uppercase text-zinc-500 font-semibold tracking-wider mb-1">RADAR notities</p>
+                <p className="text-[12px] text-zinc-300 whitespace-pre-wrap">{domain.radarNotes}</p>
+              </div>
+            )}
+            {domain.notes && (
+              <div>
+                <p className="text-[9px] uppercase text-zinc-500 font-semibold tracking-wider mb-1">Notities</p>
+                <p className="text-[12px] text-zinc-300 whitespace-pre-wrap">{domain.notes}</p>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* ── Save button (edit mode) ─────────────────── */}
+      {editMode && (
+        <div className="mt-3">
+          <Button
+            onClick={onSave}
+            disabled={saving}
+            className="w-full bg-[#F5911E] hover:bg-[#F5911E]/90 text-black font-semibold"
+          >
+            {saving ? "Opslaan…" : "Wijzigingen opslaan"}
+          </Button>
+        </div>
+      )}
+
+      {/* ── Linked tasks ────────────────────────────── */}
+      <TaskList tasks={tasks} onAddTask={onAddTask} entityLabel="domein" />
+
+      {/* ── Footer actions ──────────────────────────── */}
+      <div className="mt-6 pt-4 border-t border-white/[0.06] space-y-2">
+        <Button
+          onClick={onPromote}
+          className="w-full bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 font-semibold border border-emerald-500/20"
+        >
+          ⤴ Promote naar Site
+        </Button>
+        <Button
+          variant="outline"
+          onClick={onClose}
+          className="w-full border-white/[0.08] bg-transparent text-zinc-400 hover:bg-white/[0.04] hover:text-white"
+        >
+          Sluiten
+        </Button>
+      </div>
+    </>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Shared sub-components
+// ═══════════════════════════════════════════════════════════════
+
+function MiniStat({ label, value, className }: { label: string; value: string; className?: string }) {
+  return (
+    <div className="rounded-lg bg-zinc-800/40 p-3">
+      <p className="text-[9px] uppercase text-zinc-500 font-semibold">{label}</p>
+      <p className={cn("text-lg font-bold text-white tabular-nums", className)}>{value}</p>
+    </div>
+  )
+}
+
+function DetailRow({ label, value, link }: { label: string; value: string; link?: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <p className="text-[10px] uppercase text-zinc-500 font-semibold tracking-wider shrink-0">{label}</p>
+      {link ? (
+        <a
+          href={link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[12px] text-[#F5911E] hover:underline text-right truncate"
+        >
+          {value}
+        </a>
+      ) : (
+        <p className="text-[12px] text-zinc-300 text-right truncate">{value}</p>
+      )}
+    </div>
+  )
+}
+
+function FieldInput({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+}: {
+  label: string
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+  type?: string
+}) {
+  return (
+    <div>
+      <label className="text-[9px] uppercase text-zinc-500 font-semibold tracking-wider">{label}</label>
+      <Input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white text-[12px] placeholder:text-zinc-600"
+      />
+    </div>
+  )
+}
+
+function FieldSelect({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string
+  value: string
+  options: { value: string; label: string }[]
+  onChange: (v: string) => void
+}) {
+  return (
+    <div>
+      <label className="text-[9px] uppercase text-zinc-500 font-semibold tracking-wider">{label}</label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white text-[12px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent className="bg-zinc-900 border-white/[0.08] text-white">
+          {options.map((o) => (
+            <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
+
+function TaskList({
+  tasks,
+  onAddTask,
+  entityLabel,
+}: {
+  tasks: Task[]
+  onAddTask: () => void
+  entityLabel: string
+}) {
+  return (
+    <div className="mt-5">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">
+          Open tasks ({tasks.length})
+        </p>
+        <button
+          onClick={onAddTask}
+          className="rounded-md bg-[#F5911E]/15 hover:bg-[#F5911E]/25 text-[#F5911E] text-[11px] font-semibold px-2.5 py-1 transition-colors"
+        >
+          + Taak
+        </button>
+      </div>
+
+      {tasks.length === 0 ? (
+        <p className="text-[11px] text-zinc-600 italic">
+          Nog geen open tasks voor deze {entityLabel}
+        </p>
+      ) : (
+        <div className="space-y-2">
+          {tasks.slice(0, 10).map((t) => (
+            <div key={t.id} className="rounded-lg border border-white/[0.06] bg-zinc-800/30 p-3">
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-[12px] font-medium text-white flex-1">{t.title}</p>
+                {t.priority && (
+                  <span
+                    className={cn(
+                      "text-[8px] font-bold uppercase rounded-full px-2 py-0.5 border shrink-0",
+                      priorityColors[t.priority] || priorityColors.low
+                    )}
+                  >
+                    {t.priority}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-3 mt-1.5 text-[10px] text-zinc-500">
+                <span className={cn("font-semibold", taskStatusColors[t.status] || "text-zinc-500")}>
+                  {t.status}
+                </span>
+                {t.assignee && <span className="uppercase">{t.assignee}</span>}
+                {t.category && <span>· {t.category}</span>}
+              </div>
+            </div>
+          ))}
+          {tasks.length > 10 && (
+            <p className="text-[10px] text-zinc-600 text-center">
+              +{tasks.length - 10} meer — zie /werk
             </p>
           )}
         </div>
       )}
     </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════
+// QuickAddTaskModal
+// ═══════════════════════════════════════════════════════════════
+interface QuickAddTaskModalProps {
+  open: boolean
+  onOpenChange: (v: boolean) => void
+  context: { scope: "site" | "domain"; id: string; label: string } | null
+  existingTasks: Task[]
+  onCreated: () => void
+}
+
+function QuickAddTaskModal({
+  open,
+  onOpenChange,
+  context,
+  existingTasks,
+  onCreated,
+}: QuickAddTaskModalProps) {
+  const [title, setTitle] = useState("")
+  const [description, setDescription] = useState("")
+  const [assignee, setAssignee] = useState<string>("atlas")
+  const [priority, setPriority] = useState<string>("medium")
+  const [category, setCategory] = useState<string>("general")
+  const [submitting, setSubmitting] = useState(false)
+  const [duplicateWarning, setDuplicateWarning] = useState<Task | null>(null)
+
+  useEffect(() => {
+    if (open) {
+      setTitle("")
+      setDescription("")
+      setAssignee("atlas")
+      setPriority("medium")
+      setCategory("general")
+      setDuplicateWarning(null)
+    }
+  }, [open])
+
+  // Dedup check
+  useEffect(() => {
+    if (!context || !title.trim() || title.length < 4) {
+      setDuplicateWarning(null)
+      return
+    }
+    const needle = title.trim().toLowerCase()
+    const match = existingTasks.find((t) => {
+      if (t.status === "done") return false
+      if (context.scope === "site" && t.siteId !== context.id) return false
+      if (context.scope === "domain" && t.linkedDomainId !== context.id) return false
+      return t.title.toLowerCase().includes(needle) || needle.includes(t.title.toLowerCase())
+    })
+    setDuplicateWarning(match || null)
+  }, [title, context, existingTasks])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!context || !title.trim()) return
+    setSubmitting(true)
+    try {
+      const payload: Record<string, unknown> = {
+        title: title.trim(),
+        description: description.trim() || undefined,
+        status: "todo",
+        priority,
+        assignee,
+        category,
+        source: "manual",
+      }
+      if (context.scope === "site") payload.siteId = context.id
+      if (context.scope === "domain") payload.linkedDomainId = context.id
+
+      const res = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) throw new Error("Kon taak niet aanmaken")
+      onCreated()
+    } catch (err) {
+      alert("Fout: " + (err instanceof Error ? err.message : "onbekend"))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="bg-zinc-900 border border-white/[0.08] text-white sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="text-white">Nieuwe taak</DialogTitle>
+          <DialogDescription className="text-zinc-500">
+            {context
+              ? `Gekoppeld aan ${context.scope === "site" ? "site" : "domein"}: ${context.label}`
+              : "—"}
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+          <div>
+            <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">Titel</label>
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Wat moet er gebeuren?"
+              className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white placeholder:text-zinc-600"
+              required
+              autoFocus
+            />
+            {duplicateWarning && (
+              <p className="mt-2 text-[11px] text-yellow-400 bg-yellow-500/5 border border-yellow-500/20 rounded-md px-2.5 py-1.5">
+                Lijkt op bestaande open taak: <strong>{duplicateWarning.title}</strong> ({duplicateWarning.assignee || "—"} · {duplicateWarning.status})
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">Omschrijving (optioneel)</label>
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Extra context voor de agent…"
+              className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white placeholder:text-zinc-600 min-h-[70px]"
+            />
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">Agent</label>
+              <Select value={assignee} onValueChange={setAssignee}>
+                <SelectTrigger className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-white/[0.08] text-white">
+                  {AGENTS.map((a) => (
+                    <SelectItem key={a} value={a} className="capitalize">{a}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">Prioriteit</label>
+              <Select value={priority} onValueChange={setPriority}>
+                <SelectTrigger className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-white/[0.08] text-white">
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">Categorie</label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-white/[0.08] text-white">
+                  <SelectItem value="general">Algemeen</SelectItem>
+                  <SelectItem value="seo">SEO</SelectItem>
+                  <SelectItem value="content">Content</SelectItem>
+                  <SelectItem value="dev">Dev</SelectItem>
+                  <SelectItem value="research">Research</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter className="flex gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="border-white/[0.08] bg-transparent text-zinc-400 hover:bg-white/[0.04] hover:text-white"
+            >
+              Annuleren
+            </Button>
+            <Button
+              type="submit"
+              disabled={submitting || !title.trim()}
+              className="bg-[#F5911E] hover:bg-[#F5911E]/90 text-black font-semibold"
+            >
+              {submitting ? "Bezig…" : duplicateWarning ? "Toch aanmaken" : "Aanmaken"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }
