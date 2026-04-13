@@ -56,7 +56,10 @@ interface Site {
   lastDeployAt?: string
   revenue?: number
   clientName?: string
+  clientEmail?: string
   ownerType?: string
+  contractType?: string
+  monthlyFee?: number
 }
 
 interface DomainOpportunity {
@@ -298,6 +301,11 @@ export default function PortfolioPage() {
           productionUrl: editSite.productionUrl,
           githubRepo: editSite.githubRepo,
           techStack: editSite.techStack,
+          ownerType: editSite.ownerType,
+          clientName: editSite.ownerType === "client" ? editSite.clientName : null,
+          clientEmail: editSite.ownerType === "client" ? editSite.clientEmail : null,
+          contractType: editSite.ownerType === "client" ? editSite.contractType : null,
+          monthlyFee: editSite.ownerType === "client" && editSite.monthlyFee ? Number(editSite.monthlyFee) : null,
         }),
       })
       if (!res.ok) throw new Error("Opslaan mislukt")
@@ -335,6 +343,32 @@ export default function PortfolioPage() {
       alert("Fout: " + (e instanceof Error ? e.message : "onbekend"))
     } finally {
       setSaving(false)
+    }
+  }
+
+  // ─── Delete site ─────────────────────────────────────────
+  const handleDeleteSite = async (site: Site) => {
+    if (!confirm(`Site "${site.domain}" definitief verwijderen? Dit kan niet ongedaan worden.`)) return
+    try {
+      const res = await fetch(`/api/sites/${site.id}`, { method: "DELETE" })
+      if (!res.ok) throw new Error("Verwijderen mislukt")
+      setDetailOpen(false)
+      fetchAll()
+    } catch (e) {
+      alert("Fout: " + (e instanceof Error ? e.message : "onbekend"))
+    }
+  }
+
+  // ─── Delete domain ──────────────────────────────────────
+  const handleDeleteDomain = async (domain: DomainOpportunity) => {
+    if (!confirm(`Domein "${domain.domain}" definitief verwijderen? Dit kan niet ongedaan worden.`)) return
+    try {
+      const res = await fetch(`/api/domain-opportunities/${domain.id}`, { method: "DELETE" })
+      if (!res.ok) throw new Error("Verwijderen mislukt")
+      setDetailOpen(false)
+      fetchAll()
+    } catch (e) {
+      alert("Fout: " + (e instanceof Error ? e.message : "onbekend"))
     }
   }
 
@@ -562,11 +596,18 @@ export default function PortfolioPage() {
                   >
                     <div className="min-w-0">
                       <p className="text-[12px] font-semibold text-white truncate">{s.domain}</p>
-                      {s.hosting && (
-                        <span className="text-[8px] font-bold uppercase rounded px-1.5 py-0.5 bg-zinc-700/60 text-zinc-400">
-                          {s.hosting}
-                        </span>
-                      )}
+                      <div className="flex gap-1 mt-0.5">
+                        {s.ownerType === "client" && (
+                          <span className="text-[8px] font-bold uppercase rounded px-1.5 py-0.5 bg-[#F5911E]/15 text-[#F5911E]">
+                            Klant{s.clientName ? ` · ${s.clientName}` : ""}
+                          </span>
+                        )}
+                        {s.hosting && (
+                          <span className="text-[8px] font-bold uppercase rounded px-1.5 py-0.5 bg-zinc-700/60 text-zinc-400">
+                            {s.hosting}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span className={cn("h-1.5 w-1.5 rounded-full", st.dot)} />
@@ -636,6 +677,7 @@ export default function PortfolioPage() {
               setEditMode={setEditMode}
               saving={saving}
               onSave={handleSaveSite}
+              onDelete={() => handleDeleteSite(selected.data)}
               tasks={openTasksForSite(selected.data.id)}
               onAddTask={() => openTaskModalForSite(selected.data)}
               onClose={() => setDetailOpen(false)}
@@ -650,6 +692,7 @@ export default function PortfolioPage() {
               setEditMode={setEditMode}
               saving={saving}
               onSave={handleSaveDomain}
+              onDelete={() => handleDeleteDomain(selected.data)}
               onPromote={() => handlePromoteDomain(selected.data)}
               tasks={openTasksForDomain(selected.data.id)}
               onAddTask={() => openTaskModalForDomain(selected.data)}
@@ -682,6 +725,7 @@ function SiteDetailPanel({
   setEditMode,
   saving,
   onSave,
+  onDelete,
   tasks,
   onAddTask,
   onClose,
@@ -693,6 +737,7 @@ function SiteDetailPanel({
   setEditMode: (v: boolean) => void
   saving: boolean
   onSave: () => void
+  onDelete: () => void
   tasks: Task[]
   onAddTask: () => void
   onClose: () => void
@@ -797,6 +842,52 @@ function SiteDetailPanel({
               onChange={(v) => setEditSite({ ...editSite, techStack: v.split(",").map(s => s.trim()).filter(Boolean) })}
               placeholder="Next.js, Tailwind, ..."
             />
+            {/* Klant sectie */}
+            <div className="pt-2 mt-2 border-t border-white/[0.06]">
+              <p className="text-[9px] uppercase text-zinc-500 font-bold tracking-wider mb-2">Klant-info</p>
+            </div>
+            <FieldSelect
+              label="Eigenaar"
+              value={editSite.ownerType || "own"}
+              options={[
+                { value: "own", label: "Eigen site" },
+                { value: "client", label: "Klantsite" },
+              ]}
+              onChange={(v) => setEditSite({ ...editSite, ownerType: v })}
+            />
+            {editSite.ownerType === "client" && (
+              <>
+                <FieldInput
+                  label="Klantnaam"
+                  value={editSite.clientName || ""}
+                  onChange={(v) => setEditSite({ ...editSite, clientName: v })}
+                  placeholder="Naam van de klant"
+                />
+                <FieldInput
+                  label="Klant email"
+                  value={editSite.clientEmail || ""}
+                  onChange={(v) => setEditSite({ ...editSite, clientEmail: v })}
+                  placeholder="email@klant.be"
+                />
+                <FieldSelect
+                  label="Contract type"
+                  value={editSite.contractType || ""}
+                  options={[
+                    { value: "retainer", label: "Retainer (maandelijks)" },
+                    { value: "eenmalig", label: "Eenmalig project" },
+                    { value: "mixed", label: "Mix" },
+                  ]}
+                  onChange={(v) => setEditSite({ ...editSite, contractType: v })}
+                />
+                <FieldInput
+                  label="Maandelijkse fee (€)"
+                  type="number"
+                  value={String(editSite.monthlyFee || "")}
+                  onChange={(v) => setEditSite({ ...editSite, monthlyFee: v ? Number(v) : undefined })}
+                  placeholder="0"
+                />
+              </>
+            )}
             <div>
               <label className="text-[9px] uppercase text-zinc-500 font-semibold tracking-wider">Notities</label>
               <Textarea
@@ -824,6 +915,20 @@ function SiteDetailPanel({
             <DetailRow label="Productie URL" value={site.productionUrl || "—"} link={site.productionUrl} />
             <DetailRow label="GitHub" value={site.githubRepo || "—"} />
             <DetailRow label="Tech stack" value={(site.techStack || []).join(", ") || "—"} />
+            {/* Klant-info view */}
+            {site.ownerType === "client" && (
+              <>
+                <div className="pt-2 mt-2 border-t border-white/[0.06]">
+                  <p className="text-[9px] uppercase text-[#F5911E] font-bold tracking-wider mb-2">Klant</p>
+                </div>
+                <DetailRow label="Klantnaam" value={site.clientName || "—"} />
+                {site.clientEmail && <DetailRow label="Email" value={site.clientEmail} />}
+                {site.contractType && <DetailRow label="Contract" value={site.contractType} />}
+                {site.monthlyFee != null && site.monthlyFee > 0 && (
+                  <DetailRow label="Maandelijkse fee" value={`€${site.monthlyFee.toLocaleString("nl-BE")}`} />
+                )}
+              </>
+            )}
             {site.topKeyword && (
               <DetailRow
                 label="Top keyword"
@@ -863,14 +968,20 @@ function SiteDetailPanel({
       <TaskList tasks={tasks} onAddTask={onAddTask} entityLabel="site" />
 
       {/* ── Footer actions ──────────────────────────── */}
-      <div className="mt-6 pt-4 border-t border-white/[0.06] flex gap-2">
+      <div className="mt-6 pt-4 border-t border-white/[0.06] space-y-2">
         <Button
           variant="outline"
           onClick={onClose}
-          className="flex-1 border-white/[0.08] bg-transparent text-zinc-400 hover:bg-white/[0.04] hover:text-white"
+          className="w-full border-white/[0.08] bg-transparent text-zinc-400 hover:bg-white/[0.04] hover:text-white"
         >
           Sluiten
         </Button>
+        <button
+          onClick={onDelete}
+          className="w-full text-[10px] text-red-400/60 hover:text-red-400 transition-colors py-2"
+        >
+          Site verwijderen
+        </button>
       </div>
     </>
   )
@@ -887,6 +998,7 @@ function DomainDetailPanel({
   setEditMode,
   saving,
   onSave,
+  onDelete,
   onPromote,
   tasks,
   onAddTask,
@@ -899,6 +1011,7 @@ function DomainDetailPanel({
   setEditMode: (v: boolean) => void
   saving: boolean
   onSave: () => void
+  onDelete: () => void
   onPromote: () => void
   tasks: Task[]
   onAddTask: () => void
@@ -1057,6 +1170,12 @@ function DomainDetailPanel({
         >
           Sluiten
         </Button>
+        <button
+          onClick={onDelete}
+          className="w-full text-[10px] text-red-400/60 hover:text-red-400 transition-colors py-2"
+        >
+          Domein verwijderen
+        </button>
       </div>
     </>
   )
