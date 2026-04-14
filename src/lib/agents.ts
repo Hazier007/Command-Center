@@ -1,4 +1,4 @@
-import { AgentName } from './types';
+import { AgentName, ActiveAssignee, LegacyAgentName } from './types';
 
 export interface AgentProfile {
   name: AgentName;
@@ -9,6 +9,50 @@ export interface AgentProfile {
   color: string; // hex color for UI
   emoji: string;
 }
+
+export interface TeamMember {
+  name: ActiveAssignee;
+  displayName: string;
+  role: string;
+  description: string;
+  specialties: string[];
+  color: string;
+  emoji: string;
+}
+
+// ===== TEAM BC: De actieve kern =====
+export const TEAM: Record<ActiveAssignee, TeamMember> = {
+  bart: {
+    name: 'bart',
+    displayName: 'Bart',
+    role: 'Eigenaar & Operator',
+    description: 'Oprichter van Hazier. Beslist, keurt goed, stuurt bij.',
+    specialties: ['strategie', 'beslissingen', 'klantrelaties', 'business development'],
+    color: '#F5911E', // Hazier orange
+    emoji: '👤',
+  },
+  claude: {
+    name: 'claude',
+    displayName: 'Claude',
+    role: 'Builder & Strategist',
+    description: 'Rechterhand van Bart. Bouwt, analyseert, schrijft content, beheert financiën, evalueert groei.',
+    specialties: ['development', 'strategie', 'content', 'finance', 'groei-analyse', 'SEO'],
+    color: '#D97706', // warm amber — complementair aan Hazier orange
+    emoji: '🤖',
+  },
+  radar: {
+    name: 'radar',
+    displayName: 'RADAR',
+    role: 'SEO & Domain Intelligence',
+    description: 'Autonome agent. Scant de markt, vindt kansen, analyseert domeinen en zoekverkeer.',
+    specialties: ['SEO analyse', 'domein research', 'keyword research', 'concurrentie analyse'],
+    color: '#10B981', // green
+    emoji: '📡',
+  },
+};
+
+// Legacy agents — behouden voor historische data, niet meer actief
+export const LEGACY_AGENTS: LegacyAgentName[] = ['atlas', 'forge', 'ink', 'ledger', 'spark'];
 
 export const AGENTS: Record<AgentName, AgentProfile> = {
   atlas: {
@@ -67,6 +111,7 @@ export const AGENTS: Record<AgentName, AgentProfile> = {
   },
 };
 
+// BART constant behouden voor backward compatibility
 export const BART = {
   name: 'bart' as const,
   displayName: 'Bart',
@@ -76,17 +121,40 @@ export const BART = {
   emoji: '👤',
 };
 
-export const ALL_ASSIGNEES = ['bart', ...Object.keys(AGENTS), 'cowork'] as const;
+// Team BC actieve assignees (voor dropdowns, filters)
+export const ACTIVE_ASSIGNEES: ActiveAssignee[] = ['bart', 'claude', 'radar'];
+
+// Alle assignees inclusief legacy (voor backward compatibility)
+export const ALL_ASSIGNEES = ['bart', 'claude', ...Object.keys(AGENTS), 'cowork'] as const;
 
 export function getAgentProfile(name: string): AgentProfile | undefined {
   return AGENTS[name as AgentName];
 }
 
-export function getAssigneeDisplay(name: string): { displayName: string; color: string; emoji: string } {
-  if (name === 'bart') return BART;
+export function getTeamMember(name: string): TeamMember | undefined {
+  return TEAM[name as ActiveAssignee];
+}
+
+export function isLegacyAgent(name: string): boolean {
+  return LEGACY_AGENTS.includes(name as LegacyAgentName);
+}
+
+export function isActiveAssignee(name: string): name is ActiveAssignee {
+  return ACTIVE_ASSIGNEES.includes(name as ActiveAssignee);
+}
+
+export function getAssigneeDisplay(name: string): { displayName: string; color: string; emoji: string; isLegacy?: boolean } {
+  // Team BC members eerst
+  const member = TEAM[name as ActiveAssignee];
+  if (member) return { displayName: member.displayName, color: member.color, emoji: member.emoji };
+
+  // System & cowork
   if (name === 'cowork') return { displayName: 'Cowork', color: '#6B7280', emoji: '🖥️' };
   if (name === 'system') return { displayName: 'System', color: '#6B7280', emoji: '⚙️' };
+
+  // Legacy agents — tonen met markering
   const agent = AGENTS[name as AgentName];
-  if (agent) return { displayName: agent.displayName, color: agent.color, emoji: agent.emoji };
+  if (agent) return { displayName: agent.displayName, color: agent.color, emoji: agent.emoji, isLegacy: true };
+
   return { displayName: name, color: '#6B7280', emoji: '❓' };
 }

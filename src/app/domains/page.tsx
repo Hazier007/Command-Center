@@ -15,6 +15,11 @@ import {
   Tag,
   DollarSign,
   Filter,
+  Pencil,
+  ChevronDown,
+  ChevronUp,
+  Calendar,
+  Server,
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -45,6 +50,8 @@ interface DomainRecord {
   businessUnit?: string
   hasIdea?: boolean
   category?: string
+  renewalDate?: string
+  provider?: string
   createdAt: string
   updatedAt: string
 }
@@ -82,9 +89,36 @@ const PRIORITY_CONFIG: Record<string, { label: string; cls: string }> = {
   low:    { label: "Laag",   cls: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30" },
 }
 
+const BU_OPTIONS = [
+  { value: "", label: "-- Geen --" },
+  { value: "hazier", label: "Hazier.eu" },
+  { value: "agency", label: "Agency" },
+  { value: "rankrent", label: "Rank & Rent" },
+  { value: "affiliate", label: "Affiliate" },
+  { value: "tools", label: "Tools" },
+  { value: "leadgen", label: "Leadgen" },
+]
+
+const PROVIDER_OPTIONS = [
+  { value: "", label: "-- Geen --" },
+  { value: "hazier", label: "Hazier.eu" },
+  { value: "transip", label: "TransIP" },
+  { value: "combell", label: "Combell" },
+  { value: "godaddy", label: "GoDaddy" },
+  { value: "cloudflare", label: "Cloudflare" },
+  { value: "other", label: "Anders" },
+]
+
+const darkSelect = "flex h-9 w-full rounded-md border border-white/[0.06] bg-white/[0.02] px-3 py-1 text-sm text-zinc-200 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#F5911E]"
+
 function formatEuro(n?: number): string {
   if (n == null) return "-"
   return n.toLocaleString("nl-BE", { style: "currency", currency: "EUR", minimumFractionDigits: 0 })
+}
+
+function formatDate(d?: string): string {
+  if (!d) return "-"
+  return new Date(d).toLocaleDateString("nl-BE", { day: "numeric", month: "short", year: "numeric" })
 }
 
 function sparkColor(score: number): string {
@@ -126,14 +160,19 @@ export default function DomainsPage() {
   const [noteDialogDomain, setNoteDialogDomain] = useState<DomainRecord | null>(null)
   const [noteForm, setNoteForm] = useState({ title: "", content: "" })
 
+  // Edit dialog
+  const [editingDomain, setEditingDomain] = useState<DomainRecord | null>(null)
+  const [editForm, setEditForm] = useState({
+    domain: "", status: "parking", priority: "medium", niche: "", estimatedValue: "",
+    businessUnit: "", notes: "", renewalDate: "", provider: "",
+  })
+
+  // SPARK expand
+  const [expandedSparkId, setExpandedSparkId] = useState<string | null>(null)
+
   const [formData, setFormData] = useState({
-    domain: "",
-    status: "parking",
-    priority: "medium",
-    niche: "",
-    estimatedValue: "",
-    businessUnit: "",
-    notes: "",
+    domain: "", status: "parking", priority: "medium", niche: "", estimatedValue: "",
+    businessUnit: "", notes: "", renewalDate: "", provider: "",
   })
 
   // ─── Data Loading ──────────────────────────────────────────
@@ -208,10 +247,12 @@ export default function DomainsPage() {
           estimatedValue: formData.estimatedValue ? parseFloat(formData.estimatedValue) : undefined,
           businessUnit: formData.businessUnit || undefined,
           notes: formData.notes || undefined,
+          renewalDate: formData.renewalDate || undefined,
+          provider: formData.provider || undefined,
         }),
       })
       setIsCreateOpen(false)
-      setFormData({ domain: "", status: "parking", priority: "medium", niche: "", estimatedValue: "", businessUnit: "", notes: "" })
+      setFormData({ domain: "", status: "parking", priority: "medium", niche: "", estimatedValue: "", businessUnit: "", notes: "", renewalDate: "", provider: "" })
       await loadData()
     } catch (error) {
       console.error("Failed to create domain:", error)
@@ -220,11 +261,53 @@ export default function DomainsPage() {
     }
   }
 
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingDomain) return
+    try {
+      setSubmitting(true)
+      await fetch(`/api/domain-opportunities/${editingDomain.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          domain: editForm.domain,
+          status: editForm.status,
+          priority: editForm.priority,
+          niche: editForm.niche || undefined,
+          estimatedValue: editForm.estimatedValue ? parseFloat(editForm.estimatedValue) : undefined,
+          businessUnit: editForm.businessUnit || undefined,
+          notes: editForm.notes || undefined,
+          renewalDate: editForm.renewalDate || null,
+          provider: editForm.provider || undefined,
+        }),
+      })
+      setEditingDomain(null)
+      await loadData()
+    } catch (error) {
+      console.error("Failed to update domain:", error)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const openEdit = (domain: DomainRecord) => {
+    setEditForm({
+      domain: domain.domain,
+      status: domain.status,
+      priority: domain.priority || "medium",
+      niche: domain.niche || "",
+      estimatedValue: domain.estimatedValue?.toString() || "",
+      businessUnit: domain.businessUnit || "",
+      notes: domain.notes || "",
+      renewalDate: domain.renewalDate ? domain.renewalDate.split("T")[0] : "",
+      provider: domain.provider || "",
+    })
+    setEditingDomain(domain)
+  }
+
   const handleSparkEvaluate = async (domain: DomainRecord) => {
     try {
       setSparkLoading(domain.id)
-
-      // 1. Create idea for SPARK
       const ideaRes = await fetch("/api/ideas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -234,21 +317,15 @@ export default function DomainsPage() {
           category: "domain_acquisition",
           priority: "medium",
           status: "raw",
-          assignedTo: "spark",
+          assignedTo: "claude",
         }),
       })
       const newIdea = await ideaRes.json()
-
-      // 2. Link idea to domain
       await fetch(`/api/domain-opportunities/${domain.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          linkedIdeaId: newIdea.id,
-          hasIdea: true,
-        }),
+        body: JSON.stringify({ linkedIdeaId: newIdea.id, hasIdea: true }),
       })
-
       await loadData()
     } catch (error) {
       console.error("Failed to create SPARK evaluation:", error)
@@ -363,12 +440,7 @@ export default function DomainsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="create-status" className="text-sm font-medium text-zinc-300">Status</label>
-                  <select
-                    id="create-status"
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="mt-1 flex h-9 w-full rounded-md border border-white/[0.06] bg-white/[0.02] px-3 py-1 text-sm text-zinc-200 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#F5911E]"
-                  >
+                  <select id="create-status" value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className={`mt-1 ${darkSelect}`} style={{ colorScheme: "dark" }}>
                     <option value="parking">Parking</option>
                     <option value="prospect">Prospect</option>
                     <option value="acquired">Acquired</option>
@@ -378,12 +450,7 @@ export default function DomainsPage() {
                 </div>
                 <div>
                   <label htmlFor="create-priority" className="text-sm font-medium text-zinc-300">Prioriteit</label>
-                  <select
-                    id="create-priority"
-                    value={formData.priority}
-                    onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                    className="mt-1 flex h-9 w-full rounded-md border border-white/[0.06] bg-white/[0.02] px-3 py-1 text-sm text-zinc-200 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#F5911E]"
-                  >
+                  <select id="create-priority" value={formData.priority} onChange={(e) => setFormData({ ...formData, priority: e.target.value })} className={`mt-1 ${darkSelect}`} style={{ colorScheme: "dark" }}>
                     <option value="low">Laag</option>
                     <option value="medium">Medium</option>
                     <option value="high">Hoog</option>
@@ -393,53 +460,34 @@ export default function DomainsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="create-value" className="text-sm font-medium text-zinc-300">Geschatte waarde (EUR)</label>
-                  <Input
-                    id="create-value"
-                    type="number"
-                    value={formData.estimatedValue}
-                    onChange={(e) => setFormData({ ...formData, estimatedValue: e.target.value })}
-                    placeholder="0"
-                    min="0"
-                    step="1"
-                    className="mt-1 bg-white/[0.02] border-white/[0.06]"
-                  />
+                  <Input id="create-value" type="number" value={formData.estimatedValue} onChange={(e) => setFormData({ ...formData, estimatedValue: e.target.value })} placeholder="0" min="0" step="1" className="mt-1 bg-white/[0.02] border-white/[0.06]" />
                 </div>
                 <div>
                   <label htmlFor="create-niche" className="text-sm font-medium text-zinc-300">Niche</label>
-                  <Input
-                    id="create-niche"
-                    value={formData.niche}
-                    onChange={(e) => setFormData({ ...formData, niche: e.target.value })}
-                    placeholder="bijv. vastgoed"
-                    className="mt-1 bg-white/[0.02] border-white/[0.06]"
-                  />
+                  <Input id="create-niche" value={formData.niche} onChange={(e) => setFormData({ ...formData, niche: e.target.value })} placeholder="bijv. vastgoed" className="mt-1 bg-white/[0.02] border-white/[0.06]" />
                 </div>
               </div>
               <div>
                 <label htmlFor="create-bu" className="text-sm font-medium text-zinc-300">Business Unit</label>
-                <select
-                  id="create-bu"
-                  value={formData.businessUnit}
-                  onChange={(e) => setFormData({ ...formData, businessUnit: e.target.value })}
-                  className="mt-1 flex h-9 w-full rounded-md border border-white/[0.06] bg-white/[0.02] px-3 py-1 text-sm text-zinc-200 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#F5911E]"
-                >
-                  <option value="">-- Geen --</option>
-                  <option value="agency">Agency</option>
-                  <option value="rankrent">Rank & Rent</option>
-                  <option value="affiliate">Affiliate</option>
-                  <option value="tools">Tools</option>
-                  <option value="leadgen">Leadgen</option>
+                <select id="create-bu" value={formData.businessUnit} onChange={(e) => setFormData({ ...formData, businessUnit: e.target.value })} className={`mt-1 ${darkSelect}`} style={{ colorScheme: "dark" }}>
+                  {BU_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="create-provider" className="text-sm font-medium text-zinc-300">Provider</label>
+                  <select id="create-provider" value={formData.provider} onChange={(e) => setFormData({ ...formData, provider: e.target.value })} className={`mt-1 ${darkSelect}`} style={{ colorScheme: "dark" }}>
+                    {PROVIDER_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="create-renewal" className="text-sm font-medium text-zinc-300">Vervaldatum</label>
+                  <Input id="create-renewal" type="date" value={formData.renewalDate} onChange={(e) => setFormData({ ...formData, renewalDate: e.target.value })} className="mt-1 bg-white/[0.02] border-white/[0.06]" style={{ colorScheme: "dark" }} />
+                </div>
               </div>
               <div>
                 <label htmlFor="create-notes" className="text-sm font-medium text-zinc-300">Notities</label>
-                <Input
-                  id="create-notes"
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Extra informatie"
-                  className="mt-1 bg-white/[0.02] border-white/[0.06]"
-                />
+                <Input id="create-notes" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} placeholder="Extra informatie" className="mt-1 bg-white/[0.02] border-white/[0.06]" />
               </div>
               <div className="flex gap-2 pt-2">
                 <Button type="submit" className="flex-1 bg-[#F5911E] hover:bg-[#e07d0a] text-white" disabled={submitting}>
@@ -482,23 +530,11 @@ export default function DomainsPage() {
           Filters
         </div>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-5">
-          {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-            <Input
-              placeholder="Zoek domein..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 bg-white/[0.02] border-white/[0.06]"
-            />
+            <Input placeholder="Zoek domein..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 bg-white/[0.02] border-white/[0.06]" />
           </div>
-
-          {/* Status */}
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="flex h-9 w-full rounded-md border border-white/[0.06] bg-white/[0.02] px-3 py-1 text-sm text-zinc-200 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#F5911E]"
-          >
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className={darkSelect} style={{ colorScheme: "dark" }}>
             <option value="all">Alle statussen</option>
             <option value="parking">Parking</option>
             <option value="prospect">Prospect</option>
@@ -506,37 +542,18 @@ export default function DomainsPage() {
             <option value="forsale">Te koop</option>
             <option value="expired-watching">Expired watching</option>
           </select>
-
-          {/* Has Idea */}
-          <select
-            value={hasIdeaFilter}
-            onChange={(e) => setHasIdeaFilter(e.target.value)}
-            className="flex h-9 w-full rounded-md border border-white/[0.06] bg-white/[0.02] px-3 py-1 text-sm text-zinc-200 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#F5911E]"
-          >
+          <select value={hasIdeaFilter} onChange={(e) => setHasIdeaFilter(e.target.value)} className={darkSelect} style={{ colorScheme: "dark" }}>
             <option value="all">SPARK: Alle</option>
             <option value="yes">Met evaluatie</option>
             <option value="no">Zonder evaluatie</option>
           </select>
-
-          {/* Priority */}
-          <select
-            value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-            className="flex h-9 w-full rounded-md border border-white/[0.06] bg-white/[0.02] px-3 py-1 text-sm text-zinc-200 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#F5911E]"
-          >
+          <select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)} className={darkSelect} style={{ colorScheme: "dark" }}>
             <option value="all">Alle prioriteiten</option>
             <option value="high">Hoog</option>
             <option value="medium">Medium</option>
             <option value="low">Laag</option>
           </select>
-
-          {/* Niche */}
-          <Input
-            placeholder="Niche filter..."
-            value={nicheFilter}
-            onChange={(e) => setNicheFilter(e.target.value)}
-            className="bg-white/[0.02] border-white/[0.06]"
-          />
+          <Input placeholder="Niche filter..." value={nicheFilter} onChange={(e) => setNicheFilter(e.target.value)} className="bg-white/[0.02] border-white/[0.06]" />
         </div>
       </div>
 
@@ -551,129 +568,189 @@ export default function DomainsPage() {
           const sc = STATUS_CONFIG[domain.status] || STATUS_CONFIG.parking
           const pc = PRIORITY_CONFIG[domain.priority || "medium"] || PRIORITY_CONFIG.medium
           const linkedIdea = getLinkedIdea(domain)
+          const isSparkExpanded = expandedSparkId === domain.id
 
           return (
             <div
               key={domain.id}
-              className={`cc-animate-in cc-stagger-${Math.min(i + 1, 10)} rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 hover:border-white/[0.12] transition-colors`}
+              className={`cc-animate-in cc-stagger-${Math.min(i + 1, 10)} rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12] transition-colors`}
             >
-              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                {/* Left: domain info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <span className="text-base font-semibold text-zinc-100 font-mono tracking-tight truncate">
-                      {domain.domain}
-                    </span>
-                    <Badge variant="outline" className={`text-[11px] ${sc.cls}`}>
-                      {sc.label}
-                    </Badge>
-                    <Badge variant="outline" className={`text-[11px] ${pc.cls}`}>
-                      {pc.label}
-                    </Badge>
-                    {domain.niche && (
-                      <span className="inline-flex items-center gap-1 text-[11px] text-zinc-500">
-                        <Tag className="h-3 w-3" />
-                        {domain.niche}
+              <div className="p-4">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  {/* Left: domain info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="text-base font-semibold text-zinc-100 font-mono tracking-tight truncate">
+                        {domain.domain}
                       </span>
-                    )}
-                    {domain.businessUnit && (
-                      <span className="text-[11px] text-zinc-600 bg-zinc-800/50 px-1.5 py-0.5 rounded">
-                        {domain.businessUnit}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Second row: value + SPARK score + notes */}
-                  <div className="mt-2 flex items-center gap-4 flex-wrap">
-                    {domain.estimatedValue != null && domain.estimatedValue > 0 && (
-                      <span className="inline-flex items-center gap-1 text-sm text-zinc-300">
-                        <DollarSign className="h-3.5 w-3.5 text-emerald-500" />
-                        {formatEuro(domain.estimatedValue)}
-                      </span>
-                    )}
-
-                    {/* SPARK score */}
-                    {linkedIdea?.scoreOverall != null && (
-                      <span className="inline-flex items-center gap-2 text-sm">
-                        <Sparkles className="h-3.5 w-3.5 text-[#F5911E]" />
-                        <span className={`font-semibold tabular-nums ${sparkColor(linkedIdea.scoreOverall)}`}>
-                          {linkedIdea.scoreOverall.toFixed(1)}
+                      <Badge variant="outline" className={`text-[11px] ${sc.cls}`}>
+                        {sc.label}
+                      </Badge>
+                      <Badge variant="outline" className={`text-[11px] ${pc.cls}`}>
+                        {pc.label}
+                      </Badge>
+                      {domain.niche && (
+                        <span className="inline-flex items-center gap-1 text-[11px] text-zinc-500">
+                          <Tag className="h-3 w-3" />
+                          {domain.niche}
                         </span>
-                        <div className="w-16 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all ${sparkBarColor(linkedIdea.scoreOverall)}`}
-                            style={{ width: `${(linkedIdea.scoreOverall / 10) * 100}%` }}
-                          />
-                        </div>
-                        {linkedIdea.recommendation && (
-                          <span className={`text-[10px] uppercase font-medium ${
-                            linkedIdea.recommendation === "build"
-                              ? "text-emerald-400"
-                              : linkedIdea.recommendation === "investigate"
-                                ? "text-yellow-400"
-                                : "text-zinc-500"
-                          }`}>
-                            {linkedIdea.recommendation}
+                      )}
+                      {domain.businessUnit && (
+                        <span className="text-[11px] text-zinc-600 bg-zinc-800/50 px-1.5 py-0.5 rounded">
+                          {BU_OPTIONS.find(o => o.value === domain.businessUnit)?.label || domain.businessUnit}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Second row: value + provider + renewal + SPARK score + notes */}
+                    <div className="mt-2 flex items-center gap-4 flex-wrap">
+                      {domain.estimatedValue != null && domain.estimatedValue > 0 && (
+                        <span className="inline-flex items-center gap-1 text-sm text-zinc-300">
+                          <DollarSign className="h-3.5 w-3.5 text-emerald-500" />
+                          {formatEuro(domain.estimatedValue)}
+                        </span>
+                      )}
+
+                      {domain.provider && (
+                        <span className="inline-flex items-center gap-1 text-[11px] text-zinc-500">
+                          <Server className="h-3 w-3" />
+                          {PROVIDER_OPTIONS.find(o => o.value === domain.provider)?.label || domain.provider}
+                        </span>
+                      )}
+
+                      {domain.renewalDate && (
+                        <span className="inline-flex items-center gap-1 text-[11px] text-zinc-500">
+                          <Calendar className="h-3 w-3" />
+                          {formatDate(domain.renewalDate)}
+                        </span>
+                      )}
+
+                      {/* SPARK score — clickable */}
+                      {linkedIdea?.scoreOverall != null && (
+                        <button
+                          onClick={() => setExpandedSparkId(isSparkExpanded ? null : domain.id)}
+                          className="inline-flex items-center gap-2 text-sm hover:bg-white/[0.04] rounded-md px-1.5 py-0.5 -mx-1.5 transition-colors"
+                        >
+                          <Sparkles className="h-3.5 w-3.5 text-[#F5911E]" />
+                          <span className={`font-semibold tabular-nums ${sparkColor(linkedIdea.scoreOverall)}`}>
+                            {linkedIdea.scoreOverall.toFixed(1)}
                           </span>
-                        )}
-                      </span>
-                    )}
+                          <div className="w-16 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${sparkBarColor(linkedIdea.scoreOverall)}`}
+                              style={{ width: `${(linkedIdea.scoreOverall / 10) * 100}%` }}
+                            />
+                          </div>
+                          {linkedIdea.recommendation && (
+                            <span className={`text-[10px] uppercase font-medium ${
+                              linkedIdea.recommendation === "build" ? "text-emerald-400"
+                                : linkedIdea.recommendation === "investigate" ? "text-yellow-400"
+                                : "text-zinc-500"
+                            }`}>
+                              {linkedIdea.recommendation}
+                            </span>
+                          )}
+                          {isSparkExpanded ? <ChevronUp className="h-3 w-3 text-zinc-500" /> : <ChevronDown className="h-3 w-3 text-zinc-500" />}
+                        </button>
+                      )}
 
-                    {domain.hasIdea && !linkedIdea?.scoreOverall && (
-                      <span className="inline-flex items-center gap-1 text-[11px] text-zinc-500">
-                        <Sparkles className="h-3 w-3 text-[#F5911E]/50" />
-                        SPARK: wacht op evaluatie
-                      </span>
-                    )}
+                      {domain.hasIdea && !linkedIdea?.scoreOverall && (
+                        <span className="inline-flex items-center gap-1 text-[11px] text-zinc-500">
+                          <Sparkles className="h-3 w-3 text-[#F5911E]/50 animate-pulse" />
+                          SPARK: wacht op evaluatie
+                        </span>
+                      )}
 
-                    {domain.notes && (
-                      <span className="text-xs text-zinc-500 truncate max-w-[300px]" title={domain.notes}>
-                        {domain.notes}
-                      </span>
-                    )}
+                      {domain.notes && (
+                        <span className="text-xs text-zinc-500 truncate max-w-[300px]" title={domain.notes}>
+                          {domain.notes}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {/* Right: actions */}
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  {!domain.hasIdea && (
+                  {/* Right: actions */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <Button
                       size="sm"
                       variant="outline"
-                      className="text-[11px] gap-1.5 border-[#F5911E]/30 text-[#F5911E] hover:bg-[#F5911E]/10 hover:text-[#F5911E]"
-                      onClick={() => handleSparkEvaluate(domain)}
-                      disabled={sparkLoading === domain.id}
+                      className="text-[11px] gap-1 border-white/[0.06] text-zinc-400 hover:text-zinc-200"
+                      onClick={() => openEdit(domain)}
                     >
-                      <Zap className="h-3.5 w-3.5" />
-                      {sparkLoading === domain.id ? "Bezig..." : "SPARK Evalueren"}
+                      <Pencil className="h-3 w-3" />
                     </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-[11px] gap-1.5 border-white/[0.06] text-zinc-400 hover:text-zinc-200"
-                    onClick={() => {
-                      setTaskForm({ title: `Taak voor ${domain.domain}`, description: "", priority: "medium", assignee: "" })
-                      setTaskDialogDomain(domain)
-                    }}
-                  >
-                    <ListTodo className="h-3.5 w-3.5" />
-                    Taak
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-[11px] gap-1.5 border-white/[0.06] text-zinc-400 hover:text-zinc-200"
-                    onClick={() => {
-                      setNoteForm({ title: `Notitie: ${domain.domain}`, content: "" })
-                      setNoteDialogDomain(domain)
-                    }}
-                  >
-                    <StickyNote className="h-3.5 w-3.5" />
-                    Note
-                  </Button>
+                    {!domain.hasIdea && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-[11px] gap-1.5 border-[#F5911E]/30 text-[#F5911E] hover:bg-[#F5911E]/10 hover:text-[#F5911E]"
+                        onClick={() => handleSparkEvaluate(domain)}
+                        disabled={sparkLoading === domain.id}
+                      >
+                        <Zap className="h-3.5 w-3.5" />
+                        {sparkLoading === domain.id ? "Bezig..." : "SPARK Evalueren"}
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-[11px] gap-1.5 border-white/[0.06] text-zinc-400 hover:text-zinc-200"
+                      onClick={() => {
+                        setTaskForm({ title: `Taak voor ${domain.domain}`, description: "", priority: "medium", assignee: "" })
+                        setTaskDialogDomain(domain)
+                      }}
+                    >
+                      <ListTodo className="h-3.5 w-3.5" />
+                      Taak
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-[11px] gap-1.5 border-white/[0.06] text-zinc-400 hover:text-zinc-200"
+                      onClick={() => {
+                        setNoteForm({ title: `Notitie: ${domain.domain}`, content: "" })
+                        setNoteDialogDomain(domain)
+                      }}
+                    >
+                      <StickyNote className="h-3.5 w-3.5" />
+                      Note
+                    </Button>
+                  </div>
                 </div>
               </div>
+
+              {/* ─── SPARK Expanded Details ──────────────────── */}
+              {isSparkExpanded && linkedIdea && (
+                <div className="border-t border-white/[0.06] bg-white/[0.01] p-4">
+                  <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+                    {[
+                      { label: "Haalbaarheid", score: linkedIdea.scoreFeasibility },
+                      { label: "Omzetpotentieel", score: linkedIdea.scoreRevenuePotential },
+                      { label: "Time to Revenue", score: linkedIdea.scoreTimeToRevenue },
+                      { label: "Concurrentie", score: linkedIdea.scoreCompetition },
+                      { label: "Strategische Fit", score: linkedIdea.scoreStrategicFit },
+                    ].map((item) => (
+                      <div key={item.label} className="space-y-1">
+                        <p className="text-[10px] text-zinc-500 uppercase tracking-wider">{item.label}</p>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-sm font-semibold tabular-nums ${item.score != null ? sparkColor(item.score) : "text-zinc-600"}`}>
+                            {item.score != null ? item.score.toFixed(1) : "-"}
+                          </span>
+                          <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${item.score != null ? sparkBarColor(item.score) : "bg-zinc-700"}`}
+                              style={{ width: `${item.score != null ? (item.score / 10) * 100 : 0}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {linkedIdea.description && (
+                    <p className="mt-3 text-xs text-zinc-500">{linkedIdea.description}</p>
+                  )}
+                </div>
+              )}
             </div>
           )
         })}
@@ -691,6 +768,79 @@ export default function DomainsPage() {
           </p>
         </div>
       )}
+
+      {/* ─── Edit Dialog ───────────────────────────────────── */}
+      <Dialog open={!!editingDomain} onOpenChange={() => setEditingDomain(null)}>
+        <DialogContent className="bg-zinc-950 border-white/[0.06]">
+          <DialogHeader>
+            <DialogTitle>Domein bewerken</DialogTitle>
+            <DialogDescription>{editingDomain?.domain}</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEdit} className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-zinc-300">Domein</label>
+              <Input value={editForm.domain} onChange={(e) => setEditForm({ ...editForm, domain: e.target.value })} required className="mt-1 bg-white/[0.02] border-white/[0.06]" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-zinc-300">Status</label>
+                <select value={editForm.status} onChange={(e) => setEditForm({ ...editForm, status: e.target.value })} className={`mt-1 ${darkSelect}`} style={{ colorScheme: "dark" }}>
+                  <option value="parking">Parking</option>
+                  <option value="prospect">Prospect</option>
+                  <option value="acquired">Acquired</option>
+                  <option value="forsale">Te koop</option>
+                  <option value="expired-watching">Expired - watching</option>
+                  <option value="developing">In ontwikkeling</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-zinc-300">Prioriteit</label>
+                <select value={editForm.priority} onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })} className={`mt-1 ${darkSelect}`} style={{ colorScheme: "dark" }}>
+                  <option value="low">Laag</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">Hoog</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-zinc-300">Geschatte waarde (EUR)</label>
+                <Input type="number" value={editForm.estimatedValue} onChange={(e) => setEditForm({ ...editForm, estimatedValue: e.target.value })} placeholder="0" min="0" className="mt-1 bg-white/[0.02] border-white/[0.06]" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-zinc-300">Niche</label>
+                <Input value={editForm.niche} onChange={(e) => setEditForm({ ...editForm, niche: e.target.value })} placeholder="bijv. vastgoed" className="mt-1 bg-white/[0.02] border-white/[0.06]" />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-zinc-300">Business Unit</label>
+              <select value={editForm.businessUnit} onChange={(e) => setEditForm({ ...editForm, businessUnit: e.target.value })} className={`mt-1 ${darkSelect}`} style={{ colorScheme: "dark" }}>
+                {BU_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-zinc-300">Provider</label>
+                <select value={editForm.provider} onChange={(e) => setEditForm({ ...editForm, provider: e.target.value })} className={`mt-1 ${darkSelect}`} style={{ colorScheme: "dark" }}>
+                  {PROVIDER_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-zinc-300">Vervaldatum</label>
+                <Input type="date" value={editForm.renewalDate} onChange={(e) => setEditForm({ ...editForm, renewalDate: e.target.value })} className="mt-1 bg-white/[0.02] border-white/[0.06]" style={{ colorScheme: "dark" }} />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-zinc-300">Notities</label>
+              <Input value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} placeholder="Extra informatie" className="mt-1 bg-white/[0.02] border-white/[0.06]" />
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button type="submit" className="flex-1 bg-[#F5911E] hover:bg-[#e07d0a] text-white" disabled={submitting}>{submitting ? "Opslaan..." : "Opslaan"}</Button>
+              <Button type="button" variant="outline" onClick={() => setEditingDomain(null)} className="border-white/[0.06]">Annuleren</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* ─── Task Dialog ────────────────────────────────────── */}
       <Dialog open={!!taskDialogDomain} onOpenChange={() => setTaskDialogDomain(null)}>
@@ -711,7 +861,7 @@ export default function DomainsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-zinc-300">Prioriteit</label>
-                <select value={taskForm.priority} onChange={(e) => setTaskForm({ ...taskForm, priority: e.target.value })} className="mt-1 flex h-9 w-full rounded-md border border-white/[0.06] bg-white/[0.02] px-3 py-1 text-sm text-zinc-200">
+                <select value={taskForm.priority} onChange={(e) => setTaskForm({ ...taskForm, priority: e.target.value })} className={`mt-1 ${darkSelect}`} style={{ colorScheme: "dark" }}>
                   <option value="low">Laag</option>
                   <option value="medium">Medium</option>
                   <option value="high">Hoog</option>
@@ -719,15 +869,11 @@ export default function DomainsPage() {
               </div>
               <div>
                 <label className="text-sm font-medium text-zinc-300">Toewijzen aan</label>
-                <select value={taskForm.assignee} onChange={(e) => setTaskForm({ ...taskForm, assignee: e.target.value })} className="mt-1 flex h-9 w-full rounded-md border border-white/[0.06] bg-white/[0.02] px-3 py-1 text-sm text-zinc-200">
+                <select value={taskForm.assignee} onChange={(e) => setTaskForm({ ...taskForm, assignee: e.target.value })} className={`mt-1 ${darkSelect}`} style={{ colorScheme: "dark" }}>
                   <option value="">Niet toegewezen</option>
-                  <option value="bart">👤 Bart</option>
-                  <option value="atlas">🗺️ Atlas</option>
-                  <option value="forge">🔨 Forge</option>
-                  <option value="radar">📡 Radar</option>
-                  <option value="ink">✒️ Ink</option>
-                  <option value="ledger">📊 Ledger</option>
-                  <option value="spark">⚡ Spark</option>
+                  <option value="bart">Bart</option>
+                  <option value="claude">Claude</option>
+                  <option value="radar">Radar</option>
                 </select>
               </div>
             </div>

@@ -99,7 +99,7 @@ type SelectedItem =
   | null
 
 // ─── Config ────────────────────────────────────────────────────
-const AGENTS = ["atlas", "forge", "radar", "ink", "ledger", "spark", "bart"] as const
+const AGENTS = ["bart", "claude", "radar"] as const
 
 const SITE_CATEGORIES = [
   { value: "adsense", label: "AdSense" },
@@ -1363,7 +1363,7 @@ function QuickAddTaskModal({
     if (open) {
       setTitle("")
       setDescription("")
-      setAssignee("atlas")
+      setAssignee("claude")
       setPriority("medium")
       setCategory("general")
       setDuplicateWarning(null)

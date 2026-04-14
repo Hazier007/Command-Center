@@ -45,7 +45,7 @@ export default function ContentPage() {
     body: "",
     type: "article" as ContentItem['type'],
     status: "draft" as ContentItem['status'],
-    author: "ink" as ContentItem['author'],
+    author: "claude" as ContentItem['author'],
     targetSite: "",
     targetPath: "",
     projectId: "",
@@ -125,7 +125,7 @@ export default function ContentPage() {
       // Reset form
       setIsDialogOpen(false)
       setEditingContent(null)
-      setFormData({ title: "", body: "", type: "article", status: "draft", author: "ink", targetSite: "", targetPath: "", projectId: "" })
+      setFormData({ title: "", body: "", type: "article", status: "draft", author: "claude", targetSite: "", targetPath: "", projectId: "" })
     } catch (error) {
       console.error('Failed to save content:', error)
     } finally {
@@ -226,9 +226,11 @@ export default function ContentPage() {
   const getAuthorColor = (author: string) => {
     switch (author) {
       case 'bart': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-200'
+      case 'claude': return 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-200'
+      case 'radar': return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-200'
+      // Legacy agents
       case 'atlas': return 'bg-violet-100 text-violet-800 dark:bg-violet-900/20 dark:text-violet-200'
       case 'forge': return 'bg-rose-100 text-rose-800 dark:bg-rose-900/20 dark:text-rose-200'
-      case 'radar': return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-200'
       case 'ink': return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-200'
       case 'ledger': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200'
       case 'spark': return 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-200'
@@ -273,7 +275,7 @@ export default function ContentPage() {
             <DialogTrigger asChild>
               <Button className="bg-[#F5911E] hover:bg-[#e07d0a] text-white" onClick={() => {
                 setEditingContent(null)
-                setFormData({ title: "", body: "", type: "article", status: "draft", author: "ink", targetSite: "", targetPath: "", projectId: "" })
+                setFormData({ title: "", body: "", type: "article", status: "draft", author: "claude", targetSite: "", targetPath: "", projectId: "" })
               }}>
                 <Plus className="mr-2 h-4 w-4" />
                 Content toevoegen
@@ -349,13 +351,8 @@ export default function ContentPage() {
                       className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     >
                       <option value="bart">Bart</option>
-                      <option value="atlas">Atlas</option>
-                      <option value="forge">Forge</option>
+                      <option value="claude">Claude</option>
                       <option value="radar">Radar</option>
-                      <option value="ink">Ink</option>
-                      <option value="ledger">Ledger</option>
-                      <option value="spark">Spark</option>
-                      <option value="cowork">Cowork</option>
                     </select>
                   </div>
                   <div>
@@ -433,13 +430,8 @@ export default function ContentPage() {
               >
                 <option value="all">Alle auteurs</option>
                 <option value="bart">Bart</option>
-                <option value="atlas">Atlas</option>
-                <option value="forge">Forge</option>
+                <option value="claude">Claude</option>
                 <option value="radar">Radar</option>
-                <option value="ink">Ink</option>
-                <option value="ledger">Ledger</option>
-                <option value="spark">Spark</option>
-                <option value="cowork">Cowork</option>
               </select>
               <select
                 value={selectedType}

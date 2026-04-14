@@ -75,14 +75,11 @@ interface Lead {
 }
 
 // ─── Agent list for dump box ───────────────────────────────────
+// Team BC assignees voor dump box
 const AGENT_OPTIONS = [
   { value: "bart", label: "Bart (zelf)" },
-  { value: "atlas", label: "ATLAS" },
-  { value: "forge", label: "FORGE" },
+  { value: "claude", label: "Claude" },
   { value: "radar", label: "RADAR" },
-  { value: "ink", label: "INK" },
-  { value: "ledger", label: "LEDGER" },
-  { value: "spark", label: "SPARK" },
 ]
 
 // ─── Dump Box ──────────────────────────────────────────────────

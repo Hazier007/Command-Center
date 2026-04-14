@@ -30,7 +30,7 @@ const primaryNav = [
   { href: "/werk", icon: ClipboardList, label: "Werk" },
   { href: "/portfolio", icon: Globe, label: "Portfolio" },
   { href: "/klanten", icon: Users, label: "Klanten" },
-  { href: "/agents", icon: Bot, label: "Agents" },
+  { href: "/agents", icon: Bot, label: "Team" },
 ]
 
 const moreNav = [

@@ -18,22 +18,26 @@ import {
 } from "@/components/ui/dialog"
 import { tasksStorage, sitesStorage, type Task, type Site } from "@/lib/storage"
 
+// Team BC: actieve assignees bovenaan, legacy agents onderaan
 const assigneeOptions = [
   { value: 'bart', label: 'Bart 👑' },
-  { value: 'atlas', label: 'Atlas 🗺️' },
-  { value: 'forge', label: 'Forge 🔨' },
+  { value: 'claude', label: 'Claude 🤖' },
   { value: 'radar', label: 'Radar 📡' },
-  { value: 'ink', label: 'Ink ✍️' },
-  { value: 'ledger', label: 'Ledger 📊' },
-  { value: 'spark', label: 'Spark ⚡' },
+  // Legacy (voor heroewijzing oude taken)
+  { value: 'atlas', label: 'Atlas 🗺️ (legacy)' },
+  { value: 'forge', label: 'Forge 🔨 (legacy)' },
+  { value: 'ink', label: 'Ink ✍️ (legacy)' },
+  { value: 'ledger', label: 'Ledger 📊 (legacy)' },
+  { value: 'spark', label: 'Spark ⚡ (legacy)' },
   { value: 'cowork', label: 'Cowork 🤝' },
 ]
 
 const assigneeEmojis: Record<string, string> = {
   bart: '👑',
+  claude: '🤖',
+  radar: '📡',
   atlas: '🗺️',
   forge: '🔨',
-  radar: '📡',
   ink: '✍️',
   ledger: '📊',
   spark: '⚡',
@@ -42,9 +46,10 @@ const assigneeEmojis: Record<string, string> = {
 
 const assigneeNames: Record<string, string> = {
   bart: 'Bart',
+  claude: 'Claude',
+  radar: 'Radar',
   atlas: 'Atlas',
   forge: 'Forge',
-  radar: 'Radar',
   ink: 'Ink',
   ledger: 'Ledger',
   spark: 'Spark',
@@ -410,25 +415,27 @@ export default function TasksPage() {
     setTasks(allTasks)
   }
 
+  // Team BC flow: RADAR levert data → Claude doet de rest → Bart keurt goed
   const getFollowUpSuggestion = (task: Task): { suggestedTitle: string; suggestedAssignee: string } => {
     const titleLower = task.title.toLowerCase()
     if (task.assignee === 'radar') {
-      return { suggestedTitle: `Content schrijven: ${task.title}`, suggestedAssignee: 'ink' }
+      return { suggestedTitle: `Content schrijven: ${task.title}`, suggestedAssignee: 'claude' }
     }
-    if (task.assignee === 'ink') {
-      return { suggestedTitle: `Implementeren: ${task.title}`, suggestedAssignee: 'forge' }
+    if (task.assignee === 'claude') {
+      return { suggestedTitle: `Review & goedkeuring: ${task.title}`, suggestedAssignee: 'bart' }
     }
-    if (task.assignee === 'forge') {
-      return { suggestedTitle: `QA Review: ${task.title}`, suggestedAssignee: 'atlas' }
+    if (task.assignee === 'bart') {
+      return { suggestedTitle: `Implementeren: ${task.title}`, suggestedAssignee: 'claude' }
     }
-    if (task.assignee === 'atlas') {
-      return { suggestedTitle: `Deploy: ${task.title}`, suggestedAssignee: 'forge' }
+    // Legacy agents → route naar claude
+    if (['ink', 'forge', 'atlas', 'ledger', 'spark'].includes(task.assignee || '')) {
+      return { suggestedTitle: `Overnemen: ${task.title}`, suggestedAssignee: 'claude' }
     }
     if (titleLower.includes('keyword') || titleLower.includes('research')) {
-      return { suggestedTitle: `Content schrijven: ${task.title}`, suggestedAssignee: 'ink' }
+      return { suggestedTitle: `Content schrijven: ${task.title}`, suggestedAssignee: 'claude' }
     }
     if (titleLower.includes('content') || titleLower.includes('blog') || titleLower.includes('tekst')) {
-      return { suggestedTitle: `Implementeren: ${task.title}`, suggestedAssignee: 'forge' }
+      return { suggestedTitle: `Implementeren: ${task.title}`, suggestedAssignee: 'claude' }
     }
     return { suggestedTitle: '', suggestedAssignee: '' }
   }

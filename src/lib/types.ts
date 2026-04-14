@@ -1,6 +1,11 @@
 // Agent & Assignee Types
 export type AgentName = 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark';
-export type Assignee = 'bart' | AgentName | 'cowork';
+export type LegacyAgentName = 'atlas' | 'forge' | 'ink' | 'ledger' | 'spark';
+export type ActiveAgentName = 'radar';
+
+// Team BC: Bart + Claude + RADAR (+ legacy agents voor historische data)
+export type Assignee = 'bart' | 'claude' | 'radar' | AgentName | 'cowork';
+export type ActiveAssignee = 'bart' | 'claude' | 'radar';
 export type ActorType = Assignee | 'system';
 
 // Owner Types

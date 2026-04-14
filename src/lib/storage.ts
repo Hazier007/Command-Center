@@ -68,7 +68,7 @@ export interface Task {
   projectId?: string;
   siteId?: string; // linked site
   priority?: 'low' | 'medium' | 'high';
-  assignee?: string; // 'bart' | 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark' | 'cowork'
+  assignee?: string; // Team BC: 'bart' | 'claude' | 'radar' (+ legacy: 'atlas' | 'forge' | 'ink' | 'ledger' | 'spark' | 'cowork')
   dueDate?: string;
   notified?: boolean; // Track if assignee has been notified
   notifiedAt?: string; // When the notification was sent
@@ -127,7 +127,7 @@ export interface ContentItem {
   body: string // the actual content (markdown)
   type: 'meta' | 'blogpost' | 'landingpage' | 'review' | 'faq' | 'social' | 'article' | 'product-review' | 'buyers-guide' | 'page' | 'brief' | 'outline' | 'seo-rewrite' | 'brand-messaging' | 'other'
   status: 'draft' | 'review' | 'approved' | 'rejected' | 'live'
-  author: string // 'bart' | 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark' | 'cowork'
+  author: string // Team BC: 'bart' | 'claude' | 'radar' (+ legacy agents)
   targetSite?: string // e.g. 'preppedia.com', 'btw-calculator.be'
   targetPath?: string // e.g. '/guide/best-water-filters'
   projectId?: string
@@ -156,7 +156,7 @@ export interface ResearchItem {
   title: string
   body: string // full markdown content
   type: 'keyword-research' | 'market-analysis' | 'api-research' | 'oracle' | 'competitor' | 'technical' | 'seo-strategy' | 'completion-report' | 'roadmap' | 'data-dataset' | 'business-case' | 'governance' | 'visibility-audit' | 'domain-analysis' | 'market-research' | 'acquisition-memo' | 'growth-evaluation' | 'other'
-  author: string // 'bart' | 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark' | 'cowork'
+  author: string // Team BC: 'bart' | 'claude' | 'radar' (+ legacy agents)
   projectId?: string
   tags?: string // comma-separated
   status: 'draft' | 'final' | 'outdated'
@@ -177,7 +177,7 @@ export interface ResearchItem {
 export interface ActivityItem {
   id: string
   type: 'commit' | 'deploy' | 'task' | 'content' | 'research' | 'alert' | 'system'
-  actor: string // 'bart' | 'atlas' | 'forge' | 'radar' | 'ink' | 'ledger' | 'spark' | 'cowork' | 'system'
+  actor: string // Team BC: 'bart' | 'claude' | 'radar' | 'system' (+ legacy agents)
   title: string
   description?: string
   url?: string // link to commit, deploy, etc
