@@ -208,6 +208,13 @@ export default function PortfolioPage() {
     label: string
   } | null>(null)
 
+  // Create new site/domain
+  const [createOpen, setCreateOpen] = useState(false)
+  const [createType, setCreateType] = useState<"site" | "domain">("site")
+  const [createSubmitting, setCreateSubmitting] = useState(false)
+  const [newSite, setNewSite] = useState({ domain: "", status: "dev", category: "tools", revenueType: "adsense", hosting: "vercel" })
+  const [newDomain, setNewDomain] = useState({ domain: "", status: "prospect", priority: "medium", niche: "", notes: "" })
+
   // ─── Data loading ─────────────────────────────────────────
   const fetchAll = useCallback(async () => {
     setLoading(true)
@@ -400,6 +407,47 @@ export default function PortfolioPage() {
     }
   }
 
+  // ─── Create site/domain ─────────────────────────────────
+  const handleCreateSite = async () => {
+    if (!newSite.domain.trim()) return
+    setCreateSubmitting(true)
+    try {
+      const res = await fetch("/api/sites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newSite),
+      })
+      if (!res.ok) throw new Error("Failed")
+      setCreateOpen(false)
+      setNewSite({ domain: "", status: "dev", category: "tools", revenueType: "adsense", hosting: "vercel" })
+      fetchAll()
+    } catch (e) {
+      alert("Fout: " + (e instanceof Error ? e.message : "onbekend"))
+    } finally {
+      setCreateSubmitting(false)
+    }
+  }
+
+  const handleCreateDomain = async () => {
+    if (!newDomain.domain.trim()) return
+    setCreateSubmitting(true)
+    try {
+      const res = await fetch("/api/domain-opportunities", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newDomain),
+      })
+      if (!res.ok) throw new Error("Failed")
+      setCreateOpen(false)
+      setNewDomain({ domain: "", status: "prospect", priority: "medium", niche: "", notes: "" })
+      fetchAll()
+    } catch (e) {
+      alert("Fout: " + (e instanceof Error ? e.message : "onbekend"))
+    } finally {
+      setCreateSubmitting(false)
+    }
+  }
+
   // ─── Render ──────────────────────────────────────────────
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -413,6 +461,23 @@ export default function PortfolioPage() {
               <span className="ml-2 text-[#F5911E]">· {activeBusiness.name}</span>
             )}
           </p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 border-white/10 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+            onClick={() => { setCreateType("domain"); setCreateOpen(true) }}
+          >
+            + Domein
+          </Button>
+          <Button
+            size="sm"
+            className="gap-1.5 bg-[#F5911E] hover:bg-[#e07d0a] text-white"
+            onClick={() => { setCreateType("site"); setCreateOpen(true) }}
+          >
+            + Site
+          </Button>
         </div>
       </div>
 
@@ -710,6 +775,142 @@ export default function PortfolioPage() {
         existingTasks={tasks}
         onCreated={handleTaskCreated}
       />
+
+      {/* ─── Create site/domain dialog ──────────────────── */}
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent className="bg-zinc-900 border-white/[0.08] text-white sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {createType === "site" ? "Nieuwe site toevoegen" : "Nieuw domein toevoegen"}
+            </DialogTitle>
+            <DialogDescription className="text-zinc-500">
+              {createType === "site"
+                ? "Voeg een live of in-development site toe aan je portfolio."
+                : "Voeg een domein toe aan je pipeline."}
+            </DialogDescription>
+          </DialogHeader>
+
+          {createType === "site" ? (
+            <div className="space-y-3 pt-2">
+              <div>
+                <label className="text-[11px] font-medium text-zinc-400 block mb-1">Domein *</label>
+                <Input
+                  placeholder="bijv. loonberekening.be"
+                  value={newSite.domain}
+                  onChange={(e) => setNewSite({ ...newSite, domain: e.target.value })}
+                  className="bg-zinc-800 border-white/10"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-medium text-zinc-400 block mb-1">Status</label>
+                  <Select value={newSite.status} onValueChange={(v) => setNewSite({ ...newSite, status: v })}>
+                    <SelectTrigger className="bg-zinc-800 border-white/10"><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-zinc-800 border-white/10">
+                      {SITE_STATUSES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-[11px] font-medium text-zinc-400 block mb-1">Categorie</label>
+                  <Select value={newSite.category} onValueChange={(v) => setNewSite({ ...newSite, category: v })}>
+                    <SelectTrigger className="bg-zinc-800 border-white/10"><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-zinc-800 border-white/10">
+                      {SITE_CATEGORIES.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-medium text-zinc-400 block mb-1">Inkomsten</label>
+                  <Select value={newSite.revenueType} onValueChange={(v) => setNewSite({ ...newSite, revenueType: v })}>
+                    <SelectTrigger className="bg-zinc-800 border-white/10"><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-zinc-800 border-white/10">
+                      {REVENUE_TYPES.map((r) => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-[11px] font-medium text-zinc-400 block mb-1">Hosting</label>
+                  <Select value={newSite.hosting} onValueChange={(v) => setNewSite({ ...newSite, hosting: v })}>
+                    <SelectTrigger className="bg-zinc-800 border-white/10"><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-zinc-800 border-white/10">
+                      {HOSTING_OPTIONS.map((h) => <SelectItem key={h.value} value={h.value}>{h.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3 pt-2">
+              <div>
+                <label className="text-[11px] font-medium text-zinc-400 block mb-1">Domein *</label>
+                <Input
+                  placeholder="bijv. schoorsteenveger.be"
+                  value={newDomain.domain}
+                  onChange={(e) => setNewDomain({ ...newDomain, domain: e.target.value })}
+                  className="bg-zinc-800 border-white/10"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-medium text-zinc-400 block mb-1">Status</label>
+                  <Select value={newDomain.status} onValueChange={(v) => setNewDomain({ ...newDomain, status: v })}>
+                    <SelectTrigger className="bg-zinc-800 border-white/10"><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-zinc-800 border-white/10">
+                      {DOMAIN_STATUSES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-[11px] font-medium text-zinc-400 block mb-1">Prioriteit</label>
+                  <Select value={newDomain.priority} onValueChange={(v) => setNewDomain({ ...newDomain, priority: v })}>
+                    <SelectTrigger className="bg-zinc-800 border-white/10"><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-zinc-800 border-white/10">
+                      <SelectItem value="high">Hoog</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="low">Laag</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div>
+                <label className="text-[11px] font-medium text-zinc-400 block mb-1">Niche</label>
+                <Input
+                  placeholder="bijv. home-services, finance, tools"
+                  value={newDomain.niche}
+                  onChange={(e) => setNewDomain({ ...newDomain, niche: e.target.value })}
+                  className="bg-zinc-800 border-white/10"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-medium text-zinc-400 block mb-1">Notities</label>
+                <Textarea
+                  placeholder="Optioneel..."
+                  value={newDomain.notes}
+                  onChange={(e) => setNewDomain({ ...newDomain, notes: e.target.value })}
+                  className="bg-zinc-800 border-white/10"
+                  rows={2}
+                />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="pt-3">
+            <Button variant="outline" onClick={() => setCreateOpen(false)} className="border-white/10 text-zinc-400">
+              Annuleren
+            </Button>
+            <Button
+              onClick={createType === "site" ? handleCreateSite : handleCreateDomain}
+              disabled={createSubmitting || (createType === "site" ? !newSite.domain.trim() : !newDomain.domain.trim())}
+              className="bg-[#F5911E] hover:bg-[#e07d0a] text-white"
+            >
+              {createSubmitting ? "Bezig..." : "Toevoegen"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
