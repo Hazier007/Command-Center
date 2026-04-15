@@ -561,7 +561,7 @@ model RevenueEntry {
 model DomainOpportunity {
   id             String   @id @default(cuid())
   domain         String
-  status         String   // 'parking' | 'developing' | 'forsale' | 'expired-watching' | 'acquired' | 'prospect'
+  status         String   // 'parking' | 'developing' | 'forsale' | 'expired-watching' | 'acquired' | 'prospect' | 'sold'
   estimatedValue Float?
   niche          String?
   priority       String?  // 'low' | 'medium' | 'high'
@@ -577,6 +577,12 @@ model DomainOpportunity {
   category       String?  // 'parking' | 'prospect' | 'acquired' | 'forsale'
   renewalDate    DateTime?
   provider       String?  // 'hazier' | 'transip' | 'combell' | 'godaddy' | 'cloudflare' | 'other'
+
+  // Verkocht-tracking (voor domeinflips)
+  soldPrice      Float?    // verkoopbedrag in soldCurrency
+  soldCurrency   String?   // 'EUR' | 'USD' (default USD wanneer null)
+  soldAt         DateTime? // datum van verkoop
+  soldTo         String?   // optioneel: aan wie (marketplace of koper)
 
   @@map("domain_opportunities")
 }

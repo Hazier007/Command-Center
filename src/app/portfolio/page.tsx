@@ -77,6 +77,11 @@ interface DomainOpportunity {
   provider?: string
   businessUnit?: string
   updatedAt?: string
+  // Sold tracking (voor domeinflips)
+  soldPrice?: number
+  soldCurrency?: string
+  soldAt?: string
+  soldTo?: string
 }
 
 interface Task {
@@ -145,6 +150,7 @@ const DOMAIN_STATUSES = [
   { value: "developing", label: "In ontwikkeling" },
   { value: "acquired", label: "Aangekocht" },
   { value: "forsale", label: "Te koop" },
+  { value: "sold", label: "Verkocht" },
   { value: "expired-watching", label: "Verlopen (watch)" },
 ] as const
 
@@ -154,6 +160,7 @@ const domainStatusConfig: Record<string, { label: string; dot: string; text: str
   developing: { label: "In ontwikkeling", dot: "bg-[#F5911E]", text: "text-[#F5911E]" },
   acquired: { label: "Aangekocht", dot: "bg-emerald-400", text: "text-emerald-400" },
   forsale: { label: "Te koop", dot: "bg-yellow-400", text: "text-yellow-400" },
+  sold: { label: "Verkocht", dot: "bg-violet-400", text: "text-violet-400" },
   "expired-watching": { label: "Verlopen (watch)", dot: "bg-red-400", text: "text-red-400" },
 }
 
@@ -242,10 +249,14 @@ export default function PortfolioPage() {
       ? sites
       : sites.filter((s) => !s.businessId || s.businessId === activeBusiness.id)
 
-  const filteredDomains =
+  // Structureel: zodra een domein een site is geworden, hoort het niet meer in de Domeinen-lijst.
+  // Uitzondering: status 'sold' blijft zichtbaar als historiek. Matching is case-insensitive.
+  const siteDomains = new Set(sites.map((s) => s.domain?.toLowerCase()).filter(Boolean) as string[])
+  const filteredDomains = (
     activeBusiness.id === "all"
       ? domains
       : domains.filter((d) => !d.businessUnit || d.businessUnit === activeBusiness.id)
+  ).filter((d) => d.status === "sold" || !siteDomains.has(d.domain.toLowerCase()))
 
   // Tasks helpers
   const openTasksForSite = (siteId: string) =>
@@ -341,6 +352,10 @@ export default function PortfolioPage() {
           estimatedValue: editDomain.estimatedValue ? Number(editDomain.estimatedValue) : null,
           provider: editDomain.provider,
           notes: editDomain.notes,
+          soldPrice: editDomain.soldPrice ?? null,
+          soldCurrency: editDomain.soldCurrency || null,
+          soldAt: editDomain.soldAt || null,
+          soldTo: editDomain.soldTo || null,
         }),
       })
       if (!res.ok) throw new Error("Opslaan mislukt")
@@ -380,30 +395,47 @@ export default function PortfolioPage() {
   }
 
   // ─── Promote domain → site ──────────────────────────────
+  // Mapping van domain.category (vrij veld) naar de vaste site-categorieën + bijpassend revenue type.
+  const inferSiteDefaults = (d: DomainOpportunity): { category: string; revenueType: string } => {
+    const raw = (d.category || d.niche || "").toLowerCase()
+    if (raw.includes("lead") || raw.includes("rank") || raw.includes("rent"))
+      return { category: "leadgen", revenueType: "leadgen" }
+    if (raw.includes("affil")) return { category: "affiliate", revenueType: "affiliate" }
+    if (raw.includes("klant") || raw.includes("client") || raw.includes("agency"))
+      return { category: "klant", revenueType: "recurring" }
+    if (raw.includes("tool") || raw.includes("calc")) return { category: "tool", revenueType: "adsense" }
+    if (raw.includes("direct")) return { category: "directory", revenueType: "adsense" }
+    return { category: "tool", revenueType: "adsense" }
+  }
+
   const handlePromoteDomain = async (domain: DomainOpportunity) => {
-    if (!confirm(`Promote ${domain.domain} naar Live Site?`)) return
+    if (domain.status === "sold") {
+      alert("Dit domein is verkocht — kan niet meer omgezet worden naar een site.")
+      return
+    }
+    if (!confirm(`${domain.domain} converteren naar een site? Het domein verdwijnt uit de Domeinen-lijst.`)) return
     try {
+      const { category, revenueType } = inferSiteDefaults(domain)
       const res = await fetch("/api/sites", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           domain: domain.domain,
           status: "dev",
-          category: domain.category || "tool",
-          notes: domain.notes,
+          category,
+          revenueType,
+          hosting: "vercel",
+          notes: domain.notes || undefined,
           techStack: [],
         }),
       })
       if (!res.ok) throw new Error("Kon site niet aanmaken")
-      await fetch(`/api/domain-opportunities/${domain.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "acquired" }),
-      }).catch(() => {})
+      // De server verwijdert automatisch de matching domain_opportunity (zie POST /api/sites).
+      // Geen extra PATCH/DELETE nodig.
       setDetailOpen(false)
       fetchAll()
     } catch (e) {
-      alert("Fout bij promoten: " + (e instanceof Error ? e.message : "onbekend"))
+      alert("Fout bij converteren: " + (e instanceof Error ? e.message : "onbekend"))
     }
   }
 
@@ -1310,6 +1342,48 @@ function DomainDetailPanel({
                 placeholder="Notities, ideeën, plannen..."
               />
             </div>
+            {editDomain.status === "sold" && (
+              <div className="rounded-lg border border-violet-500/20 bg-violet-500/5 p-3 space-y-3">
+                <p className="text-[10px] uppercase tracking-wider text-violet-400 font-semibold">Verkoopgegevens</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <FieldInput
+                    label="Verkoopprijs"
+                    type="number"
+                    value={String(editDomain.soldPrice ?? "")}
+                    onChange={(v) => setEditDomain({ ...editDomain, soldPrice: v ? Number(v) : undefined })}
+                    placeholder="50"
+                  />
+                  <div>
+                    <label className="text-[9px] uppercase text-zinc-500 font-semibold tracking-wider">Munt</label>
+                    <Select
+                      value={editDomain.soldCurrency || "USD"}
+                      onValueChange={(v) => setEditDomain({ ...editDomain, soldCurrency: v })}
+                    >
+                      <SelectTrigger className="mt-1 h-8 bg-zinc-800/50 border-white/[0.08] text-white text-[12px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="USD">USD</SelectItem>
+                        <SelectItem value="EUR">EUR</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <FieldInput
+                  label="Verkoopdatum"
+                  type="date"
+                  value={editDomain.soldAt ? editDomain.soldAt.slice(0, 10) : ""}
+                  onChange={(v) => setEditDomain({ ...editDomain, soldAt: v || undefined })}
+                  placeholder=""
+                />
+                <FieldInput
+                  label="Verkocht aan"
+                  value={editDomain.soldTo || ""}
+                  onChange={(v) => setEditDomain({ ...editDomain, soldTo: v })}
+                  placeholder="bv. Sedo, Dan.com, privékoper..."
+                />
+              </div>
+            )}
           </>
         ) : (
           <>
@@ -1323,6 +1397,24 @@ function DomainDetailPanel({
             <DetailRow label="Provider" value={domain.provider || "—"} />
             {domain.renewalDate && (
               <DetailRow label="Verlenging" value={new Date(domain.renewalDate).toLocaleDateString("nl-BE")} />
+            )}
+            {domain.status === "sold" && (
+              <div className="rounded-lg border border-violet-500/20 bg-violet-500/5 p-3 space-y-1.5">
+                <p className="text-[10px] uppercase tracking-wider text-violet-400 font-semibold mb-2">Verkocht</p>
+                <DetailRow
+                  label="Verkoopprijs"
+                  value={
+                    domain.soldPrice != null
+                      ? `${domain.soldCurrency === "EUR" ? "€" : "$"}${domain.soldPrice.toLocaleString("nl-BE")}`
+                      : "—"
+                  }
+                />
+                <DetailRow
+                  label="Verkoopdatum"
+                  value={domain.soldAt ? new Date(domain.soldAt).toLocaleDateString("nl-BE") : "—"}
+                />
+                <DetailRow label="Aan" value={domain.soldTo || "—"} />
+              </div>
             )}
             {domain.radarNotes && (
               <div>
@@ -1358,12 +1450,18 @@ function DomainDetailPanel({
 
       {/* ── Footer actions ──────────────────────────── */}
       <div className="mt-6 pt-4 border-t border-white/[0.06] space-y-2">
-        <Button
-          onClick={onPromote}
-          className="w-full bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 font-semibold border border-emerald-500/20"
-        >
-          ⤴ Promote naar Site
-        </Button>
+        {domain.status === "sold" ? (
+          <div className="w-full rounded-md border border-violet-500/20 bg-violet-500/5 px-3 py-2 text-[11px] text-violet-300 text-center">
+            Verkocht domein — converteren niet mogelijk
+          </div>
+        ) : (
+          <Button
+            onClick={onPromote}
+            className="w-full bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 font-semibold border border-emerald-500/20"
+          >
+            ⤴ Converteer naar site
+          </Button>
+        )}
         <Button
           variant="outline"
           onClick={onClose}

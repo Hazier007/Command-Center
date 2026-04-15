@@ -66,12 +66,32 @@ export async function POST(request: Request) {
         lastBuildAt: data.lastBuildAt ? new Date(data.lastBuildAt) : undefined,
         lighthouse: data.lighthouse,
         devPhase: data.devPhase,
+        // Client / contract fields
+        ownerType: data.ownerType,
+        clientName: data.clientName,
+        clientEmail: data.clientEmail,
+        contractType: data.contractType,
+        monthlyFee: data.monthlyFee,
+        hoursPerMonth: data.hoursPerMonth,
+        contractStart: data.contractStart ? new Date(data.contractStart) : undefined,
+        contractEnd: data.contractEnd ? new Date(data.contractEnd) : undefined,
       },
       include: {
         project: true,
       },
     })
-    
+
+    // Auto-sync: zodra een domein een site wordt, verdwijnt het uit de Domeinen-lijst.
+    // Een "sold" record laten we wel staan (die blijft in Domeinen voor historiek).
+    if (site.domain) {
+      await prisma.domainOpportunity.deleteMany({
+        where: {
+          domain: { equals: site.domain, mode: 'insensitive' },
+          NOT: { status: 'sold' },
+        },
+      })
+    }
+
     return NextResponse.json(site)
   } catch (error) {
     console.error('Error creating site:', error)

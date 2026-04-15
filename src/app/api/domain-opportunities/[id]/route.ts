@@ -24,6 +24,12 @@ export async function PATCH(
         ...(data.businessUnit !== undefined && { businessUnit: data.businessUnit }),
         ...(data.hasIdea !== undefined && { hasIdea: data.hasIdea }),
         ...(data.category !== undefined && { category: data.category }),
+        ...(data.renewalDate !== undefined && { renewalDate: data.renewalDate ? new Date(data.renewalDate) : null }),
+        ...(data.provider !== undefined && { provider: data.provider }),
+        ...(data.soldPrice !== undefined && { soldPrice: data.soldPrice === null || data.soldPrice === '' ? null : Number(data.soldPrice) }),
+        ...(data.soldCurrency !== undefined && { soldCurrency: data.soldCurrency || null }),
+        ...(data.soldAt !== undefined && { soldAt: data.soldAt ? new Date(data.soldAt) : null }),
+        ...(data.soldTo !== undefined && { soldTo: data.soldTo || null }),
       },
     })
 
