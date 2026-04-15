@@ -667,16 +667,32 @@ interface EditClientModalProps {
 function EditClientModal({ open, onOpenChange, client, onSaved }: EditClientModalProps) {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
+  const [phone, setPhone] = useState("")
+  const [company, setCompany] = useState("")
+  const [vatNumber, setVatNumber] = useState("")
+  const [address, setAddress] = useState("")
+  const [notes, setNotes] = useState("")
   const [contractType, setContractType] = useState("retainer")
+  const [paymentStatus, setPaymentStatus] = useState<string>("")
   const [monthlyFee, setMonthlyFee] = useState("")
   const [hoursPerMonth, setHoursPerMonth] = useState("")
   const [submitting, setSubmitting] = useState(false)
+
+  const isRealClient =
+    !!client?.id && !client.id.startsWith("legacy:") && !client.isLegacy
+  const siteCount = client?.sites.length ?? 0
 
   useEffect(() => {
     if (open && client) {
       setName(client.name)
       setEmail(client.email || "")
+      setPhone(client.phone || "")
+      setCompany(client.company || "")
+      setVatNumber(client.vatNumber || "")
+      setAddress(client.address || "")
+      setNotes(client.notes || "")
       setContractType(client.contractType || "retainer")
+      setPaymentStatus(client.paymentStatus || "")
       setMonthlyFee(String(client.monthlyFee || ""))
       setHoursPerMonth(String(client.hoursPerMonth || ""))
     }
@@ -687,18 +703,59 @@ function EditClientModal({ open, onOpenChange, client, onSaved }: EditClientModa
     if (!client) return
     setSubmitting(true)
     try {
-      // Bulk update all sites belonging to this client
-      // Split the client's monthlyFee and hoursPerMonth evenly over sites
-      const siteCount = client.sites.length
+      // Pad 1: echte Client record → PATCH /api/clients/[id]
+      if (isRealClient && client.id) {
+        const res = await fetch(`/api/clients/${client.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            email: email || null,
+            phone: phone || null,
+            company: company || null,
+            vatNumber: vatNumber || null,
+            address: address || null,
+            notes: notes || null,
+            contractType,
+            paymentStatus: paymentStatus || null,
+          }),
+        })
+        if (!res.ok) throw new Error("Kon klant niet opslaan")
+
+        // Fee/uren worden verdeeld over de sites (alleen als er sites zijn)
+        if (siteCount > 0 && (monthlyFee || hoursPerMonth)) {
+          const feePerSite = monthlyFee ? Number(monthlyFee) / siteCount : 0
+          const hoursPerSite = hoursPerMonth
+            ? Math.round(Number(hoursPerMonth) / siteCount)
+            : 0
+          await Promise.all(
+            client.sites.map((s) =>
+              fetch(`/api/sites/${s.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  monthlyFee: feePerSite,
+                  hoursPerMonth: hoursPerSite,
+                }),
+              })
+            )
+          )
+        }
+        onSaved()
+        return
+      }
+
+      // Pad 2: legacy fallback — bulk update sites (oude v1 gedrag)
       if (siteCount === 0) {
-        alert("Klant heeft geen sites. Voeg eerst een site toe via /portfolio.")
+        alert(
+          "Legacy klant zonder sites kan niet worden opgeslagen. Backfill eerst via de knop bovenaan."
+        )
         return
       }
       const feePerSite = monthlyFee ? Number(monthlyFee) / siteCount : 0
       const hoursPerSite = hoursPerMonth
         ? Math.round(Number(hoursPerMonth) / siteCount)
         : 0
-
       await Promise.all(
         client.sites.map((s) =>
           fetch(`/api/sites/${s.id}`, {
@@ -729,76 +786,192 @@ function EditClientModal({ open, onOpenChange, client, onSaved }: EditClientModa
         <DialogHeader>
           <DialogTitle className="text-white">Klant bewerken</DialogTitle>
           <DialogDescription className="text-zinc-500">
-            Wijzigingen worden toegepast op alle {client?.sites.length || 0} sites van deze klant.
+            {siteCount > 0
+              ? `Wijzigingen worden toegepast op alle ${siteCount} sites van deze klant.`
+              : "Klant heeft nog geen gekoppelde sites. Contact- en administratiegegevens worden opgeslagen op de klant."}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
-          <div>
-            <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">
-              Naam
-            </label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white"
-              required
-            />
-          </div>
-          <div>
-            <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">
-              Email
-            </label>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white"
-            />
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">
-                Contract
-              </label>
-              <Select value={contractType} onValueChange={setContractType}>
-                <SelectTrigger className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-zinc-900 border-white/[0.08] text-white">
-                  <SelectItem value="retainer">Retainer</SelectItem>
-                  <SelectItem value="eenmalig">Eenmalig</SelectItem>
-                  <SelectItem value="mixed">Mixed</SelectItem>
-                </SelectContent>
-              </Select>
+        <form onSubmit={handleSubmit} className="space-y-5 pt-2 max-h-[70vh] overflow-y-auto pr-1">
+          {/* Sectie 1: basis */}
+          <div className="space-y-4">
+            <p className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider border-b border-white/[0.06] pb-1">
+              Basis
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">
+                  Naam
+                </label>
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white"
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">
+                  Bedrijf
+                </label>
+                <Input
+                  value={company}
+                  onChange={(e) => setCompany(e.target.value)}
+                  placeholder="Bv. Ponnet BV"
+                  className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white"
+                  disabled={!isRealClient}
+                />
+              </div>
             </div>
-            <div>
-              <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">
-                Maandfee (totaal)
-              </label>
-              <Input
-                type="number"
-                value={monthlyFee}
-                onChange={(e) => setMonthlyFee(e.target.value)}
-                placeholder="€"
-                className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white"
-              />
-            </div>
-            <div>
-              <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">
-                Uren/m (totaal)
-              </label>
-              <Input
-                type="number"
-                value={hoursPerMonth}
-                onChange={(e) => setHoursPerMonth(e.target.value)}
-                className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">
+                  Email
+                </label>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">
+                  Telefoon
+                </label>
+                <Input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+32 …"
+                  className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white"
+                  disabled={!isRealClient}
+                />
+              </div>
             </div>
           </div>
-          <p className="text-[10px] text-zinc-500 italic">
-            Fee en uren worden gelijk verdeeld over de {client?.sites.length || 0} sites van deze klant.
-          </p>
+
+          {/* Sectie 2: administratie — enkel voor echte Client records */}
+          {isRealClient && (
+            <div className="space-y-4">
+              <p className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider border-b border-white/[0.06] pb-1">
+                Contactgegevens & administratie
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">
+                    BTW-nummer
+                  </label>
+                  <Input
+                    value={vatNumber}
+                    onChange={(e) => setVatNumber(e.target.value)}
+                    placeholder="BE0123.456.789"
+                    className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">
+                    Betaalstatus
+                  </label>
+                  <Select
+                    value={paymentStatus || "none"}
+                    onValueChange={(v) => setPaymentStatus(v === "none" ? "" : v)}
+                  >
+                    <SelectTrigger className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white">
+                      <SelectValue placeholder="—" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-zinc-900 border-white/[0.08] text-white">
+                      <SelectItem value="none">—</SelectItem>
+                      <SelectItem value="paid">Betaald</SelectItem>
+                      <SelectItem value="pending">In behandeling</SelectItem>
+                      <SelectItem value="overdue">Achterstallig</SelectItem>
+                      <SelectItem value="cancelled">Geannuleerd</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div>
+                <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">
+                  Adres
+                </label>
+                <Input
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Straat 1, 9000 Gent"
+                  className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">
+                  Notities
+                </label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={3}
+                  placeholder="Interne notities over de klant…"
+                  className="mt-1 w-full rounded-md bg-zinc-800/50 border border-white/[0.08] text-white text-sm px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-[#F5911E]/50"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Sectie 3: contract & billing */}
+          <div className="space-y-4">
+            <p className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider border-b border-white/[0.06] pb-1">
+              Contract & billing
+            </p>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">
+                  Contract
+                </label>
+                <Select value={contractType} onValueChange={setContractType}>
+                  <SelectTrigger className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-white/[0.08] text-white">
+                    <SelectItem value="retainer">Retainer</SelectItem>
+                    <SelectItem value="eenmalig">Eenmalig</SelectItem>
+                    <SelectItem value="mixed">Mixed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">
+                  Maandfee (totaal)
+                </label>
+                <Input
+                  type="number"
+                  value={monthlyFee}
+                  onChange={(e) => setMonthlyFee(e.target.value)}
+                  placeholder="€"
+                  disabled={siteCount === 0}
+                  className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white disabled:opacity-50"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">
+                  Uren/m (totaal)
+                </label>
+                <Input
+                  type="number"
+                  value={hoursPerMonth}
+                  onChange={(e) => setHoursPerMonth(e.target.value)}
+                  disabled={siteCount === 0}
+                  className="mt-1 bg-zinc-800/50 border-white/[0.08] text-white disabled:opacity-50"
+                />
+              </div>
+            </div>
+            {siteCount > 0 ? (
+              <p className="text-[10px] text-zinc-500 italic">
+                Fee en uren worden gelijk verdeeld over de {siteCount} sites van deze klant.
+              </p>
+            ) : (
+              <p className="text-[10px] text-zinc-500 italic">
+                Koppel eerst een site aan deze klant om maandfee en uren te registreren.
+              </p>
+            )}
+          </div>
 
           <DialogFooter className="flex gap-2 pt-2">
             <Button
