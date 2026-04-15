@@ -18,7 +18,42 @@ export async function GET(request: NextRequest) {
     await notify(`\uD83D\uDEA8 *${urgentAlerts.length} urgente alerts open:*\n\n${alertList}`, 'urgent')
   }
 
-  // Future: check domain expiry dates
+  // ─── GitHub PAT expiration watchdog ──────────────────────────
+  // De sandbox-token waarmee Claude naar GitHub pushed verloopt
+  // op GITHUB_PAT_EXPIRES_AT (env). Als dat binnen 7 dagen is,
+  // maken we een high-priority Alert zodat Bart tijdig een nieuwe
+  // token genereert. Idempotent: één open alert tegelijk.
+  const patExpiresRaw = process.env.GITHUB_PAT_EXPIRES_AT // ISO datum
+  let patAlertCreated = false
+  if (patExpiresRaw) {
+    const expiresAt = new Date(patExpiresRaw)
+    const msUntil = expiresAt.getTime() - Date.now()
+    const daysUntil = Math.ceil(msUntil / (24 * 60 * 60 * 1000))
+    if (!Number.isNaN(expiresAt.getTime()) && daysUntil <= 7 && daysUntil > -1) {
+      const existing = await prisma.alert.findFirst({
+        where: {
+          resolved: false,
+          title: { contains: 'GitHub PAT verloopt' },
+        },
+      })
+      if (!existing) {
+        await prisma.alert.create({
+          data: {
+            title: `GitHub PAT verloopt binnen ${daysUntil} dag${daysUntil === 1 ? '' : 'en'}`,
+            body: `De Claude Cowork PAT (scope: Hazier007 / All repos) verloopt op ${expiresAt.toISOString().slice(0, 10)}. Genereer een nieuwe fine-grained PAT en vervang de lijn in /mnt/.claude/git/credentials. Zonder token kan Claude niet meer pushen naar GitHub.`,
+            priority: 'high',
+          },
+        })
+        patAlertCreated = true
+      }
+    }
+  }
 
-  return NextResponse.json({ success: true, alertsChecked: urgentAlerts.length })
+  // Future: check domain expiry dates (Site.expirationDate)
+
+  return NextResponse.json({
+    success: true,
+    alertsChecked: urgentAlerts.length,
+    patAlertCreated,
+  })
 }

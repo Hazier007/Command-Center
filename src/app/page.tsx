@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from "react"
 import Link from "next/link"
 import { useBusinessContext } from "@/components/nerve"
 import { cn } from "@/lib/utils"
+import { TEAM, ACTIVE_ASSIGNEES } from "@/lib/agents"
 import {
   TrendingUp,
   TrendingDown,
@@ -73,14 +74,21 @@ interface Lead {
   createdAt: string
   nextFollowUp?: string | null
 }
+interface AgentLog {
+  id: string
+  agent?: string
+  action: string
+  details?: string
+  createdAt: string
+}
 
 // ─── Agent list for dump box ───────────────────────────────────
-// Team BC assignees voor dump box
-const AGENT_OPTIONS = [
-  { value: "bart", label: "Bart (zelf)" },
-  { value: "claude", label: "Claude" },
-  { value: "radar", label: "RADAR" },
-]
+// Team assignees voor dump box — afgeleid uit agents.ts zodat er
+// één bron van waarheid is voor wie op het team zit.
+const AGENT_OPTIONS = ACTIVE_ASSIGNEES.map((id) => ({
+  value: id,
+  label: id === "bart" ? "Bart (zelf)" : TEAM[id].displayName,
+}))
 
 // ─── Dump Box ──────────────────────────────────────────────────
 function DumpBox({ onCreated }: { onCreated: () => void }) {
@@ -347,6 +355,7 @@ export default function CockpitPage() {
   const [research, setResearch] = useState<Research[]>([])
   const [sites, setSites] = useState<Site[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
+  const [radarLogs, setRadarLogs] = useState<AgentLog[]>([])
   const [loading, setLoading] = useState(true)
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set())
   const [showAllApprovals, setShowAllApprovals] = useState(false)
@@ -362,13 +371,19 @@ export default function CockpitPage() {
       fetch("/api/research").then((r) => r.json()),
       fetch("/api/sites").then((r) => r.json()),
       fetch("/api/leads").then((r) => r.json()),
+      fetch("/api/agent-logs?limit=50").then((r) => r.json()).catch(() => []),
     ])
-      .then(([t, c, r, s, l]) => {
+      .then(([t, c, r, s, l, logs]) => {
         setTasks(Array.isArray(t) ? t : [])
         setContent(Array.isArray(c) ? c : [])
         setResearch(Array.isArray(r) ? r : Array.isArray(r?.items) ? r.items : [])
         setSites(Array.isArray(s) ? s : [])
         setLeads(Array.isArray(l) ? l : [])
+        setRadarLogs(
+          (Array.isArray(logs) ? logs : []).filter(
+            (log: AgentLog) => (log.agent || "").toLowerCase() === "radar"
+          )
+        )
       })
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -437,6 +452,27 @@ export default function CockpitPage() {
       (l) => new Date(l.createdAt).getTime() > weekAgo && l.status === "nieuw"
     ).length
   }, [leads])
+
+  // RADAR laatste 24u — zodat Bart weet wat er autonoom gebeurd is
+  const radarLast24h = useMemo(() => {
+    const dayAgo = Date.now() - 24 * 60 * 60 * 1000
+    return radarLogs
+      .filter((l) => new Date(l.createdAt).getTime() > dayAgo)
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+  }, [radarLogs])
+  const radarLastScanAt = useMemo(() => {
+    if (radarLogs.length === 0) return null
+    return radarLogs
+      .map((l) => new Date(l.createdAt).getTime())
+      .reduce((max, t) => (t > max ? t : max), 0)
+  }, [radarLogs])
+  const decliningSitesCount = useMemo(
+    () => sites.filter((s) => s.seoStatus === "declining").length,
+    [sites]
+  )
 
   const openLeads = useMemo(
     () =>
@@ -842,6 +878,99 @@ export default function CockpitPage() {
             </>
           )}
         </div>
+      </div>
+
+      {/* ─── RADAR 24u ─────────────────────────────────────── */}
+      <div>
+        <SectionHeader
+          title="📡 RADAR — laatste 24u"
+          count={radarLast24h.length}
+          href="/agents"
+          hrefLabel="Team"
+        />
+        {loading ? (
+          <div className="h-24 rounded-xl border border-white/[0.06] bg-zinc-800/30 animate-pulse" />
+        ) : (
+          <div className="rounded-xl border border-white/[0.06] bg-zinc-800/30 p-4">
+            {/* Mini-KPI strip */}
+            <div className="grid grid-cols-3 gap-3 mb-3">
+              <div className="rounded-lg bg-white/[0.03] px-3 py-2">
+                <p className="text-[9px] uppercase tracking-wider text-zinc-500">
+                  Acties 24u
+                </p>
+                <p className="text-[18px] font-extrabold text-white tabular-nums">
+                  {radarLast24h.length}
+                </p>
+              </div>
+              <div className="rounded-lg bg-white/[0.03] px-3 py-2">
+                <p className="text-[9px] uppercase tracking-wider text-zinc-500">
+                  Dalende sites
+                </p>
+                <p
+                  className={cn(
+                    "text-[18px] font-extrabold tabular-nums",
+                    decliningSitesCount > 0 ? "text-red-400" : "text-white"
+                  )}
+                >
+                  {decliningSitesCount}
+                </p>
+              </div>
+              <div className="rounded-lg bg-white/[0.03] px-3 py-2">
+                <p className="text-[9px] uppercase tracking-wider text-zinc-500">
+                  Laatste scan
+                </p>
+                <p className="text-[12px] font-semibold text-zinc-300 mt-1">
+                  {radarLastScanAt
+                    ? new Date(radarLastScanAt).toLocaleString("nl-BE", {
+                        day: "numeric",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "—"}
+                </p>
+              </div>
+            </div>
+
+            {/* Recente acties */}
+            {radarLast24h.length === 0 ? (
+              <p className="text-[11px] text-zinc-500 text-center py-3">
+                Geen RADAR activiteit in de laatste 24u — cron draait op{" "}
+                <code className="text-zinc-400">/api/cron/seo-scan</code>.
+              </p>
+            ) : (
+              <div className="space-y-1">
+                {radarLast24h.slice(0, 5).map((log) => (
+                  <div
+                    key={log.id}
+                    className="flex items-center gap-3 rounded-lg px-2 py-1.5 text-[11px] hover:bg-white/[0.02] transition-colors"
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-green-400 shrink-0" />
+                    <span className="text-zinc-300 font-medium shrink-0">
+                      {log.action}
+                    </span>
+                    {log.details && (
+                      <span className="text-zinc-500 truncate flex-1">
+                        {log.details}
+                      </span>
+                    )}
+                    <span className="text-[10px] text-zinc-600 shrink-0 tabular-nums">
+                      {new Date(log.createdAt).toLocaleTimeString("nl-BE", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+                ))}
+                {radarLast24h.length > 5 && (
+                  <p className="text-[10px] text-zinc-500 text-center pt-1">
+                    +{radarLast24h.length - 5} meer RADAR acties
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ─── Traffic Pulse + Leads ──────────────────────────── */}

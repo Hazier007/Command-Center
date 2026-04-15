@@ -320,6 +320,16 @@ Elke afgeronde wijziging komt hier met datum en 1 regel wat er gebeurd is. Zo zi
 | 2026-04-11 | shell | Nieuwe NerveTopNav (links-sidebar + oude topbar vervangen), capture/inbox weg, theme toggle + ThemeProvider, mobile drawer, right panel hidden <lg | Claude |
 | 2026-04-11 | globals.css | Base font-size 16px→17px, scrollbar-thin utility toegevoegd | Claude |
 | 2026-04-11 | / cockpit | Cockpit v2: dump box, KPI tegels, Vandaag voor Bart, Review queue (content+tasks+research), Traffic pulse, Leads pipeline, footer stats | Claude |
+| 2026-04-13 | /portfolio | pizzeriabellaitalia.be geregistreerd als verkocht ($50) — eerste domeinflip in CC | Bart |
+| 2026-04-14 | team | 5 Clawbot agents (ATLAS/FORGE/INK/LEDGER/SPARK) afgevoerd — team = Bart + Claude + RADAR | Bart |
+| 2026-04-14 | /portfolio | Verkocht-status toegevoegd aan DomainOpportunity: status='sold' + soldPrice/soldCurrency/soldAt/soldTo velden, violette styling in UI | Claude |
+| 2026-04-14 | /portfolio | Structurele fix domein↔site duplicaat: POST /api/sites auto-delete matching domain_opportunity (behalve sold); UI-filter als vangnet in filteredDomains | Claude |
+| 2026-04-14 | /portfolio | "Converteer naar site"-knop met smart category-inference (leadgen/affiliate/klant/tool/directory) op DomainOpportunity detail | Claude |
+| 2026-04-14 | /api/domain-opportunities/[id] | PATCH uitgebreid met soldPrice/soldCurrency/soldAt/soldTo handling (null-safe) | Claude |
+| 2026-04-14 | infra | Persistent GitHub PAT in /mnt/.claude/git/credentials + gitconfig — Claude kan pushen vanuit elke sessie via `export GIT_CONFIG_GLOBAL=...` | Claude |
+| 2026-04-15 | /agents | Team-page opgekuist: titel "Team BC" → "Team", TEAM_BC/LEGACY_AGENTS arrays vervangen door imports uit src/lib/agents.ts (enige bron) | Claude |
+| 2026-04-15 | / cockpit | Dump box AGENT_OPTIONS afgeleid uit ACTIVE_ASSIGNEES ipv hardgecodeerd; "📡 RADAR — laatste 24u" widget toegevoegd (mini-KPI strip + recente acties) | Claude |
+| 2026-04-15 | /api/cron/check-alerts | PAT-expiration watchdog: maakt high-priority Alert als GITHUB_PAT_EXPIRES_AT binnen 7 dagen verloopt (idempotent) | Claude |
 
 ---
 

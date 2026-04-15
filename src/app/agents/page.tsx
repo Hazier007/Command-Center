@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
+import { TEAM, ACTIVE_ASSIGNEES, AGENTS, LEGACY_AGENTS as LEGACY_NAMES } from "@/lib/agents"
 
 // ─── Types ─────────────────────────────────────────────────────
 interface AgentLog {
@@ -11,43 +12,56 @@ interface Task {
   id: string; title: string; status: string; assignee?: string; priority?: string; category?: string
 }
 
-// ─── Team BC: De actieve kern ─────────────────────────────────
-const TEAM_BC = [
-  {
-    id: "bart", name: "Bart", role: "Eigenaar & Operator",
-    emoji: "👤", color: "bg-[#F5911E]", cardColor: "border-[#F5911E]/20",
-    badgeColor: "bg-[#F5911E]/15 text-[#F5911E]", hex: "#F5911E",
-    description: "Oprichter van Hazier. Beslist, keurt goed, stuurt bij. Alles begint en eindigt hier.",
-    specialties: ["Strategie", "Beslissingen", "Klantrelaties", "Business Dev"],
-  },
-  {
-    id: "claude", name: "Claude", role: "Builder & Strategist",
-    emoji: "🤖", color: "bg-amber-500", cardColor: "border-amber-500/20",
-    badgeColor: "bg-amber-500/15 text-amber-400", hex: "#D97706",
-    description: "Rechterhand van Bart. Bouwt het CC, schrijft content, analyseert finance, evalueert groei.",
-    specialties: ["Development", "Content", "Finance", "Groei", "SEO", "Strategie"],
-  },
-  {
-    id: "radar", name: "RADAR", role: "SEO & Domain Intelligence",
-    emoji: "📡", color: "bg-green-500", cardColor: "border-green-500/20",
-    badgeColor: "bg-green-500/15 text-green-400", hex: "#10B981",
-    description: "Autonome agent. Scant de markt, vindt kansen, analyseert domeinen en zoekverkeer.",
-    specialties: ["SEO analyse", "Keyword research", "GSC data", "Domein evaluatie"],
-  },
-]
+// ─── Team (Bart + Claude + RADAR) — afgeleid uit agents.ts ─────
+// Enige bron van waarheid: TEAM in src/lib/agents.ts. Hier alleen
+// de UI-extensies (Tailwind border/badge classes, long description).
+type TeamCard = {
+  id: "bart" | "claude" | "radar"
+  name: string
+  role: string
+  emoji: string
+  color: string         // Tailwind bg class (used for top accent bar)
+  cardColor: string     // Tailwind border class for card
+  badgeColor: string    // Tailwind classes for specialty badges
+  hex: string           // hex color for inline style
+  description: string
+  specialties: string[]
+}
 
-// ─── Legacy agents (historische data) ─────────────────────────
-const LEGACY_AGENTS = [
-  { id: "atlas", name: "ATLAS", emoji: "🗺️", role: "Strategist", hex: "#3B82F6" },
-  { id: "forge", name: "FORGE", emoji: "🔨", role: "Developer", hex: "#EF4444" },
-  { id: "ink", name: "INK", emoji: "✒️", role: "Copywriter", hex: "#8B5CF6" },
-  { id: "ledger", name: "LEDGER", emoji: "📊", role: "Finance", hex: "#F59E0B" },
-  { id: "spark", name: "SPARK", emoji: "⚡", role: "Growth", hex: "#EC4899" },
-]
+const CARD_STYLES: Record<"bart" | "claude" | "radar", Pick<TeamCard, "color" | "cardColor" | "badgeColor">> = {
+  bart:   { color: "bg-[#F5911E]",   cardColor: "border-[#F5911E]/20",   badgeColor: "bg-[#F5911E]/15 text-[#F5911E]" },
+  claude: { color: "bg-amber-500",   cardColor: "border-amber-500/20",   badgeColor: "bg-amber-500/15 text-amber-400" },
+  radar:  { color: "bg-green-500",   cardColor: "border-green-500/20",   badgeColor: "bg-green-500/15 text-green-400" },
+}
+
+const TEAM_CARDS: TeamCard[] = ACTIVE_ASSIGNEES.map((id) => {
+  const m = TEAM[id]
+  const style = CARD_STYLES[id]
+  return {
+    id,
+    name: m.displayName,
+    role: m.role,
+    emoji: m.emoji,
+    hex: m.color,
+    description: m.description,
+    specialties: m.specialties,
+    ...style,
+  }
+})
+
+// Legacy agents — alleen getoond als er nog historische open taken zijn.
+// Bron: LEGACY_AGENTS in agents.ts. UI-info uit AGENTS map.
+const LEGACY_CARDS = LEGACY_NAMES.map((id) => ({
+  id,
+  name: AGENTS[id].displayName.split(" ")[0], // strip "(VPZI)" etc.
+  emoji: AGENTS[id].emoji,
+  role: AGENTS[id].role.split(" ")[0],
+  hex: AGENTS[id].color,
+}))
 
 // ─── Team Member Modal ───────────────────────────────────────
 function MemberModal({ member, tasks, logs, onClose, onDispatch }: {
-  member: typeof TEAM_BC[0]; tasks: Task[]; logs: AgentLog[]; onClose: () => void
+  member: typeof TEAM_CARDS[0]; tasks: Task[]; logs: AgentLog[]; onClose: () => void
   onDispatch: (assignee: string, title: string, category: string) => Promise<void>
 }) {
   const [dispatchTitle, setDispatchTitle] = useState("")
@@ -177,7 +191,7 @@ export default function AgentsPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [logs, setLogs] = useState<AgentLog[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedMember, setSelectedMember] = useState<typeof TEAM_BC[0] | null>(null)
+  const [selectedMember, setSelectedMember] = useState<typeof TEAM_CARDS[0] | null>(null)
   const [showLegacy, setShowLegacy] = useState(false)
 
   useEffect(() => {
@@ -216,8 +230,8 @@ export default function AgentsPage() {
   const totalOpen = tasks.filter((t) => t.status !== "done").length
   const totalDone = tasks.filter((t) => t.status === "done").length
 
-  // Legacy stats
-  const legacyTaskCount = LEGACY_AGENTS.reduce((sum, a) => {
+  // Legacy stats — alleen tonen als oude agents nog open tasks hebben
+  const legacyTaskCount = LEGACY_CARDS.reduce((sum, a) => {
     return sum + tasks.filter((t) => t.assignee?.toLowerCase() === a.id && t.status !== "done").length
   }, 0)
 
@@ -225,8 +239,8 @@ export default function AgentsPage() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
       {/* Header */}
       <div>
-        <h1 className="text-[26px] font-extrabold tracking-tight text-white">👥 Team BC</h1>
-        <p className="text-[13px] text-zinc-500">Bart + Claude + RADAR — je kernteam</p>
+        <h1 className="text-[26px] font-extrabold tracking-tight text-white">Team</h1>
+        <p className="text-[13px] text-zinc-500">Bart + Claude + RADAR — de actieve kern</p>
       </div>
 
       {/* Team stats */}
@@ -247,7 +261,7 @@ export default function AgentsPage() {
 
       {/* Team BC cards */}
       <div className="grid grid-cols-3 gap-4">
-        {TEAM_BC.map((member) => {
+        {TEAM_CARDS.map((member) => {
           const stats = getStats(member.id)
           return (
             <button
@@ -327,7 +341,7 @@ export default function AgentsPage() {
 
           {showLegacy && (
             <div className="mt-3 grid grid-cols-5 gap-2">
-              {LEGACY_AGENTS.map((agent) => {
+              {LEGACY_CARDS.map((agent) => {
                 const stats = getStats(agent.id)
                 return (
                   <div
