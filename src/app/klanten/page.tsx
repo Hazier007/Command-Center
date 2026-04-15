@@ -50,8 +50,18 @@ interface ClientProjectRef {
 }
 
 interface ClientAgg {
+  // v2: id kan "real" cuid zijn OF "legacy:<key>" voor niet-gemigreerde records
+  id?: string
+  isLegacy?: boolean
   name: string
   email: string | null
+  phone?: string | null
+  company?: string | null
+  vatNumber?: string | null
+  address?: string | null
+  notes?: string | null
+  businessUnit?: string | null
+  status?: string
   contractType: string | null
   monthlyFee: number
   hoursPerMonth: number
@@ -107,6 +117,8 @@ export default function KlantenPage() {
 
   const [editOpen, setEditOpen] = useState(false)
   const [newOpen, setNewOpen] = useState(false)
+  const [backfillRunning, setBackfillRunning] = useState(false)
+  const [backfillResult, setBackfillResult] = useState<string | null>(null)
 
   // ─── Data ────────────────────────────────────────────────
   const fetchAll = useCallback(async () => {
@@ -126,6 +138,45 @@ export default function KlantenPage() {
   useEffect(() => {
     fetchAll()
   }, [fetchAll])
+
+  // ─── Backfill: legacy clientName-sites omzetten naar echte Client records ──
+  const runBackfill = useCallback(async () => {
+    if (backfillRunning) return
+    const legacyCount = clients.filter((c) => c.isLegacy).length
+    if (legacyCount === 0) {
+      setBackfillResult("Alles is al gemigreerd — geen legacy records.")
+      setTimeout(() => setBackfillResult(null), 4000)
+      return
+    }
+    if (
+      !confirm(
+        `${legacyCount} legacy klant-aggregaat${legacyCount === 1 ? "" : "en"} omzetten naar echte Client records?`
+      )
+    )
+      return
+
+    setBackfillRunning(true)
+    setBackfillResult(null)
+    try {
+      const res = await fetch("/api/clients/backfill", { method: "POST" })
+      const json = await res.json()
+      if (!res.ok) {
+        setBackfillResult("Fout: " + (json.error || "onbekend"))
+      } else {
+        setBackfillResult(
+          `✓ ${json.created} aangemaakt, ${json.linked} sites gelinkt.`
+        )
+        await fetchAll()
+      }
+    } catch (err) {
+      setBackfillResult(
+        "Netwerkfout: " + (err instanceof Error ? err.message : "onbekend")
+      )
+    } finally {
+      setBackfillRunning(false)
+      setTimeout(() => setBackfillResult(null), 6000)
+    }
+  }, [backfillRunning, clients, fetchAll])
 
   // ─── Stats ───────────────────────────────────────────────
   const filtered =
@@ -165,13 +216,31 @@ export default function KlantenPage() {
             Hazier-klanten met sites onder beheer — recurring &amp; eenmalig
           </p>
         </div>
-        <Button
-          onClick={() => setNewOpen(true)}
-          className="bg-[#F5911E] hover:bg-[#F5911E]/90 text-black font-semibold"
-        >
-          + Nieuwe klant
-        </Button>
+        <div className="flex items-center gap-2">
+          {clients.some((c) => c.isLegacy) && (
+            <Button
+              onClick={runBackfill}
+              disabled={backfillRunning}
+              variant="outline"
+              className="border-white/[0.08] bg-transparent text-zinc-400 hover:bg-white/[0.04] hover:text-white"
+              title="Zet bestaande klant-sites om naar echte Client-records (v2 migratie)"
+            >
+              {backfillRunning ? "Backfillen…" : "Backfill legacy klanten"}
+            </Button>
+          )}
+          <Button
+            onClick={() => setNewOpen(true)}
+            className="bg-[#F5911E] hover:bg-[#F5911E]/90 text-black font-semibold"
+          >
+            + Nieuwe klant
+          </Button>
+        </div>
       </div>
+      {backfillResult && (
+        <div className="rounded-lg border border-[#F5911E]/30 bg-[#F5911E]/10 px-4 py-2 text-[12px] text-[#F5911E]">
+          {backfillResult}
+        </div>
+      )}
 
       {/* Summary cards */}
       <div className="grid grid-cols-4 gap-3">
@@ -786,6 +855,29 @@ function NewClientModal({ open, onOpenChange, onCreated }: NewClientModalProps) 
     if (!name.trim() || !firstDomain.trim()) return
     setSubmitting(true)
     try {
+      // v2 flow: eerst Client record proberen aan te maken, dan de site koppelen
+      // via clientId. Als de Client endpoint nog niet beschikbaar is (db:push
+      // niet gerund), val stil terug op v1 (enkel site met clientName).
+      let clientId: string | null = null
+      try {
+        const cRes = await fetch("/api/clients", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: name.trim(),
+            email: email || null,
+            contractType,
+            status: "active",
+          }),
+        })
+        if (cRes.ok) {
+          const c = await cRes.json()
+          if (c && c.id) clientId = c.id
+        }
+      } catch {
+        // stil — fallback naar v1
+      }
+
       const res = await fetch("/api/sites", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -800,6 +892,7 @@ function NewClientModal({ open, onOpenChange, onCreated }: NewClientModalProps) 
           contractType,
           monthlyFee: monthlyFee ? Number(monthlyFee) : 0,
           hoursPerMonth: hoursPerMonth ? Number(hoursPerMonth) : 0,
+          ...(clientId ? { clientId } : {}),
         }),
       })
       if (!res.ok) throw new Error("Kon klant niet aanmaken")

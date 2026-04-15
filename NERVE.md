@@ -330,6 +330,7 @@ Elke afgeronde wijziging komt hier met datum en 1 regel wat er gebeurd is. Zo zi
 | 2026-04-15 | /agents | Team-page opgekuist: titel "Team BC" → "Team", TEAM_BC/LEGACY_AGENTS arrays vervangen door imports uit src/lib/agents.ts (enige bron) | Claude |
 | 2026-04-15 | / cockpit | Dump box AGENT_OPTIONS afgeleid uit ACTIVE_ASSIGNEES ipv hardgecodeerd; "📡 RADAR — laatste 24u" widget toegevoegd (mini-KPI strip + recente acties) | Claude |
 | 2026-04-15 | /api/cron/check-alerts | PAT-expiration watchdog: maakt high-priority Alert als GITHUB_PAT_EXPIRES_AT binnen 7 dagen verloopt (idempotent) | Claude |
+| 2026-04-16 | schema + api + /klanten | **MT-2: eerste-klas Client model.** Prisma Client model (naam/email/phone/company/vatNumber/adres/notes/contract/status/businessUnit) + Site.clientId FK met onDelete SetNull. Nieuwe /api/clients route met Client-records + graceful fallback naar legacy-aggregatie, /api/clients/[id] voor PATCH/DELETE (syncd ook naar legacy site-velden), /api/clients/backfill (POST converteert unique clientName-groepen naar Client records, GET is preview). /api/sites POST/PATCH accepteert clientId en sync't legacy velden vanuit het Client record. /klanten krijgt Backfill-knop (verschijnt alleen als er legacy aggregaten zijn) en NewClientModal maakt eerst Client record aan vooraleer de eerste site te koppelen via clientId. | Claude |
 
 ---
 

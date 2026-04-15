@@ -86,12 +86,49 @@ export async function PATCH(
         ...(data.domainAuthority !== undefined && { domainAuthority: data.domainAuthority }),
         ...(data.expirationDate !== undefined && { expirationDate: data.expirationDate ? new Date(data.expirationDate) : null }),
         ...(data.registrar !== undefined && { registrar: data.registrar }),
+        // Client / contract fields
+        ...(data.ownerType !== undefined && { ownerType: data.ownerType }),
+        ...(data.clientName !== undefined && { clientName: data.clientName }),
+        ...(data.clientEmail !== undefined && { clientEmail: data.clientEmail }),
+        ...(data.contractType !== undefined && { contractType: data.contractType }),
+        ...(data.monthlyFee !== undefined && { monthlyFee: data.monthlyFee }),
+        ...(data.hoursPerMonth !== undefined && { hoursPerMonth: data.hoursPerMonth }),
+        ...(data.contractStart !== undefined && { contractStart: data.contractStart ? new Date(data.contractStart) : null }),
+        ...(data.contractEnd !== undefined && { contractEnd: data.contractEnd ? new Date(data.contractEnd) : null }),
+        // v2: eerste-klas Client relatie
+        // @ts-ignore – clientId veld (schema v2, na db:push beschikbaar)
+        ...(data.clientId !== undefined && { clientId: data.clientId || null }),
       },
       include: {
         project: true,
       },
     })
     
+    // Sync legacy client-velden vanuit gekoppelde Client record
+    // @ts-ignore – clientId veld (schema v2, na db:push beschikbaar)
+    if (data.clientId) {
+      try {
+        // @ts-ignore – Client model (schema v2, na db:push beschikbaar)
+        const client = await prisma.client.findUnique({
+          where: { id: data.clientId },
+        })
+        if (client) {
+          await prisma.site.update({
+            where: { id: site.id },
+            data: {
+              clientName: client.name,
+              clientEmail: client.email,
+              contractType: client.contractType,
+              contractStart: client.contractStart,
+              contractEnd: client.contractEnd,
+            },
+          })
+        }
+      } catch {
+        // Client model nog niet beschikbaar — negeer stil
+      }
+    }
+
     // ── Site onboarding guard: alert als dev/live zonder deploy velden ──
     const activeStatuses = ['dev', 'staging', 'live']
     const newStatus = data.status || site.status

@@ -75,11 +75,40 @@ export async function POST(request: Request) {
         hoursPerMonth: data.hoursPerMonth,
         contractStart: data.contractStart ? new Date(data.contractStart) : undefined,
         contractEnd: data.contractEnd ? new Date(data.contractEnd) : undefined,
+        // v2: eerste-klas Client relatie. Als clientId meekomt, linken we direct.
+        // @ts-ignore – clientId veld (schema v2, na db:push beschikbaar)
+        ...(data.clientId !== undefined && { clientId: data.clientId || null }),
       },
       include: {
         project: true,
       },
     })
+
+    // Als een clientId is meegegeven, sync de legacy client-velden vanuit de Client record
+    // zodat clientName/clientEmail/contractType altijd up-to-date blijven.
+    // @ts-ignore – clientId veld (schema v2, na db:push beschikbaar)
+    if (data.clientId) {
+      try {
+        // @ts-ignore – Client model (schema v2, na db:push beschikbaar)
+        const client = await prisma.client.findUnique({
+          where: { id: data.clientId },
+        })
+        if (client) {
+          await prisma.site.update({
+            where: { id: site.id },
+            data: {
+              clientName: client.name,
+              clientEmail: client.email,
+              contractType: client.contractType,
+              contractStart: client.contractStart,
+              contractEnd: client.contractEnd,
+            },
+          })
+        }
+      } catch {
+        // Client model nog niet beschikbaar — negeer stil
+      }
+    }
 
     // Auto-sync: zodra een domein een site wordt, verdwijnt het uit de Domeinen-lijst.
     // Een "sold" record laten we wel staan (die blijft in Domeinen voor historiek).

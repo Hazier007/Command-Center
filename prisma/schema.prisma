@@ -152,6 +152,9 @@ model Site {
   registrar         String?    // DNS.be, Combell, etc.
 
   ownerType         String     @default("own")  // 'client' | 'own'
+  // Legacy client-velden — behouden voor backcompat tijdens Client-model migratie.
+  // Nieuwe records moeten via clientId naar Client wijzen; deze string-velden
+  // worden automatisch gesynced bij POST/PATCH als clientId gezet is.
   clientName        String?
   clientEmail       String?
   contractType      String?    // 'retainer' | 'eenmalig' | 'mixed'
@@ -160,11 +163,45 @@ model Site {
   contractEnd       DateTime?
   hoursPerMonth     Int?
 
+  // Eerste-klas Client relatie (v2 van klanten-model, 2026-04-15)
+  clientId          String?
+  client            Client?    @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
   // Relations
   project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
   tasks   Task[]
 
   @@map("sites")
+}
+
+model Client {
+  id             String    @id @default(cuid())
+  name           String    // klant-/bedrijfsnaam (wordt in UI getoond)
+  email          String?   // primair contact e-mail
+  phone          String?
+  company        String?   // formele juridische naam als verschillend van `name`
+  vatNumber      String?   // BTW-nummer — nodig voor CollectPro facturatie later
+  address        String?   // factuur-adres (volledige string, simpel)
+  notes          String?
+
+  // Contract — primaire aggregatie. Per-site contract kan nog steeds
+  // verschillen via Site.contractType/monthlyFee, maar dit is de default.
+  contractType   String?   // 'retainer' | 'eenmalig' | 'mixed'
+  contractStart  DateTime?
+  contractEnd    DateTime?
+  autoRenew      Boolean   @default(false)
+  paymentStatus  String?   // 'paid' | 'pending' | 'overdue'
+
+  // Portfolio context
+  businessUnit   String?   // 'hazier' | 'agency' | 'rankrent' | ... — filter in /klanten
+  status         String    @default("active") // 'active' | 'churned' | 'prospect'
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  sites          Site[]
+
+  @@map("clients")
 }
 
 model Idea {
