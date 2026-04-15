@@ -112,6 +112,38 @@ const paymentStatusConfig: Record<
   current: { label: "Up-to-date", dot: "bg-emerald-400", text: "text-emerald-400" },
   late: { label: "Laat", dot: "bg-yellow-400", text: "text-yellow-400" },
   overdue: { label: "Vervallen", dot: "bg-red-400", text: "text-red-400" },
+  paid: { label: "Betaald", dot: "bg-emerald-400", text: "text-emerald-400" },
+  pending: { label: "In behandeling", dot: "bg-zinc-400", text: "text-zinc-400" },
+  cancelled: { label: "Geannuleerd", dot: "bg-zinc-500", text: "text-zinc-500" },
+}
+
+// ─── Contract-expiry helper ────────────────────────────
+type ContractAlertLevel = "ok" | "soon" | "urgent" | "expired"
+
+function contractExpiryLevel(
+  contractEnd: string | null | undefined
+): { level: ContractAlertLevel; daysLeft: number | null; label: string } {
+  if (!contractEnd) return { level: "ok", daysLeft: null, label: "doorlopend" }
+  const now = Date.now()
+  const end = new Date(contractEnd).getTime()
+  const days = Math.ceil((end - now) / (1000 * 60 * 60 * 24))
+  if (days < 0)
+    return { level: "expired", daysLeft: days, label: `verlopen ${Math.abs(days)}d` }
+  if (days <= 14)
+    return { level: "urgent", daysLeft: days, label: `nog ${days}d` }
+  if (days <= 30)
+    return { level: "soon", daysLeft: days, label: `nog ${days}d` }
+  return { level: "ok", daysLeft: days, label: `nog ${days}d` }
+}
+
+const contractLevelStyle: Record<
+  ContractAlertLevel,
+  { dot: string; text: string }
+> = {
+  ok: { dot: "bg-zinc-600", text: "text-zinc-500" },
+  soon: { dot: "bg-yellow-400", text: "text-yellow-400" },
+  urgent: { dot: "bg-orange-400", text: "text-orange-400" },
+  expired: { dot: "bg-red-500", text: "text-red-400" },
 }
 
 // ─── Component ────────────────────────────────────────────────
@@ -380,6 +412,9 @@ export default function KlantenPage() {
               const pay = c.paymentStatus
                 ? paymentStatusConfig[c.paymentStatus]
                 : null
+              const expiry = contractExpiryLevel(c.contractEnd)
+              const expiryStyle = contractLevelStyle[expiry.level]
+              const showExpiry = expiry.level !== "ok" && c.contractEnd
               return (
                 <div
                   key={c.name}
@@ -390,9 +425,27 @@ export default function KlantenPage() {
                   className="grid grid-cols-[1fr_120px_90px_100px_120px_100px] gap-3 px-4 py-3 items-center transition-colors hover:bg-zinc-800/40 cursor-pointer"
                 >
                   <div className="min-w-0">
-                    <p className="text-[12px] font-semibold text-white truncate">
-                      {c.name}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-[12px] font-semibold text-white truncate">
+                        {c.name}
+                      </p>
+                      {showExpiry && (
+                        <span
+                          className={cn(
+                            "text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded",
+                            expiry.level === "expired" &&
+                              "bg-red-500/15 text-red-400 border border-red-500/30",
+                            expiry.level === "urgent" &&
+                              "bg-orange-400/15 text-orange-400 border border-orange-400/30",
+                            expiry.level === "soon" &&
+                              "bg-yellow-400/15 text-yellow-400 border border-yellow-400/30"
+                          )}
+                          title={`Contract eindigt: ${new Date(c.contractEnd!).toLocaleDateString("nl-BE")}`}
+                        >
+                          {expiry.label}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-[10px] text-zinc-500 truncate">
                       {c.email || "—"}
                     </p>
@@ -405,6 +458,14 @@ export default function KlantenPage() {
                       <div className="flex items-center gap-1">
                         <span className={cn("h-1.5 w-1.5 rounded-full", pay.dot)} />
                         <span className={cn("text-[9px]", pay.text)}>{pay.label}</span>
+                      </div>
+                    )}
+                    {!pay && showExpiry && (
+                      <div className="flex items-center gap-1">
+                        <span className={cn("h-1.5 w-1.5 rounded-full", expiryStyle.dot)} />
+                        <span className={cn("text-[9px]", expiryStyle.text)}>
+                          contract {expiry.label}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -552,31 +613,79 @@ export default function KlantenPage() {
                     )
                   }
                   if (available.length === 0) return null
+
+                  // Smart matching: sites waarvan clientName (case-insens)
+                  // matcht met deze klant krijgen prioriteit.
+                  const nameKey = selected.name.trim().toLowerCase()
+                  const suggested: SiteLite[] = []
+                  const others: SiteLite[] = []
+                  for (const s of available) {
+                    const siteKey = (s.clientName || "").trim().toLowerCase()
+                    if (siteKey && siteKey === nameKey) suggested.push(s)
+                    else others.push(s)
+                  }
+                  suggested.sort((a, b) => a.domain.localeCompare(b.domain))
+                  others.sort((a, b) => a.domain.localeCompare(b.domain))
+
                   return (
                     <div className="mb-3 flex items-center gap-2 rounded-lg border border-white/[0.06] bg-zinc-800/20 p-2">
                       <Select value={linkSiteId} onValueChange={setLinkSiteId}>
                         <SelectTrigger className="h-9 flex-1 bg-zinc-800/50 border-white/[0.08] text-white text-[12px]">
-                          <SelectValue placeholder="+ Koppel bestaande site…" />
+                          <SelectValue
+                            placeholder={
+                              suggested.length > 0
+                                ? `+ ${suggested.length} match${suggested.length === 1 ? "" : "es"} gevonden…`
+                                : "+ Koppel bestaande site…"
+                            }
+                          />
                         </SelectTrigger>
-                        <SelectContent className="bg-zinc-900 border-white/[0.08] text-white max-h-[280px]">
-                          {available
-                            .slice()
-                            .sort((a, b) => a.domain.localeCompare(b.domain))
-                            .map((s) => (
-                              <SelectItem key={s.id} value={s.id}>
-                                <span className="flex items-center gap-2">
-                                  <span className="font-medium">{s.domain}</span>
-                                  <span className="text-[10px] text-zinc-500 uppercase">
-                                    {s.status}
-                                  </span>
-                                  {s.clientName && s.clientName !== selected.name && (
-                                    <span className="text-[10px] text-yellow-400">
-                                      (was: {s.clientName})
+                        <SelectContent className="bg-zinc-900 border-white/[0.08] text-white max-h-[320px]">
+                          {suggested.length > 0 && (
+                            <>
+                              <div className="px-2 py-1 text-[9px] uppercase tracking-wider text-[#F5911E] font-bold">
+                                ★ Waarschijnlijke matches
+                              </div>
+                              {suggested.map((s) => (
+                                <SelectItem key={s.id} value={s.id}>
+                                  <span className="flex items-center gap-2">
+                                    <span className="font-medium">{s.domain}</span>
+                                    <span className="text-[10px] text-zinc-500 uppercase">
+                                      {s.status}
                                     </span>
-                                  )}
-                                </span>
-                              </SelectItem>
-                            ))}
+                                    <span className="text-[10px] text-[#F5911E]">
+                                      ★ naam match
+                                    </span>
+                                  </span>
+                                </SelectItem>
+                              ))}
+                            </>
+                          )}
+                          {others.length > 0 && (
+                            <>
+                              {suggested.length > 0 && (
+                                <div className="px-2 py-1 text-[9px] uppercase tracking-wider text-zinc-500 font-bold border-t border-white/[0.06] mt-1">
+                                  Andere sites
+                                </div>
+                              )}
+                              {others.map((s) => (
+                                <SelectItem key={s.id} value={s.id}>
+                                  <span className="flex items-center gap-2">
+                                    <span className="font-medium">{s.domain}</span>
+                                    <span className="text-[10px] text-zinc-500 uppercase">
+                                      {s.status}
+                                    </span>
+                                    {s.clientName &&
+                                      s.clientName.trim().toLowerCase() !==
+                                        nameKey && (
+                                        <span className="text-[10px] text-yellow-400">
+                                          (was: {s.clientName})
+                                        </span>
+                                      )}
+                                  </span>
+                                </SelectItem>
+                              ))}
+                            </>
+                          )}
                         </SelectContent>
                       </Select>
                       <Button
@@ -592,7 +701,20 @@ export default function KlantenPage() {
                 })()}
 
                 {selected.sites.length === 0 ? (
-                  <p className="text-[11px] text-zinc-600 italic">Geen sites gelinkt</p>
+                  <div className="rounded-lg border border-dashed border-white/[0.08] bg-zinc-800/20 p-3">
+                    <p className="text-[11px] text-zinc-400">
+                      Nog geen sites gelinkt aan deze klant.
+                    </p>
+                    {selected.projects.length > 0 ? (
+                      <p className="text-[10px] text-zinc-500 mt-1.5">
+                        Deze klant heeft wel {selected.projects.length} project{selected.projects.length === 1 ? "" : "en"} — kies hierboven een bestaand domein om ze actief te koppelen aan Hazier.
+                      </p>
+                    ) : (
+                      <p className="text-[10px] text-zinc-500 mt-1.5">
+                        Koppel een bestaand domein via de dropdown hierboven, of voeg een nieuwe site toe via /portfolio.
+                      </p>
+                    )}
+                  </div>
                 ) : (
                   <div className="space-y-2">
                     {selected.sites.map((site) => {

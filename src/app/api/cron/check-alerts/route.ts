@@ -49,11 +49,74 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // ─── Klant-contract expiry watchdog ──────────────────────────
+  // Voor elke Client record met een contractEnd binnen 30 dagen (of
+  // reeds verlopen) maken we één idempotent Alert. Levert Bart een
+  // trigger om proactief te verlengen of af te sluiten.
+  let clientContractAlerts = 0
+  try {
+    // @ts-ignore – Client model (schema v2, na db:push beschikbaar)
+    const clients = await prisma.client.findMany({
+      where: {
+        status: 'active',
+        contractEnd: { not: null },
+      },
+      select: {
+        id: true,
+        name: true,
+        contractEnd: true,
+      },
+    })
+
+    const now = Date.now()
+    const thirtyDays = 30 * 24 * 60 * 60 * 1000
+
+    for (const c of clients) {
+      if (!c.contractEnd) continue
+      const endTs = new Date(c.contractEnd).getTime()
+      const msUntil = endTs - now
+      if (msUntil > thirtyDays) continue // nog ver weg
+      if (msUntil < -7 * 24 * 60 * 60 * 1000) continue // >7d geleden verlopen, al lang bekend
+
+      const daysLeft = Math.ceil(msUntil / (24 * 60 * 60 * 1000))
+      const title =
+        daysLeft < 0
+          ? `Klant-contract verlopen: ${c.name}`
+          : `Klant-contract verloopt binnen ${daysLeft}d: ${c.name}`
+
+      // Idempotent: één open alert per klant tegelijk
+      const existing = await prisma.alert.findFirst({
+        where: {
+          resolved: false,
+          title: { contains: c.name },
+          // alleen contract-alerts matchen (niet site-onboarding alerts)
+          AND: { title: { contains: 'contract' } },
+        },
+      })
+      if (existing) continue
+
+      await prisma.alert.create({
+        data: {
+          title,
+          body:
+            daysLeft < 0
+              ? `Contract met ${c.name} is ${Math.abs(daysLeft)}d geleden verlopen. Check of verlenging of afsluiting nodig is, en update contractEnd via /klanten.`
+              : `Contract met ${c.name} verloopt op ${new Date(c.contractEnd).toLocaleDateString('nl-BE')}. Plan een gesprek voor verlenging of heronderhandeling.`,
+          priority: daysLeft < 0 || daysLeft <= 7 ? 'high' : 'medium',
+        },
+      })
+      clientContractAlerts++
+    }
+  } catch {
+    // Client model nog niet gemigreerd — stil negeren
+  }
+
   // Future: check domain expiry dates (Site.expirationDate)
 
   return NextResponse.json({
     success: true,
     alertsChecked: urgentAlerts.length,
     patAlertCreated,
+    clientContractAlerts,
   })
 }
