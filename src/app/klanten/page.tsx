@@ -87,6 +87,17 @@ interface Task {
   createdAt?: string
 }
 
+// Minimale site-shape voor de "koppel bestaande site"-picker
+interface SiteLite {
+  id: string
+  domain: string
+  status: string
+  clientId?: string | null
+  ownerType?: string | null
+  clientName?: string | null
+  category?: string | null
+}
+
 // ─── Config ────────────────────────────────────────────────────
 const contractTypeLabels: Record<string, string> = {
   retainer: "Retainer (recurring)",
@@ -109,8 +120,11 @@ export default function KlantenPage() {
 
   const [clients, setClients] = useState<ClientAgg[]>([])
   const [tasks, setTasks] = useState<Task[]>([])
+  const [allSites, setAllSites] = useState<SiteLite[]>([])
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState("")
+  const [linkSiteId, setLinkSiteId] = useState<string>("")
+  const [linking, setLinking] = useState(false)
 
   const [selected, setSelected] = useState<ClientAgg | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
@@ -124,16 +138,60 @@ export default function KlantenPage() {
   const fetchAll = useCallback(async () => {
     setLoading(true)
     try {
-      const [clientsRes, tasksRes] = await Promise.all([
+      const [clientsRes, tasksRes, sitesRes] = await Promise.all([
         fetch("/api/clients").then((r) => r.json()).catch(() => []),
         fetch("/api/tasks").then((r) => r.json()).catch(() => []),
+        fetch("/api/sites").then((r) => r.json()).catch(() => []),
       ])
       setClients(Array.isArray(clientsRes) ? clientsRes : [])
       setTasks(Array.isArray(tasksRes) ? tasksRes : [])
+      setAllSites(Array.isArray(sitesRes) ? sitesRes : [])
     } finally {
       setLoading(false)
     }
   }, [])
+
+  // ─── Koppel bestaande site aan de geselecteerde klant ───
+  const linkSiteToClient = useCallback(async () => {
+    if (!selected || !linkSiteId || linking) return
+    // Echt Client-record vereist (legacy heeft geen cuid)
+    if (!selected.id || selected.id.startsWith("legacy:") || selected.isLegacy) {
+      alert(
+        "Backfill deze legacy klant eerst voor je sites kan koppelen."
+      )
+      return
+    }
+    setLinking(true)
+    try {
+      const res = await fetch(`/api/sites/${linkSiteId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientId: selected.id,
+          ownerType: "client",
+          clientName: selected.name,
+          clientEmail: selected.email || null,
+          category: "klant",
+        }),
+      })
+      if (!res.ok) throw new Error("Kon site niet koppelen")
+      setLinkSiteId("")
+      await fetchAll()
+      // Re-fetch selected (bijgewerkte sites-lijst)
+      const updated = await fetch("/api/clients").then((r) => r.json())
+      if (Array.isArray(updated)) {
+        const match = updated.find(
+          (c: ClientAgg) => c.id === selected.id
+        )
+        if (match) setSelected(match)
+      }
+    } catch (err) {
+      alert("Fout: " + (err instanceof Error ? err.message : "onbekend"))
+    } finally {
+      setLinking(false)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, linkSiteId, linking, fetchAll])
 
   useEffect(() => {
     fetchAll()
@@ -473,6 +531,66 @@ export default function KlantenPage() {
                 <p className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider mb-3">
                   Sites onder beheer ({selected.sites.length})
                 </p>
+
+                {/* Koppel bestaande site */}
+                {(() => {
+                  const linkedIds = new Set(selected.sites.map((s) => s.id))
+                  const available = allSites.filter(
+                    (s) =>
+                      !linkedIds.has(s.id) &&
+                      (!s.clientId || s.clientId === selected.id)
+                  )
+                  const isReal =
+                    !!selected.id &&
+                    !selected.id.startsWith("legacy:") &&
+                    !selected.isLegacy
+                  if (!isReal) {
+                    return (
+                      <p className="text-[10px] text-zinc-600 italic mb-3">
+                        Backfill deze klant eerst om sites te kunnen koppelen.
+                      </p>
+                    )
+                  }
+                  if (available.length === 0) return null
+                  return (
+                    <div className="mb-3 flex items-center gap-2 rounded-lg border border-white/[0.06] bg-zinc-800/20 p-2">
+                      <Select value={linkSiteId} onValueChange={setLinkSiteId}>
+                        <SelectTrigger className="h-9 flex-1 bg-zinc-800/50 border-white/[0.08] text-white text-[12px]">
+                          <SelectValue placeholder="+ Koppel bestaande site…" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-zinc-900 border-white/[0.08] text-white max-h-[280px]">
+                          {available
+                            .slice()
+                            .sort((a, b) => a.domain.localeCompare(b.domain))
+                            .map((s) => (
+                              <SelectItem key={s.id} value={s.id}>
+                                <span className="flex items-center gap-2">
+                                  <span className="font-medium">{s.domain}</span>
+                                  <span className="text-[10px] text-zinc-500 uppercase">
+                                    {s.status}
+                                  </span>
+                                  {s.clientName && s.clientName !== selected.name && (
+                                    <span className="text-[10px] text-yellow-400">
+                                      (was: {s.clientName})
+                                    </span>
+                                  )}
+                                </span>
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        size="sm"
+                        disabled={!linkSiteId || linking}
+                        onClick={linkSiteToClient}
+                        className="bg-[#F5911E] hover:bg-[#F5911E]/90 text-black font-semibold h-9"
+                      >
+                        {linking ? "Koppelen…" : "Koppel"}
+                      </Button>
+                    </div>
+                  )
+                })()}
+
                 {selected.sites.length === 0 ? (
                   <p className="text-[11px] text-zinc-600 italic">Geen sites gelinkt</p>
                 ) : (

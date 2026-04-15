@@ -95,6 +95,11 @@ export async function PATCH(
       data.contractEnd = body.contractEnd ? new Date(body.contractEnd) : null
     }
 
+    // Lees huidige waarden op (voor naam-diff sync naar projects)
+    // @ts-ignore – Client model (schema v2, na db:push beschikbaar)
+    const current = await prisma.client.findUnique({ where: { id } })
+    const oldName: string | null = current?.name ?? null
+
     // @ts-ignore – Client model (schema v2, na db:push beschikbaar)
     const updated = await prisma.client.update({
       where: { id },
@@ -117,6 +122,42 @@ export async function PATCH(
         // @ts-ignore – clientId veld (schema v2, na db:push beschikbaar)
         where: { clientId: id },
         data: syncData,
+      })
+    }
+
+    // ── Sync naar Projects ──
+    // Projects hebben (nog) geen clientId FK en matchen via clientName.
+    // Als we de naam wijzigen, moeten we alle projects die op de OUDE naam
+    // stonden meerenamen — anders verschijnt er een "phantom" legacy-klant
+    // in /api/clients zodra je fetchAll herlaadt.
+    if ('name' in body && oldName && oldName !== updated.name) {
+      await prisma.project.updateMany({
+        where: {
+          ownerType: 'client',
+          clientName: { equals: oldName, mode: 'insensitive' },
+        },
+        data: { clientName: updated.name },
+      })
+    }
+    // Ook overige project-velden meesyncen voor projects op nieuwe naam
+    const projectSyncData: Record<string, unknown> = {}
+    if ('email' in body) projectSyncData.clientEmail = updated.email
+    if ('contractType' in body)
+      projectSyncData.contractType = updated.contractType
+    if ('contractStart' in body)
+      projectSyncData.contractStart = updated.contractStart
+    if ('contractEnd' in body)
+      projectSyncData.contractEnd = updated.contractEnd
+    if ('paymentStatus' in body)
+      projectSyncData.paymentStatus = updated.paymentStatus
+    if ('autoRenew' in body) projectSyncData.autoRenew = updated.autoRenew
+    if (Object.keys(projectSyncData).length > 0) {
+      await prisma.project.updateMany({
+        where: {
+          ownerType: 'client',
+          clientName: { equals: updated.name, mode: 'insensitive' },
+        },
+        data: projectSyncData,
       })
     }
 
