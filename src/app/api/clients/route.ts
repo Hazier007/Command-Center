@@ -116,7 +116,6 @@ export async function GET() {
     }> = []
     let clientModelAvailable = true
     try {
-      // @ts-ignore – Client model (schema v2, na db:push beschikbaar)
       realClients = await prisma.client.findMany({
         include: {
           sites: {
@@ -145,7 +144,6 @@ export async function GET() {
         where: {
           ownerType: 'client',
           // Alleen sites die NIET aan een Client record zijn gelinkt
-          // @ts-ignore – clientId veld (schema v2, na db:push beschikbaar)
           clientId: null,
         },
       }).catch(() =>
@@ -367,7 +365,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // @ts-ignore – Client model (schema v2, na db:push beschikbaar)
     const created = await prisma.client.create({
       data: {
         name: name.trim(),

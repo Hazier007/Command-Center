@@ -23,7 +23,6 @@ export async function GET(
   }
 
   try {
-    // @ts-ignore – Client model (schema v2, na db:push beschikbaar)
     const client = await prisma.client.findUnique({
       where: { id },
       include: {
@@ -96,11 +95,9 @@ export async function PATCH(
     }
 
     // Lees huidige waarden op (voor naam-diff sync naar projects)
-    // @ts-ignore – Client model (schema v2, na db:push beschikbaar)
     const current = await prisma.client.findUnique({ where: { id } })
     const oldName: string | null = current?.name ?? null
 
-    // @ts-ignore – Client model (schema v2, na db:push beschikbaar)
     const updated = await prisma.client.update({
       where: { id },
       data,
@@ -119,7 +116,6 @@ export async function PATCH(
 
     if (Object.keys(syncData).length > 0) {
       await prisma.site.updateMany({
-        // @ts-ignore – clientId veld (schema v2, na db:push beschikbaar)
         where: { clientId: id },
         data: syncData,
       })
@@ -191,7 +187,6 @@ export async function DELETE(
   }
 
   try {
-    // @ts-ignore – Client model (schema v2, na db:push beschikbaar)
     await prisma.client.delete({ where: { id } })
     return NextResponse.json({ success: true })
   } catch (error) {

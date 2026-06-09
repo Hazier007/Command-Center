@@ -104,6 +104,7 @@ export default function IdeasPage() {
           description: formData.description,
           category: formData.category,
           priority: formData.priority,
+          status: 'raw',
         })
       }
 

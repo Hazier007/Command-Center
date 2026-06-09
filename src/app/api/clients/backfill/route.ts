@@ -26,7 +26,6 @@ export async function POST(_request: NextRequest) {
       prisma.site.findMany({
         where: {
           ownerType: 'client',
-          // @ts-ignore – clientId veld (schema v2, na db:push beschikbaar)
           clientId: null,
         },
       }),
@@ -88,7 +87,6 @@ export async function POST(_request: NextRequest) {
     }> = []
 
     for (const [key, { displayName, sites: groupSites, projects: groupProjects }] of groups) {
-      // @ts-ignore – Client model (schema v2, na db:push beschikbaar)
       const existingList = await prisma.client.findMany({
         where: {
           name: { equals: displayName, mode: 'insensitive' },
@@ -115,7 +113,6 @@ export async function POST(_request: NextRequest) {
         const seedPaymentStatus = seedProject?.paymentStatus || null
         const seedAutoRenew = seedProject?.autoRenew === true
 
-        // @ts-ignore – Client model (schema v2, na db:push beschikbaar)
         client = await prisma.client.create({
           data: {
             name: displayName || key,
@@ -140,7 +137,6 @@ export async function POST(_request: NextRequest) {
         const ids = groupSites.map((s) => s.id)
         const res = await prisma.site.updateMany({
           where: { id: { in: ids } },
-          // @ts-ignore – clientId veld (schema v2, na db:push beschikbaar)
           data: { clientId: client.id },
         })
         linkedCount = res.count
@@ -182,7 +178,6 @@ export async function GET() {
       prisma.site.findMany({
         where: {
           ownerType: 'client',
-          // @ts-ignore – clientId veld (schema v2, na db:push beschikbaar)
           clientId: null,
         },
         select: {

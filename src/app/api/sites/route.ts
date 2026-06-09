@@ -76,7 +76,6 @@ export async function POST(request: Request) {
         contractStart: data.contractStart ? new Date(data.contractStart) : undefined,
         contractEnd: data.contractEnd ? new Date(data.contractEnd) : undefined,
         // v2: eerste-klas Client relatie. Als clientId meekomt, linken we direct.
-        // @ts-ignore – clientId veld (schema v2, na db:push beschikbaar)
         ...(data.clientId !== undefined && { clientId: data.clientId || null }),
       },
       include: {
@@ -86,10 +85,8 @@ export async function POST(request: Request) {
 
     // Als een clientId is meegegeven, sync de legacy client-velden vanuit de Client record
     // zodat clientName/clientEmail/contractType altijd up-to-date blijven.
-    // @ts-ignore – clientId veld (schema v2, na db:push beschikbaar)
     if (data.clientId) {
       try {
-        // @ts-ignore – Client model (schema v2, na db:push beschikbaar)
         const client = await prisma.client.findUnique({
           where: { id: data.clientId },
         })

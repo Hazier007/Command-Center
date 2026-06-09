@@ -96,7 +96,6 @@ export async function PATCH(
         ...(data.contractStart !== undefined && { contractStart: data.contractStart ? new Date(data.contractStart) : null }),
         ...(data.contractEnd !== undefined && { contractEnd: data.contractEnd ? new Date(data.contractEnd) : null }),
         // v2: eerste-klas Client relatie
-        // @ts-ignore – clientId veld (schema v2, na db:push beschikbaar)
         ...(data.clientId !== undefined && { clientId: data.clientId || null }),
       },
       include: {
@@ -105,10 +104,8 @@ export async function PATCH(
     })
     
     // Sync legacy client-velden vanuit gekoppelde Client record
-    // @ts-ignore – clientId veld (schema v2, na db:push beschikbaar)
     if (data.clientId) {
       try {
-        // @ts-ignore – Client model (schema v2, na db:push beschikbaar)
         const client = await prisma.client.findUnique({
           where: { id: data.clientId },
         })

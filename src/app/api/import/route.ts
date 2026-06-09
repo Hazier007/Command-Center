@@ -68,6 +68,10 @@ type ImportNowItem = {
   updatedAt: string
 }
 
+function optionalString(value: string | null | undefined): string | undefined {
+  return value ?? undefined
+}
+
 type ImportAlert = {
   id: string
   title: string
@@ -199,10 +203,10 @@ export async function POST(request: Request) {
           data: {
             id: nowItem.id,
             title: nowItem.title,
-            meta: nowItem.meta,
-            tag: nowItem.tag,
-            description: nowItem.description,
-            projectId: nowItem.projectId,
+            meta: nowItem.meta ?? '',
+            tag: nowItem.tag ?? '',
+            description: optionalString(nowItem.description),
+            projectId: optionalString(nowItem.projectId),
             createdAt: new Date(nowItem.createdAt),
             updatedAt: new Date(nowItem.updatedAt),
           },

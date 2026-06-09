@@ -17,6 +17,7 @@ interface SelectTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 interface SelectContentProps {
   children: React.ReactNode
+  className?: string
 }
 
 interface SelectItemProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -71,14 +72,14 @@ const SelectTrigger = React.forwardRef<HTMLButtonElement, SelectTriggerProps>(
 )
 SelectTrigger.displayName = "SelectTrigger"
 
-const SelectContent: React.FC<SelectContentProps> = ({ children }) => {
+const SelectContent: React.FC<SelectContentProps> = ({ children, className }) => {
   const context = React.useContext(SelectContext)
   if (!context) throw new Error('SelectContent must be used within Select')
 
   if (!context.isOpen) return null
 
   return (
-    <div className="absolute z-50 top-full left-0 w-full mt-1 max-h-96 overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md">
+    <div className={cn("absolute z-50 top-full left-0 w-full mt-1 max-h-96 overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md", className)}>
       <div className="p-1">
         {children}
       </div>

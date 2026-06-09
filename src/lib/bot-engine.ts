@@ -116,7 +116,7 @@ async function processPosition(config: {
   let position = await prisma.botPosition.findUnique({ where: { coin: config.coin } })
   if (!position) {
     let amount = 0
-    let avgPrice = currentPrice
+    const avgPrice = currentPrice
     if (bitvavo.isConfigured()) {
       const balances = await bitvavo.getBalance()
       const bal = balances.find((b) => b.symbol === config.coin)
