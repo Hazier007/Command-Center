@@ -827,6 +827,7 @@ export async function seedData() {
     description: 'Directory van openluchtzwembaden in België. Seizoensverkeer (mei-sep). Reviews, openingsuren, prijzen per zwembad. Zelfde setup als busstop.be.',
     category: 'directory',
     priority: 'medium',
+    status: 'raw',
   });
 
   await ideasStorage.create({
@@ -834,6 +835,7 @@ export async function seedData() {
     description: 'Puppies/fokkers directory. Emotioneel traffic (mensen zoeken puppies!). Affiliate dierenvoeding. Hoog engagement.',
     category: 'directory',
     priority: 'medium',
+    status: 'raw',
   });
 
   await ideasStorage.create({
@@ -841,6 +843,7 @@ export async function seedData() {
     description: 'Glamping/premium camping directory Europa. Affiliate boekingen (€10-30/boeking). Seizoensgebonden maar hoog volume.',
     category: 'directory',
     priority: 'low',
+    status: 'raw',
   });
 
   await ideasStorage.create({
@@ -848,6 +851,7 @@ export async function seedData() {
     description: 'React dashboard voor Hazier klanten: project status, facturen, rapportages, WordPress koppelingen. Productiseert het bureau.',
     category: 'feature',
     priority: 'high',
+    status: 'raw',
   });
 
   await ideasStorage.create({
@@ -855,6 +859,7 @@ export async function seedData() {
     description: 'Exchange vergelijker voor NL/BE markt. Affiliate commissies €50-200/signup. Past bij HODL strategie.',
     category: 'tool',
     priority: 'medium',
+    status: 'raw',
   });
 
   await ideasStorage.create({
@@ -862,6 +867,7 @@ export async function seedData() {
     description: 'Hardloopschoenen reviews & vergelijker. Internationaal (Engels). Amazon/Bol affiliate. Groot zoekvolume.',
     category: 'leadgen',
     priority: 'low',
+    status: 'raw',
   });
 
   await ideasStorage.create({
@@ -869,6 +875,7 @@ export async function seedData() {
     description: 'Simpele to-do app. Freemium model: gratis basis, €3/mnd pro. Kan viral gaan in Vlaanderen. Recurring revenue.',
     category: 'tool',
     priority: 'low',
+    status: 'raw',
   });
 
   // Create Notes — roadmap & strategie

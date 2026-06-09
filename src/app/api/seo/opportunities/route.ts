@@ -71,7 +71,12 @@ async function getGSCData(siteUrl: string, auth: GSCAuth, days: number = 28): Pr
     }
   });
 
-  return response.data.rows || [];
+  return (response.data.rows || []).map((row) => ({
+    keys: row.keys ?? undefined,
+    position: row.position ?? undefined,
+    impressions: row.impressions ?? undefined,
+    ctr: row.ctr ?? undefined,
+  }));
 }
 
 function calculatePotentialClicks(impressions: number, currentCTR: number, position: number): number {

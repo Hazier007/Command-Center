@@ -55,7 +55,6 @@ export async function GET(request: NextRequest) {
   // trigger om proactief te verlengen of af te sluiten.
   let clientContractAlerts = 0
   try {
-    // @ts-ignore – Client model (schema v2, na db:push beschikbaar)
     const clients = await prisma.client.findMany({
       where: {
         status: 'active',

@@ -34,7 +34,7 @@ export default function ClientDetailPage() {
   const [showLinkDialog, setShowLinkDialog] = useState(false)
   const [showNewSiteDialog, setShowNewSiteDialog] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [newSiteForm, setNewSiteForm] = useState({ domain: "", status: "planned", hosting: "" })
+  const [newSiteForm, setNewSiteForm] = useState<{ domain: string; status: Site['status']; hosting: string }>({ domain: "", status: "planned", hosting: "" })
 
   useEffect(() => {
     loadData()
@@ -93,7 +93,7 @@ export default function ClientDetailPage() {
 
   const handleUnlinkSite = async (siteId: string) => {
     try {
-      await sitesStorage.update(siteId, { projectId: null })
+      await sitesStorage.update(siteId, { projectId: undefined })
       await loadData()
     } catch (error) {
       console.error('Failed to unlink site:', error)
@@ -108,6 +108,7 @@ export default function ClientDetailPage() {
         domain: newSiteForm.domain,
         status: newSiteForm.status,
         projectId,
+        techStack: [],
         hosting: newSiteForm.hosting || undefined,
       })
       await loadData()
@@ -457,7 +458,7 @@ export default function ClientDetailPage() {
                   <select
                     id="new-site-status"
                     value={newSiteForm.status}
-                    onChange={(e) => setNewSiteForm({ ...newSiteForm, status: e.target.value })}
+                    onChange={(e) => setNewSiteForm({ ...newSiteForm, status: e.target.value as Site['status'] })}
                     className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   >
                     <option value="planned">Planned</option>

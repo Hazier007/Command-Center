@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Plus, Edit, Trash2, Search, Calendar, Eye, EyeOff, FileText, BarChart3, Brain, Database, Users, Wrench, Globe, Target, CheckCircle2, Route, BookOpen, Shield, ChevronLeft, ChevronRight, X, Zap, TrendingUp, Briefcase, AlertCircle } from "lucide-react"
+import { Plus, Edit, Trash2, Search, Calendar, Eye, EyeOff, FileText, BarChart3, Brain, Database, Users, Wrench, Globe, Target, CheckCircle2, Route, BookOpen, Shield, ChevronLeft, ChevronRight, X, Zap, TrendingUp, Briefcase, AlertCircle, Filter } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 
@@ -137,7 +137,7 @@ export default function ResearchPage() {
     const matchesAuthor = selectedAuthor === "all" || item.author === selectedAuthor
     const matchesStatus = selectedStatus === "all" || item.status === selectedStatus
     const matchesSite = selectedSite === "all" ||
-      (item as Record<string, unknown>).linkedSiteId === selectedSite
+      (item as unknown as Record<string, unknown>).linkedSiteId === selectedSite
 
     return matchesSearch && matchesType && matchesAuthor && matchesStatus && matchesSite
   })
@@ -164,10 +164,10 @@ export default function ResearchPage() {
       const payload = {
         title: formData.title,
         body: formData.body,
-        type: formData.type,
+        type: formData.type as ResearchItem['type'],
         author: formData.author,
         tags: formData.tags || undefined,
-        status: formData.status,
+        status: formData.status as ResearchItem['status'],
         linkedSiteId: formData.linkedSiteId || undefined,
         linkedDomainId: formData.linkedDomainId || undefined,
       }
@@ -202,8 +202,8 @@ export default function ResearchPage() {
       author: item.author,
       tags: item.tags || "",
       status: item.status,
-      linkedSiteId: (item as Record<string, unknown>).linkedSiteId as string || "",
-      linkedDomainId: (item as Record<string, unknown>).linkedDomainId as string || "",
+      linkedSiteId: (item as unknown as Record<string, unknown>).linkedSiteId as string || "",
+      linkedDomainId: (item as unknown as Record<string, unknown>).linkedDomainId as string || "",
     })
     setIsDialogOpen(true)
   }
@@ -442,11 +442,11 @@ export default function ResearchPage() {
           {paginatedResearch.map((item) => {
             const typeConfig = getTypeConfig(item.type)
             const TypeIcon = typeConfig.icon
-            const linkedSiteId = (item as Record<string, unknown>).linkedSiteId as string | undefined
+            const linkedSiteId = (item as unknown as Record<string, unknown>).linkedSiteId as string | undefined
             const siteLabel = linkedSiteId ? getSiteLabel(linkedSiteId) : null
-            const summary = (item as Record<string, unknown>).summary as string | undefined
-            const metadata = (item as Record<string, unknown>).metadata as Record<string, unknown> | undefined
-            const itemNeedsApproval = (item as Record<string, unknown>).needsApproval as boolean | undefined
+            const summary = (item as unknown as Record<string, unknown>).summary as string | undefined
+            const metadata = (item as unknown as Record<string, unknown>).metadata as Record<string, unknown> | undefined
+            const itemNeedsApproval = (item as unknown as Record<string, unknown>).needsApproval as boolean | undefined
 
             return (
               <Card key={item.id} className="overflow-hidden">

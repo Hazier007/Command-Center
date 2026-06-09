@@ -222,7 +222,7 @@ export default function KlantenPage() {
     } finally {
       setLinking(false)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [selected, linkSiteId, linking, fetchAll])
 
   useEffect(() => {

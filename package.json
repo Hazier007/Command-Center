@@ -8,7 +8,9 @@
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run lint && npm run typecheck && npm run build"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",

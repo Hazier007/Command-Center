@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { validateAgentToken, unauthorizedResponse } from '@/lib/agent-auth'
 
@@ -42,6 +43,10 @@ class ValidationError extends Error {
     super(message)
     this.name = 'ValidationError'
   }
+}
+
+function jsonMetadata(metadata: Record<string, unknown>): Prisma.InputJsonObject | undefined {
+  return Object.keys(metadata).length > 0 ? (metadata as Prisma.InputJsonObject) : undefined
 }
 
 // POST /api/agent/task — Create a task
@@ -297,7 +302,7 @@ async function handleResearch(body: Record<string, unknown>) {
       linkedIdeaId: body.linkedIdeaId as string | undefined,
       linkedTaskId: body.linkedTaskId as string | undefined,
       summary: body.summary as string | undefined,
-      metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
+      metadata: jsonMetadata(metadata),
       needsApproval: (body.needsApproval as boolean) || false,
       reportDate: body.reportDate ? new Date(body.reportDate as string) : new Date(),
       version: (body.version as number) || 1,
@@ -352,7 +357,7 @@ async function handleContent(body: Record<string, unknown>) {
       linkedSiteId: body.linkedSiteId as string | undefined,
       linkedDomainId: body.linkedDomainId as string | undefined,
       linkedContentId: body.linkedContentId as string | undefined,
-      metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
+      metadata: jsonMetadata(metadata),
       language: body.language as string | undefined,
       handoffStatus: (body.handoffStatus as string) || 'not-ready',
       version: (body.version as number) || 1,
@@ -426,7 +431,7 @@ async function handleAgentReport(body: Record<string, unknown>) {
       periodType: body.periodType as string | undefined,
       periodLabel: body.periodLabel as string | undefined,
       currency: body.currency as string | undefined,
-      metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
+      metadata: jsonMetadata(metadata),
       startedAt: body.startedAt ? new Date(body.startedAt as string) : undefined,
       completedAt: body.completedAt ? new Date(body.completedAt as string) : undefined,
     },
@@ -478,7 +483,7 @@ async function handleSeoReport(body: Record<string, unknown>) {
       quickWinCount: body.quickWinCount as number | undefined,
       dataSource: body.dataSource as string | undefined,
       periodDays: body.periodDays as number | undefined,
-      metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
+      metadata: jsonMetadata(metadata),
     },
   })
 
