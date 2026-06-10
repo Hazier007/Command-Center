@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { useState, useRef, useEffect } from "react"
 import {
   Menu, Users, DollarSign, Bell, Wallet, FileText, BarChart3, Brain,
-  LayoutDashboard, Globe, Lightbulb, CheckSquare, FolderOpen, StickyNote,
+  Globe, Lightbulb, CheckSquare, FolderOpen, StickyNote,
   ChevronDown, Zap, Workflow, Activity, Search, TrendingUp, ShoppingBag, Target
 } from "lucide-react"
 
@@ -24,8 +24,7 @@ const navGroups = [
   {
     label: "Overzicht",
     items: [
-      { href: "/", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/locallead", label: "LocalLead", icon: Target },
+      { href: "/", label: "LocalLead HQ", icon: Target },
       { href: "/activity", label: "Activiteit", icon: Activity },
       { href: "/alerts", label: "Alerts", icon: Bell },
     ],
