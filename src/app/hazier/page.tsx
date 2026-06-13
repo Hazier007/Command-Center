@@ -1,6 +1,6 @@
 import { BusinessDashboardPage } from "@/components/business-dashboard-page"
 import { businessDashboards } from "@/lib/business-dashboards"
 
-export default function LocalLeadPage() {
-  return <BusinessDashboardPage dashboard={businessDashboards.locallead} />
+export default function HazierPage() {
+  return <BusinessDashboardPage dashboard={businessDashboards.hazier} />
 }
