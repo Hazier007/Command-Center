@@ -13,6 +13,8 @@ async function deleteMany(label: string, action: () => Promise<{ count: number }
 // POST /api/reset?scope=all — bulk delete operation for a clean operational slate.
 // Keeps auth users/sessions/accounts intact; removes business/operational data.
 // Requires confirmation header to prevent accidental use.
+// This deliberately avoids one huge interactive transaction because Vercel/Prisma
+// can close those after 5s; deleteMany calls are idempotent and safe to repeat.
 export async function POST(request: NextRequest) {
   const confirm = request.headers.get('x-confirm-reset')
   if (confirm !== CONFIRMATION) {
@@ -29,49 +31,47 @@ export async function POST(request: NextRequest) {
   const results: ResetResult = {}
 
   try {
-    await prisma.$transaction(async (tx) => {
-      // Child/detail records first.
-      if (wants('bot')) {
-        await deleteMany('botTrades', () => tx.botTrade.deleteMany({}), results)
-        await deleteMany('botSnapshots', () => tx.botSnapshot.deleteMany({}), results)
-        await deleteMany('botPositions', () => tx.botPosition.deleteMany({}), results)
-        await deleteMany('botConfigs', () => tx.botConfig.deleteMany({}), results)
-      }
+    // Child/detail records first.
+    if (wants('bot')) {
+      await deleteMany('botTrades', () => prisma.botTrade.deleteMany({}), results)
+      await deleteMany('botSnapshots', () => prisma.botSnapshot.deleteMany({}), results)
+      await deleteMany('botPositions', () => prisma.botPosition.deleteMany({}), results)
+      await deleteMany('botConfigs', () => prisma.botConfig.deleteMany({}), results)
+    }
 
-      if (wants('agent')) {
-        await deleteMany('agentMessages', () => tx.agentMessage.deleteMany({}), results)
-        await deleteMany('agentLogs', () => tx.agentLog.deleteMany({}), results)
-        await deleteMany('agentReports', () => tx.agentReport.deleteMany({}), results)
-      }
+    if (wants('agent')) {
+      await deleteMany('agentMessages', () => prisma.agentMessage.deleteMany({}), results)
+      await deleteMany('agentLogs', () => prisma.agentLog.deleteMany({}), results)
+      await deleteMany('agentReports', () => prisma.agentReport.deleteMany({}), results)
+    }
 
-      if (wants('tasks')) await deleteMany('tasks', () => tx.task.deleteMany({}), results)
-      if (wants('content')) await deleteMany('content', () => tx.content.deleteMany({}), results)
-      if (wants('research')) {
-        await deleteMany('seoReports', () => tx.seoReport.deleteMany({}), results)
-        await deleteMany('research', () => tx.research.deleteMany({}), results)
-      }
-      if (wants('notes')) await deleteMany('notes', () => tx.note.deleteMany({}), results)
-      if (wants('alerts')) await deleteMany('alerts', () => tx.alert.deleteMany({}), results)
-      if (wants('activity')) await deleteMany('activity', () => tx.activity.deleteMany({}), results)
-      if (wants('decisions')) await deleteMany('decisions', () => tx.decision.deleteMany({}), results)
-      if (wants('sprints')) await deleteMany('sprints', () => tx.sprint.deleteMany({}), results)
-      if (wants('leads')) await deleteMany('leads', () => tx.lead.deleteMany({}), results)
-      if (wants('finance')) {
-        await deleteMany('financeSnapshots', () => tx.financeSnapshot.deleteMany({}), results)
-        await deleteMany('revenueEntries', () => tx.revenueEntry.deleteMany({}), results)
-        await deleteMany('costs', () => tx.cost.deleteMany({}), results)
-        await deleteMany('kpis', () => tx.kPI.deleteMany({}), results)
-      }
-      if (wants('products')) await deleteMany('products', () => tx.product.deleteMany({}), results)
-      if (wants('ideas')) await deleteMany('ideas', () => tx.idea.deleteMany({}), results)
-      if (wants('keywords')) await deleteMany('keywordHistory', () => tx.keywordHistory.deleteMany({}), results)
-      if (wants('domains')) await deleteMany('domainOpportunities', () => tx.domainOpportunity.deleteMany({}), results)
+    if (wants('tasks')) await deleteMany('tasks', () => prisma.task.deleteMany({}), results)
+    if (wants('content')) await deleteMany('content', () => prisma.content.deleteMany({}), results)
+    if (wants('research')) {
+      await deleteMany('seoReports', () => prisma.seoReport.deleteMany({}), results)
+      await deleteMany('research', () => prisma.research.deleteMany({}), results)
+    }
+    if (wants('notes')) await deleteMany('notes', () => prisma.note.deleteMany({}), results)
+    if (wants('alerts')) await deleteMany('alerts', () => prisma.alert.deleteMany({}), results)
+    if (wants('activity')) await deleteMany('activity', () => prisma.activity.deleteMany({}), results)
+    if (wants('decisions')) await deleteMany('decisions', () => prisma.decision.deleteMany({}), results)
+    if (wants('sprints')) await deleteMany('sprints', () => prisma.sprint.deleteMany({}), results)
+    if (wants('leads')) await deleteMany('leads', () => prisma.lead.deleteMany({}), results)
+    if (wants('finance')) {
+      await deleteMany('financeSnapshots', () => prisma.financeSnapshot.deleteMany({}), results)
+      await deleteMany('revenueEntries', () => prisma.revenueEntry.deleteMany({}), results)
+      await deleteMany('costs', () => prisma.cost.deleteMany({}), results)
+      await deleteMany('kpis', () => prisma.kPI.deleteMany({}), results)
+    }
+    if (wants('products')) await deleteMany('products', () => prisma.product.deleteMany({}), results)
+    if (wants('ideas')) await deleteMany('ideas', () => prisma.idea.deleteMany({}), results)
+    if (wants('keywords')) await deleteMany('keywordHistory', () => prisma.keywordHistory.deleteMany({}), results)
+    if (wants('domains')) await deleteMany('domainOpportunities', () => prisma.domainOpportunity.deleteMany({}), results)
 
-      // Parent records last.
-      if (wants('sites')) await deleteMany('sites', () => tx.site.deleteMany({}), results)
-      if (wants('clients')) await deleteMany('clients', () => tx.client.deleteMany({}), results)
-      if (wants('projects')) await deleteMany('projects', () => tx.project.deleteMany({}), results)
-    }, { timeout: 60000 })
+    // Parent records last.
+    if (wants('sites')) await deleteMany('sites', () => prisma.site.deleteMany({}), results)
+    if (wants('clients')) await deleteMany('clients', () => prisma.client.deleteMany({}), results)
+    if (wants('projects')) await deleteMany('projects', () => prisma.project.deleteMany({}), results)
 
     return NextResponse.json({
       success: true,
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Reset error:', error)
     return NextResponse.json(
-      { error: 'Reset failed', details: error instanceof Error ? error.message : 'unknown' },
+      { error: 'Reset failed', details: error instanceof Error ? error.message : 'unknown', deletedBeforeFailure: results },
       { status: 500 }
     )
   }
