@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       if (wants('sites')) await deleteMany('sites', () => tx.site.deleteMany({}), results)
       if (wants('clients')) await deleteMany('clients', () => tx.client.deleteMany({}), results)
       if (wants('projects')) await deleteMany('projects', () => tx.project.deleteMany({}), results)
-    })
+    }, { timeout: 60000 })
 
     return NextResponse.json({
       success: true,
