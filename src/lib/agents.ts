@@ -1,14 +1,4 @@
-import { AgentName, ActiveAssignee, LegacyAgentName } from './types';
-
-export interface AgentProfile {
-  name: AgentName;
-  displayName: string;
-  role: string;
-  description: string;
-  specialties: string[];
-  color: string; // hex color for UI
-  emoji: string;
-}
+import { ActiveAssignee } from './types';
 
 export interface TeamMember {
   name: ActiveAssignee;
@@ -20,123 +10,76 @@ export interface TeamMember {
   emoji: string;
 }
 
-// ===== TEAM BC: De actieve kern =====
 export const TEAM: Record<ActiveAssignee, TeamMember> = {
   bart: {
     name: 'bart',
     displayName: 'Bart',
-    role: 'Eigenaar & Operator',
-    description: 'Oprichter van Hazier. Beslist, keurt goed, stuurt bij.',
-    specialties: ['strategie', 'beslissingen', 'klantrelaties', 'business development'],
-    color: '#F5911E', // Hazier orange
-    emoji: '👤',
+    role: 'CEO & beslisser',
+    description: 'Eigenaar van de cockpit. Keurt outreach, prioriteiten, investeringen en partnerdeals goed.',
+    specialties: ['beslissen', 'relaties', 'goedkeuring', 'focus'],
+    color: '#F5911E',
+    emoji: '👑',
   },
-  claude: {
-    name: 'claude',
-    displayName: 'Claude',
-    role: 'Builder & Strategist',
-    description: 'Rechterhand van Bart. Bouwt, analyseert, schrijft content, beheert financiën, evalueert groei.',
-    specialties: ['development', 'strategie', 'content', 'finance', 'groei-analyse', 'SEO'],
-    color: '#D97706', // warm amber — complementair aan Hazier orange
-    emoji: '🤖',
+  hermes: {
+    name: 'hermes',
+    displayName: 'Hermes',
+    role: 'Command Center operator',
+    description: 'Coördineert uitvoering, code, research, agents, deployment en dagelijkse beslissingen.',
+    specialties: ['orchestratie', 'development', 'research', 'deployments'],
+    color: '#FFFFFF',
+    emoji: '🧠',
   },
-  radar: {
-    name: 'radar',
-    displayName: 'RADAR',
-    role: 'SEO & Domain Intelligence',
-    description: 'Autonome agent. Scant de markt, vindt kansen, analyseert domeinen en zoekverkeer.',
-    specialties: ['SEO analyse', 'domein research', 'keyword research', 'concurrentie analyse'],
-    color: '#10B981', // green
-    emoji: '📡',
+  lisa: {
+    name: 'lisa',
+    displayName: 'Lisa',
+    role: 'Projectmanager',
+    description: 'Bewaakt planning, taken, overdracht, deadlines en correcte opslag in Command Center.',
+    specialties: ['planning', 'taken', 'overdracht', 'rapportage'],
+    color: '#38BDF8',
+    emoji: '📋',
   },
-};
-
-// Legacy agents — behouden voor historische data, niet meer actief
-export const LEGACY_AGENTS: LegacyAgentName[] = ['atlas', 'forge', 'ink', 'ledger', 'spark'];
-
-export const AGENTS: Record<AgentName, AgentProfile> = {
-  atlas: {
-    name: 'atlas',
-    displayName: 'ATLAS (VPZI)',
-    role: 'Strategist & Operator',
-    description: 'Business partner. Dirigeert het team, stelt prioriteiten, bewaakt de grote lijnen.',
-    specialties: ['strategie', 'planning', 'prioriteiten', 'team coördinatie'],
-    color: '#3B82F6', // blue
-    emoji: '🗺️',
+  wout: {
+    name: 'wout',
+    displayName: 'Wout',
+    role: 'SEO & research',
+    description: 'Doet SERP-checks, audits, keywordresearch en site-monitoring voor alle businessen.',
+    specialties: ['SEO', 'research', 'audits', 'rank tracking'],
+    color: '#34D399',
+    emoji: '🔎',
   },
-  forge: {
-    name: 'forge',
-    displayName: 'FORGE (JKLQ)',
-    role: 'Full-Stack Developer',
-    description: 'Bouwt en onderhoudt alle technische systemen. Van frontend tot API tot database.',
-    specialties: ['Next.js', 'React', 'Prisma', 'API development', 'deployment'],
-    color: '#EF4444', // red
-    emoji: '🔨',
+  'jean-cloud': {
+    name: 'jean-cloud',
+    displayName: 'Jean-Cloud',
+    role: 'Cloud & automatisatie',
+    description: 'Zorgt voor integraties, automations, APIs, deployment en technische workflows.',
+    specialties: ['cloud', 'automation', 'APIs', 'ops'],
+    color: '#A78BFA',
+    emoji: '☁️',
   },
-  radar: {
-    name: 'radar',
-    displayName: 'RADAR (JKWF)',
-    role: 'SEO & Domain Intelligence',
-    description: 'Scant de markt, vindt kansen, analyseert domeinen en zoekverkeer.',
-    specialties: ['SEO analyse', 'domein research', 'keyword research', 'concurrentie analyse'],
-    color: '#10B981', // green
-    emoji: '📡',
+  copycat: {
+    name: 'copycat',
+    displayName: 'Copycat',
+    role: 'Copy & outreach',
+    description: 'Schrijft sitecopy, persoonlijke prospectmails, follow-ups en commerciële teksten.',
+    specialties: ['copywriting', 'outreach', 'follow-up', 'conversie'],
+    color: '#FB7185',
+    emoji: '✍️',
   },
-  ink: {
-    name: 'ink',
-    displayName: 'INK (HWHF)',
-    role: 'Content & Copywriter',
-    description: 'Schrijft alle content. Van blogposts tot productreviews tot landingspaginas.',
-    specialties: ['copywriting', 'SEO content', 'productreviews', 'landingspaginas'],
-    color: '#8B5CF6', // purple
-    emoji: '✒️',
-  },
-  ledger: {
-    name: 'ledger',
-    displayName: 'LEDGER (FXSB)',
-    role: 'Finance & Analytics',
-    description: 'Beheert financiën, analyseert data, maakt rapporten en forecasts.',
-    specialties: ['financiële analyse', 'rapportage', 'forecasting', 'KPI tracking'],
-    color: '#F59E0B', // amber
-    emoji: '📊',
-  },
-  spark: {
-    name: 'spark',
-    displayName: 'SPARK (SJGU)',
-    role: 'Growth & Acquisitions',
-    description: 'Evalueert business ideas, zoekt groei-kansen, analyseert acquisities.',
-    specialties: ['business development', 'idee evaluatie', 'groei strategie', 'acquisities'],
-    color: '#EC4899', // pink
-    emoji: '⚡',
+  beeldmaker: {
+    name: 'beeldmaker',
+    displayName: 'BeeldMaker',
+    role: 'Visuals & assets',
+    description: 'Maakt visuele assets, hero-afbeeldingen, thumbnails en campagnebeelden.',
+    specialties: ['visuals', 'assets', 'OpenAI images', 'branding'],
+    color: '#FACC15',
+    emoji: '🎨',
   },
 };
 
-// BART constant behouden voor backward compatibility
-export const BART = {
-  name: 'bart' as const,
-  displayName: 'Bart',
-  role: 'Eigenaar & Operator',
-  description: 'Oprichter van Hazier. Beslist, keurt goed, stuurt bij.',
-  color: '#F5911E', // Hazier orange
-  emoji: '👤',
-};
-
-// Team BC actieve assignees (voor dropdowns, filters)
-export const ACTIVE_ASSIGNEES: ActiveAssignee[] = ['bart', 'claude', 'radar'];
-
-// Alle assignees inclusief legacy (voor backward compatibility)
-export const ALL_ASSIGNEES = ['bart', 'claude', ...Object.keys(AGENTS), 'cowork'] as const;
-
-export function getAgentProfile(name: string): AgentProfile | undefined {
-  return AGENTS[name as AgentName];
-}
+export const ACTIVE_ASSIGNEES: ActiveAssignee[] = ['bart', 'hermes', 'lisa', 'wout', 'jean-cloud', 'copycat', 'beeldmaker'];
 
 export function getTeamMember(name: string): TeamMember | undefined {
   return TEAM[name as ActiveAssignee];
-}
-
-export function isLegacyAgent(name: string): boolean {
-  return LEGACY_AGENTS.includes(name as LegacyAgentName);
 }
 
 export function isActiveAssignee(name: string): name is ActiveAssignee {
@@ -144,17 +87,8 @@ export function isActiveAssignee(name: string): name is ActiveAssignee {
 }
 
 export function getAssigneeDisplay(name: string): { displayName: string; color: string; emoji: string; isLegacy?: boolean } {
-  // Team BC members eerst
   const member = TEAM[name as ActiveAssignee];
   if (member) return { displayName: member.displayName, color: member.color, emoji: member.emoji };
-
-  // System & cowork
-  if (name === 'cowork') return { displayName: 'Cowork', color: '#6B7280', emoji: '🖥️' };
   if (name === 'system') return { displayName: 'System', color: '#6B7280', emoji: '⚙️' };
-
-  // Legacy agents — tonen met markering
-  const agent = AGENTS[name as AgentName];
-  if (agent) return { displayName: agent.displayName, color: agent.color, emoji: agent.emoji, isLegacy: true };
-
-  return { displayName: name, color: '#6B7280', emoji: '❓' };
+  return { displayName: name, color: '#6B7280', emoji: '•' };
 }

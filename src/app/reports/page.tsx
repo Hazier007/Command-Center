@@ -94,12 +94,12 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 const AGENT_COLORS: Record<string, string> = {
-  forge: 'bg-rose-100 text-rose-800 dark:bg-rose-900/20 dark:text-rose-200',
-  atlas: 'bg-violet-100 text-violet-800 dark:bg-violet-900/20 dark:text-violet-200',
-  radar: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-200',
-  ink: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-200',
-  ledger: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200',
-  spark: 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-200',
+  lisa: 'bg-sky-100 text-sky-800 dark:bg-sky-900/20 dark:text-sky-200',
+  hermes: 'bg-violet-100 text-violet-800 dark:bg-violet-900/20 dark:text-violet-200',
+  wout: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-200',
+  copycat: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-200',
+  'jean-cloud': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200',
+  beeldmaker: 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-200',
 }
 
 export default function ReportsPage() {
@@ -194,12 +194,12 @@ export default function ReportsPage() {
                 className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
               >
                 <option value="all">Alle agents</option>
-                <option value="forge">Forge</option>
-                <option value="atlas">Atlas</option>
-                <option value="radar">Radar</option>
-                <option value="ink">Ink</option>
-                <option value="ledger">Ledger</option>
-                <option value="spark">Spark</option>
+                <option value="lisa">Lisa</option>
+                <option value="hermes">Hermes</option>
+                <option value="wout">Wout</option>
+                <option value="copycat">Copycat</option>
+                <option value="copycat">Copycat</option>
+                <option value="beeldmaker">BeeldMaker</option>
               </select>
               <select
                 value={selectedType}

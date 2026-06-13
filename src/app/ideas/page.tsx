@@ -21,13 +21,12 @@ import { ideasStorage, tasksStorage, projectsStorage, type Idea, type Project } 
 
 const assigneeOptions = [
   { value: 'bart', label: 'Bart 👑' },
-  { value: 'atlas', label: 'Atlas 🗺️' },
-  { value: 'forge', label: 'Forge 🔨' },
-  { value: 'radar', label: 'Radar 📡' },
-  { value: 'ink', label: 'Ink ✍️' },
-  { value: 'ledger', label: 'Ledger 📊' },
-  { value: 'spark', label: 'Spark ⚡' },
-  { value: 'cowork', label: 'Cowork 🤝' },
+  { value: 'hermes', label: 'Hermes 🧠' },
+  { value: 'lisa', label: 'Lisa 📋' },
+  { value: 'wout', label: 'Wout 🔎' },
+  { value: 'jean-cloud', label: 'Jean-Cloud ☁️' },
+  { value: 'copycat', label: 'Copycat ✍️' },
+  { value: 'beeldmaker', label: 'BeeldMaker 🎨' },
 ]
 
 export default function IdeasPage() {

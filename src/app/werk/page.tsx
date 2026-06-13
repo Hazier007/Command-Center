@@ -64,9 +64,9 @@ const LEAD_STATUSES = [
 
 const agentColors: Record<string, string> = {
   // Team BC
-  bart: "bg-[#F5911E]/15 text-[#F5911E]", claude: "bg-amber-500/15 text-amber-400",
-  radar: "bg-blue-500/15 text-blue-400", cowork: "bg-cyan-500/15 text-cyan-400",
-  // Legacy agents
+  bart: "bg-[#F5911E]/15 text-[#F5911E]", hermes: "bg-amber-500/15 text-amber-400",
+  wout: "bg-blue-500/15 text-blue-400", workspace: "bg-cyan-500/15 text-cyan-400",
+  // Oud agents
   forge: "bg-green-500/15 text-green-400", ink: "bg-purple-500/15 text-purple-400",
   spark: "bg-[#F5911E]/15 text-[#F5911E]", ledger: "bg-yellow-500/15 text-yellow-400",
   atlas: "bg-blue-500/15 text-blue-300",
@@ -332,7 +332,7 @@ function ContentDetailModal({ item, onClose, onUpdate }: { item: ContentItem; on
                     status: "todo",
                     priority: "medium",
                     category: "content",
-                    assignee: "claude",
+                    assignee: "hermes",
                     source: "bart",
                   }),
                 })
@@ -601,8 +601,8 @@ function ResearchDetailModal({
                 className="h-8 rounded-md border border-white/10 bg-zinc-900 px-2 text-[11px] text-white"
               >
                 <option value="bart">Bart</option>
-                <option value="claude">Claude</option>
-                <option value="radar">RADAR</option>
+                <option value="hermes">Hermes</option>
+                <option value="wout">RADAR</option>
               </select>
               <button
                 onClick={createTaskFromResearch}

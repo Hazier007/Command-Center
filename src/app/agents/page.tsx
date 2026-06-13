@@ -1,383 +1,134 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { ACTIVE_ASSIGNEES, TEAM } from "@/lib/agents"
 import { cn } from "@/lib/utils"
-import { TEAM, ACTIVE_ASSIGNEES, AGENTS, LEGACY_AGENTS as LEGACY_NAMES } from "@/lib/agents"
 
-// ─── Types ─────────────────────────────────────────────────────
-interface AgentLog {
-  id: string; agent: string; action: string; details?: string; createdAt: string
-}
-interface Task {
-  id: string; title: string; status: string; assignee?: string; priority?: string; category?: string
-}
+interface AgentLog { id: string; agent: string; action: string; details?: string; createdAt: string }
+interface Task { id: string; title: string; status: string; assignee?: string; priority?: string; category?: string }
 
-// ─── Team (Bart + Claude + RADAR) — afgeleid uit agents.ts ─────
-// Enige bron van waarheid: TEAM in src/lib/agents.ts. Hier alleen
-// de UI-extensies (Tailwind border/badge classes, long description).
-type TeamCard = {
-  id: "bart" | "claude" | "radar"
-  name: string
-  role: string
-  emoji: string
-  color: string         // Tailwind bg class (used for top accent bar)
-  cardColor: string     // Tailwind border class for card
-  badgeColor: string    // Tailwind classes for specialty badges
-  hex: string           // hex color for inline style
-  description: string
-  specialties: string[]
+const CARD_STYLES: Record<string, { ring: string; badge: string; glow: string }> = {
+  bart: { ring: "border-[#F5911E]/25", badge: "bg-[#F5911E]/15 text-[#F5911E]", glow: "shadow-[#F5911E]/10" },
+  hermes: { ring: "border-white/20", badge: "bg-white/10 text-white", glow: "shadow-white/10" },
+  lisa: { ring: "border-sky-400/25", badge: "bg-sky-400/15 text-sky-300", glow: "shadow-sky-400/10" },
+  wout: { ring: "border-emerald-400/25", badge: "bg-emerald-400/15 text-emerald-300", glow: "shadow-emerald-400/10" },
+  "jean-cloud": { ring: "border-violet-400/25", badge: "bg-violet-400/15 text-violet-300", glow: "shadow-violet-400/10" },
+  copycat: { ring: "border-rose-400/25", badge: "bg-rose-400/15 text-rose-300", glow: "shadow-rose-400/10" },
+  beeldmaker: { ring: "border-yellow-300/25", badge: "bg-yellow-300/15 text-yellow-200", glow: "shadow-yellow-300/10" },
 }
 
-const CARD_STYLES: Record<"bart" | "claude" | "radar", Pick<TeamCard, "color" | "cardColor" | "badgeColor">> = {
-  bart:   { color: "bg-[#F5911E]",   cardColor: "border-[#F5911E]/20",   badgeColor: "bg-[#F5911E]/15 text-[#F5911E]" },
-  claude: { color: "bg-amber-500",   cardColor: "border-amber-500/20",   badgeColor: "bg-amber-500/15 text-amber-400" },
-  radar:  { color: "bg-green-500",   cardColor: "border-green-500/20",   badgeColor: "bg-green-500/15 text-green-400" },
-}
-
-const TEAM_CARDS: TeamCard[] = ACTIVE_ASSIGNEES.map((id) => {
-  const m = TEAM[id]
-  const style = CARD_STYLES[id]
-  return {
-    id,
-    name: m.displayName,
-    role: m.role,
-    emoji: m.emoji,
-    hex: m.color,
-    description: m.description,
-    specialties: m.specialties,
-    ...style,
-  }
-})
-
-// Legacy agents — alleen getoond als er nog historische open taken zijn.
-// Bron: LEGACY_AGENTS in agents.ts. UI-info uit AGENTS map.
-const LEGACY_CARDS = LEGACY_NAMES.map((id) => ({
-  id,
-  name: AGENTS[id].displayName.split(" ")[0], // strip "(VPZI)" etc.
-  emoji: AGENTS[id].emoji,
-  role: AGENTS[id].role.split(" ")[0],
-  hex: AGENTS[id].color,
-}))
-
-// ─── Team Member Modal ───────────────────────────────────────
-function MemberModal({ member, tasks, logs, onClose, onDispatch }: {
-  member: typeof TEAM_CARDS[0]; tasks: Task[]; logs: AgentLog[]; onClose: () => void
-  onDispatch: (assignee: string, title: string, category: string) => Promise<void>
-}) {
-  const [dispatchTitle, setDispatchTitle] = useState("")
-  const [dispatchCategory, setDispatchCategory] = useState("general")
-  const [dispatching, setDispatching] = useState(false)
-
-  const memberTasks = tasks.filter((t) => t.assignee?.toLowerCase() === member.id)
-  const memberLogs = logs.filter((l) => l.agent?.toLowerCase() === member.id).slice(0, 8)
-  const openTasks = memberTasks.filter((t) => t.status !== "done")
-  const doneTasks = memberTasks.filter((t) => t.status === "done")
-
-  const handleDispatch = async () => {
-    if (!dispatchTitle.trim()) return
-    setDispatching(true)
-    await onDispatch(member.id, dispatchTitle, dispatchCategory)
-    setDispatchTitle("")
-    setDispatching(false)
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border border-white/[0.08] bg-zinc-900 shadow-2xl animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className="p-6 border-b border-white/[0.06]" style={{ borderTopColor: member.hex, borderTopWidth: "3px" }}>
-          <div className="flex items-center gap-4">
-            <span className="text-3xl">{member.emoji}</span>
-            <div className="flex-1">
-              <h2 className="text-[18px] font-extrabold text-white">{member.name}</h2>
-              <p className="text-[12px] text-zinc-400">{member.role}</p>
-            </div>
-            <button onClick={onClose} className="rounded-lg p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors">✕</button>
-          </div>
-          <p className="text-[12px] text-zinc-500 mt-2">{member.description}</p>
-          <div className="flex flex-wrap gap-1.5 mt-3">
-            {member.specialties.map((s) => (
-              <span key={s} className={cn("rounded px-2 py-0.5 text-[9px] font-bold", member.badgeColor)}>{s}</span>
-            ))}
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 p-5">
-          <div className="rounded-lg border border-white/[0.06] bg-zinc-800/30 p-3 text-center">
-            <p className="text-[22px] font-extrabold text-white">{openTasks.length}</p>
-            <p className="text-[9px] uppercase text-zinc-500">Open taken</p>
-          </div>
-          <div className="rounded-lg border border-white/[0.06] bg-zinc-800/30 p-3 text-center">
-            <p className="text-[22px] font-extrabold text-white">{doneTasks.length}</p>
-            <p className="text-[9px] uppercase text-zinc-500">Afgerond</p>
-          </div>
-          <div className="rounded-lg border border-white/[0.06] bg-zinc-800/30 p-3 text-center">
-            <p className="text-[22px] font-extrabold text-white">{memberLogs.length}</p>
-            <p className="text-[9px] uppercase text-zinc-500">Recente acties</p>
-          </div>
-        </div>
-
-        {/* Dispatch new task */}
-        <div className="mx-5 mb-4 rounded-xl border border-[#F5911E]/20 bg-[#F5911E]/5 p-4">
-          <p className="text-[11px] font-bold text-[#F5911E] mb-2">⚡ Taak toewijzen aan {member.name}</p>
-          <div className="flex gap-2">
-            <input
-              value={dispatchTitle}
-              onChange={(e) => setDispatchTitle(e.target.value)}
-              placeholder={`Taak voor ${member.name}...`}
-              className="flex-1 rounded-lg border border-white/[0.08] bg-zinc-800/60 px-3 py-2 text-[12px] text-white placeholder-zinc-500 outline-none focus:border-[#F5911E]/40"
-              onKeyDown={(e) => e.key === "Enter" && handleDispatch()}
-            />
-            <select
-              value={dispatchCategory}
-              onChange={(e) => setDispatchCategory(e.target.value)}
-              className="rounded-lg border border-white/[0.08] bg-zinc-800/60 px-2 py-2 text-[11px] text-zinc-300 outline-none"
-            >
-              <option value="general">General</option>
-              <option value="seo">SEO</option>
-              <option value="dev">Dev</option>
-              <option value="content">Content</option>
-              <option value="research">Research</option>
-            </select>
-            <button
-              onClick={handleDispatch}
-              disabled={dispatching || !dispatchTitle.trim()}
-              className="rounded-lg bg-[#F5911E]/20 px-4 py-2 text-[11px] font-bold text-[#F5911E] hover:bg-[#F5911E]/30 disabled:opacity-50 transition-colors"
-            >
-              {dispatching ? "..." : "Stuur →"}
-            </button>
-          </div>
-        </div>
-
-        {/* Open tasks */}
-        {openTasks.length > 0 && (
-          <div className="mx-5 mb-4">
-            <p className="text-[10px] font-bold uppercase text-zinc-500 mb-2">Open taken</p>
-            <div className="space-y-1.5">
-              {openTasks.slice(0, 8).map((t) => (
-                <div key={t.id} className="flex items-center gap-3 rounded-lg border border-white/[0.04] bg-zinc-800/40 px-3 py-2">
-                  <span className={cn("h-1.5 w-1.5 rounded-full", t.status === "in-progress" ? "bg-blue-400" : t.status === "review" ? "bg-yellow-400" : "bg-zinc-500")} />
-                  <p className="text-[11px] text-white flex-1 truncate">{t.title}</p>
-                  <span className="text-[9px] text-zinc-500 uppercase">{t.status}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Recent logs */}
-        {memberLogs.length > 0 && (
-          <div className="mx-5 mb-5">
-            <p className="text-[10px] font-bold uppercase text-zinc-500 mb-2">Recente activiteit</p>
-            <div className="space-y-1">
-              {memberLogs.map((log) => (
-                <div key={log.id} className="flex items-center gap-3 rounded-lg px-3 py-1.5 text-[10px]">
-                  <span className="text-zinc-600">{new Date(log.createdAt).toLocaleDateString("nl-BE")}</span>
-                  <span className="text-zinc-300">{log.action}</span>
-                  {log.details && <span className="text-zinc-500 truncate flex-1">{log.details}</span>}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// ─── Page ─────────────────────────────────────────────────────
 export default function AgentsPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [logs, setLogs] = useState<AgentLog[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedMember, setSelectedMember] = useState<typeof TEAM_CARDS[0] | null>(null)
-  const [showLegacy, setShowLegacy] = useState(false)
+  const [selected, setSelected] = useState<string | null>(null)
 
   useEffect(() => {
     Promise.all([
       fetch("/api/tasks").then((r) => r.json()).catch(() => []),
       fetch("/api/agent-logs?limit=50").then((r) => r.json()).catch(() => []),
-    ])
-      .then(([t, l]) => {
-        setTasks(Array.isArray(t) ? t : [])
-        setLogs(Array.isArray(l) ? l : [])
-      })
-      .finally(() => setLoading(false))
+    ]).then(([t, l]) => {
+      setTasks(Array.isArray(t) ? t : [])
+      setLogs(Array.isArray(l) ? l : [])
+    }).finally(() => setLoading(false))
   }, [])
 
-  const getStats = (id: string) => {
-    const memberTasks = tasks.filter((t) => t.assignee?.toLowerCase() === id)
-    const open = memberTasks.filter((t) => t.status !== "done").length
-    const done = memberTasks.filter((t) => t.status === "done").length
-    const lastLog = logs.find((l) => l.agent?.toLowerCase() === id)
-    return { open, done, total: memberTasks.length, lastLog }
-  }
-
-  const dispatchTask = async (assignee: string, title: string, category: string) => {
-    const res = await fetch("/api/agent/task", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: "Bearer COWORK-SKILL" },
-      body: JSON.stringify({ source: "bart", title, category, priority: "medium", assignedTo: assignee, needsApproval: false }),
-    })
-    if (res.ok) {
-      const newTask = await res.json()
-      setTasks((prev) => [newTask, ...prev])
+  const statsFor = (id: string) => {
+    const memberTasks = tasks.filter((task) => task.assignee?.toLowerCase() === id)
+    return {
+      open: memberTasks.filter((task) => task.status !== "done").length,
+      done: memberTasks.filter((task) => task.status === "done").length,
+      logs: logs.filter((log) => log.agent?.toLowerCase() === id).slice(0, 5),
     }
   }
 
-  // Team-wide stats
-  const totalOpen = tasks.filter((t) => t.status !== "done").length
-  const totalDone = tasks.filter((t) => t.status === "done").length
-
-  // Legacy stats — alleen tonen als oude agents nog open tasks hebben
-  const legacyTaskCount = LEGACY_CARDS.reduce((sum, a) => {
-    return sum + tasks.filter((t) => t.assignee?.toLowerCase() === a.id && t.status !== "done").length
-  }, 0)
+  const selectedMember = selected ? TEAM[selected as keyof typeof TEAM] : null
+  const selectedStats = selected ? statsFor(selected) : null
+  const totalOpen = tasks.filter((task) => task.status !== "done").length
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      {/* Header */}
-      <div>
-        <h1 className="text-[26px] font-extrabold tracking-tight text-white">Team</h1>
-        <p className="text-[13px] text-zinc-500">Bart + Claude + RADAR — de actieve kern</p>
-      </div>
+    <div className="space-y-6 text-white">
+      <section className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(245,145,30,0.18),_transparent_30rem),linear-gradient(135deg,_rgba(24,24,27,0.96),_rgba(7,7,10,1))] p-6 md:p-8">
+        <p className="text-xs font-black uppercase tracking-[0.24em] text-[#F5911E]">Command crew</p>
+        <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h1 className="text-4xl font-black tracking-tight md:text-5xl">Nieuw team, klaar voor uitvoering.</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
+              Dit zijn de actieve rollen voor Bart OS. Oude profielen zijn uit de zichtbare cockpit gehaald.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-right sm:grid-cols-3">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+              <div className="text-2xl font-black">{ACTIVE_ASSIGNEES.length}</div>
+              <div className="text-xs uppercase text-zinc-500">teamleden</div>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+              <div className="text-2xl font-black">{loading ? "…" : totalOpen}</div>
+              <div className="text-xs uppercase text-zinc-500">open taken</div>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+              <div className="text-2xl font-black text-green-300">Clean</div>
+              <div className="text-xs uppercase text-zinc-500">zichtbaar team</div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      {/* Team stats */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-xl border border-white/[0.06] bg-zinc-800/30 p-4">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">Open taken (team)</p>
-          <p className="text-[24px] font-extrabold text-white mt-1 tabular-nums">{loading ? "..." : totalOpen}</p>
-        </div>
-        <div className="rounded-xl border border-white/[0.06] bg-zinc-800/30 p-4">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">Afgerond (team)</p>
-          <p className="text-[24px] font-extrabold text-green-400 mt-1 tabular-nums">{loading ? "..." : totalDone}</p>
-        </div>
-        <div className="rounded-xl border border-white/[0.06] bg-zinc-800/30 p-4">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">Team leden</p>
-          <p className="text-[24px] font-extrabold text-[#F5911E] mt-1 tabular-nums">3</p>
-        </div>
-      </div>
-
-      {/* Team BC cards */}
-      <div className="grid grid-cols-3 gap-4">
-        {TEAM_CARDS.map((member) => {
-          const stats = getStats(member.id)
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {ACTIVE_ASSIGNEES.map((id) => {
+          const member = TEAM[id]
+          const stats = statsFor(id)
+          const style = CARD_STYLES[id]
           return (
             <button
-              key={member.id}
-              onClick={() => setSelectedMember(member)}
-              className={cn(
-                "group relative overflow-hidden rounded-xl border bg-zinc-800/30 p-5 text-left transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)]",
-                member.cardColor
-              )}
+              key={id}
+              onClick={() => setSelected(id)}
+              className={cn("group rounded-[1.5rem] border bg-zinc-900/75 p-5 text-left shadow-2xl transition hover:-translate-y-1", style.ring, style.glow)}
             >
-              {/* Top accent */}
-              <div className={cn("absolute top-0 left-0 right-0 h-[3px]", member.color)} />
-
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-2xl">{member.emoji}</span>
-                <div>
-                  <h3 className="text-[15px] font-extrabold text-white">{member.name}</h3>
-                  <p className="text-[10px] text-zinc-500">{member.role}</p>
-                </div>
+              <div className="flex items-start justify-between gap-4">
+                <div className="text-3xl">{member.emoji}</div>
+                <span className={cn("rounded-full px-2.5 py-1 text-[10px] font-black uppercase", style.badge)}>{member.role}</span>
               </div>
-
-              <p className="text-[11px] text-zinc-500 leading-relaxed mb-4">{member.description}</p>
-
-              {/* Stats */}
-              <div className="flex gap-4 mb-3">
-                <div>
-                  <p className="text-[18px] font-extrabold text-white tabular-nums">{stats.open}</p>
-                  <p className="text-[8px] uppercase text-zinc-500">Open</p>
-                </div>
-                <div>
-                  <p className="text-[18px] font-extrabold text-green-400 tabular-nums">{stats.done}</p>
-                  <p className="text-[8px] uppercase text-zinc-500">Done</p>
-                </div>
+              <h2 className="mt-4 text-2xl font-black">{member.displayName}</h2>
+              <p className="mt-2 min-h-[72px] text-sm leading-6 text-zinc-400">{member.description}</p>
+              <div className="mt-4 flex gap-4 border-t border-white/10 pt-4">
+                <div><div className="text-xl font-black">{stats.open}</div><div className="text-[10px] uppercase text-zinc-500">open</div></div>
+                <div><div className="text-xl font-black text-green-300">{stats.done}</div><div className="text-[10px] uppercase text-zinc-500">done</div></div>
               </div>
-
-              {/* Last activity */}
-              {stats.lastLog && (
-                <div className="rounded-lg bg-zinc-800/60 px-2.5 py-1.5">
-                  <p className="text-[9px] text-zinc-500 truncate">
-                    Laatste: {stats.lastLog.action} — {new Date(stats.lastLog.createdAt).toLocaleDateString("nl-BE")}
-                  </p>
-                </div>
-              )}
-
-              {/* Active indicator for RADAR */}
-              {member.id === "radar" && (
-                <span className="absolute top-4 right-4 flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
-                  <span className="text-[9px] text-green-400 font-medium">Live</span>
-                </span>
-              )}
-
-              {/* Hover CTA */}
-              <span className="absolute bottom-4 right-4 text-[10px] font-bold text-[#F5911E] opacity-0 transition-opacity group-hover:opacity-100">
-                Details →
-              </span>
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                {member.specialties.slice(0, 3).map((specialty) => <span key={specialty} className="rounded-full bg-white/[0.06] px-2 py-1 text-[10px] text-zinc-300">{specialty}</span>)}
+              </div>
             </button>
           )
         })}
-      </div>
+      </section>
 
-      {/* Legacy agents section */}
-      {legacyTaskCount > 0 && (
-        <div className="rounded-xl border border-white/[0.04] bg-zinc-800/20 p-4">
-          <button
-            onClick={() => setShowLegacy(!showLegacy)}
-            className="flex items-center gap-2 w-full text-left"
-          >
-            <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
-              Legacy agents
-            </span>
-            <span className="text-[10px] text-zinc-600">
-              — {legacyTaskCount} open taken van voormalige agents
-            </span>
-            <span className="ml-auto text-zinc-600 text-[11px]">{showLegacy ? "▼" : "▶"}</span>
-          </button>
-
-          {showLegacy && (
-            <div className="mt-3 grid grid-cols-5 gap-2">
-              {LEGACY_CARDS.map((agent) => {
-                const stats = getStats(agent.id)
-                return (
-                  <div
-                    key={agent.id}
-                    className="rounded-lg border border-white/[0.04] bg-zinc-800/30 p-3 text-center opacity-60"
-                  >
-                    <span className="text-lg">{agent.emoji}</span>
-                    <p className="text-[11px] font-bold text-zinc-400 mt-1">{agent.name}</p>
-                    <p className="text-[9px] text-zinc-600">{agent.role}</p>
-                    <div className="flex justify-center gap-3 mt-2">
-                      <div>
-                        <p className="text-[14px] font-bold text-zinc-400 tabular-nums">{stats.open}</p>
-                        <p className="text-[7px] uppercase text-zinc-600">Open</p>
-                      </div>
-                      <div>
-                        <p className="text-[14px] font-bold text-zinc-500 tabular-nums">{stats.done}</p>
-                        <p className="text-[7px] uppercase text-zinc-600">Done</p>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
+      {selectedMember && selectedStats && (
+        <section className="rounded-[2rem] border border-white/10 bg-zinc-900/75 p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="text-4xl">{selectedMember.emoji}</div>
+              <h2 className="mt-3 text-3xl font-black">{selectedMember.displayName}</h2>
+              <p className="mt-1 text-zinc-400">{selectedMember.role}</p>
+              <p className="mt-4 max-w-2xl text-sm leading-6 text-zinc-300">{selectedMember.description}</p>
             </div>
-          )}
-        </div>
-      )}
-
-      {/* Team Member Detail Modal */}
-      {selectedMember && (
-        <MemberModal
-          member={selectedMember}
-          tasks={tasks}
-          logs={logs}
-          onClose={() => setSelectedMember(null)}
-          onDispatch={dispatchTask}
-        />
+            <button onClick={() => setSelected(null)} className="rounded-xl border border-white/10 px-3 py-2 text-sm text-zinc-400 hover:text-white">Sluiten</button>
+          </div>
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div className="font-bold">Specialiteiten</div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {selectedMember.specialties.map((specialty) => <span key={specialty} className="rounded-full bg-white/[0.06] px-3 py-1 text-xs text-zinc-300">{specialty}</span>)}
+              </div>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div className="font-bold">Recente activiteit</div>
+              <div className="mt-3 space-y-2">
+                {selectedStats.logs.length === 0 ? <p className="text-sm text-zinc-500">Nog geen recente agentlogs.</p> : selectedStats.logs.map((log) => <p key={log.id} className="text-sm text-zinc-400">{log.action} · {new Date(log.createdAt).toLocaleDateString("nl-BE")}</p>)}
+              </div>
+            </div>
+          </div>
+        </section>
       )}
     </div>
   )

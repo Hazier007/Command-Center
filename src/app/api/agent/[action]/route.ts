@@ -463,7 +463,7 @@ async function handleSeoReport(body: Record<string, unknown>) {
   const report = await prisma.seoReport.create({
     data: {
       subtype: subtype as string,
-      agent: (source as string) || 'radar',
+      agent: (source as string) || 'wout',
       title: title as string,
       summary: body.summary as string | undefined,
       status: (body.status as string) || 'final',

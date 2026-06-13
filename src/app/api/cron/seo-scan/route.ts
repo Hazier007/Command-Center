@@ -40,7 +40,7 @@ export async function GET(request: Request) {
       });
 
       const isPageOne = opp.position <= 10;
-      const assignee = isPageOne ? 'ink' : 'radar';
+      const assignee = isPageOne ? 'copycat' : 'wout';
       const taskTitle = isPageOne
         ? `✒️ [${opp.siteDomain}] CTR optimalisatie: "${opp.keyword}" — pos ${opp.position}, ${opp.impressions} imp`
         : `📡 [${opp.siteDomain}] SEO kans: "${opp.keyword}" — pos ${opp.position}, ${opp.impressions} imp`;

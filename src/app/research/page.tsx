@@ -61,19 +61,18 @@ const getStatusColor = (status: string) => {
 const getAuthorColor = (author: string) => {
   switch (author) {
     case 'bart': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-200'
-    case 'atlas': return 'bg-violet-100 text-violet-800 dark:bg-violet-900/20 dark:text-violet-200'
-    case 'forge': return 'bg-rose-100 text-rose-800 dark:bg-rose-900/20 dark:text-rose-200'
-    case 'radar': return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-200'
-    case 'ink': return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-200'
-    case 'ledger': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200'
-    case 'spark': return 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-200'
-    case 'cowork': return 'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-200'
+    case 'hermes': return 'bg-violet-100 text-violet-800 dark:bg-violet-900/20 dark:text-violet-200'
+    case 'lisa': return 'bg-sky-100 text-sky-800 dark:bg-sky-900/20 dark:text-sky-200'
+    case 'wout': return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-200'
+    case 'copycat': return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-200'
+    case 'jean-cloud': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200'
+    case 'beeldmaker': return 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-200'
     default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200'
   }
 }
 
 const getAuthorEmoji = (author: string) => {
-  const map: Record<string, string> = { bart: '👑', atlas: '🗺️', forge: '🔨', radar: '📡', ink: '✍️', ledger: '📊', spark: '⚡', cowork: '🤝' }
+  const map: Record<string, string> = { bart: '👑', hermes: '🧠', lisa: '📋', wout: '🔎', copycat: '✍️', 'jean-cloud': '☁️', beeldmaker: '🎨' }
   return map[author] || '👤'
 }
 
@@ -98,7 +97,7 @@ export default function ResearchPage() {
     title: "",
     body: "",
     type: "keyword-research" as string,
-    author: "radar" as string,
+    author: "wout" as string,
     tags: "",
     status: "draft" as string,
     linkedSiteId: "",
@@ -190,7 +189,7 @@ export default function ResearchPage() {
   }
 
   const resetForm = () => {
-    setFormData({ title: "", body: "", type: "keyword-research", author: "radar", tags: "", status: "draft", linkedSiteId: "", linkedDomainId: "" })
+    setFormData({ title: "", body: "", type: "keyword-research", author: "wout", tags: "", status: "draft", linkedSiteId: "", linkedDomainId: "" })
   }
 
   const handleEdit = (item: ResearchItem) => {
@@ -289,13 +288,13 @@ export default function ResearchPage() {
                     <select id="author" value={formData.author} onChange={(e) => setFormData({ ...formData, author: e.target.value })}
                       className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
                       <option value="bart">Bart</option>
-                      <option value="atlas">Atlas</option>
-                      <option value="forge">Forge</option>
-                      <option value="radar">Radar</option>
+                      <option value="hermes">Hermes</option>
+                      <option value="lisa">Lisa</option>
+                      <option value="wout">Wout</option>
                       <option value="ink">Ink</option>
-                      <option value="ledger">Ledger</option>
-                      <option value="spark">Spark</option>
-                      <option value="cowork">Cowork</option>
+                      <option value="copycat">Copycat</option>
+                      <option value="beeldmaker">BeeldMaker</option>
+                      <option value="workspace">Workspace</option>
                     </select>
                   </div>
                 </div>
@@ -391,13 +390,13 @@ export default function ResearchPage() {
               className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
               <option value="all">Alle auteurs</option>
               <option value="bart">Bart</option>
-              <option value="atlas">Atlas</option>
-              <option value="forge">Forge</option>
-              <option value="radar">Radar</option>
+              <option value="hermes">Hermes</option>
+              <option value="lisa">Lisa</option>
+              <option value="wout">Wout</option>
               <option value="ink">Ink</option>
-              <option value="ledger">Ledger</option>
-              <option value="spark">Spark</option>
-              <option value="cowork">Cowork</option>
+              <option value="copycat">Copycat</option>
+              <option value="beeldmaker">BeeldMaker</option>
+              <option value="workspace">Workspace</option>
             </select>
             <select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}
               className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">

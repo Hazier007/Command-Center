@@ -51,7 +51,7 @@ export async function POST(request: Request) {
       const isPageOne = opportunity.currentPosition <= 10;
       const isCloseToPageOne = opportunity.currentPosition <= 20;
 
-      // Create Research Task (assigned to Radar) for keywords needing investigation
+      // Create Research Task (assigned to Wout) for keywords needing investigation
       if (!existingResearchTask) {
         const researchTask = await prisma.task.create({
           data: {
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
             description: `Site: ${opportunity.siteDomain}\nHuidige positie: ${opportunity.currentPosition}\nVertoningen: ${opportunity.impressions}\nHuidige CTR: ${opportunity.currentCTR}%\n\nOnderzoek:\n- Top 5 concurrenten voor dit keyword\n- Related keywords en long-tail varianten\n- Content gaps vs concurrentie\n- Aanbevolen optimalisaties`,
             status: 'todo',
             priority: isPageOne ? 'high' : 'medium',
-            assignee: 'radar',
+            assignee: 'wout',
             siteId,
             source: 'agent',
             needsApproval: true,
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
         const pagePath = opportunity.targetPage.replace(`https://${opportunity.siteDomain}`, '') || '/';
 
         // Page 1 keywords get INK for CTR optimization, page 2 get INK for content
-        const assignee = isPageOne ? 'ink' : (isCloseToPageOne ? 'ink' : 'forge');
+        const assignee = isPageOne ? 'copycat' : (isCloseToPageOne ? 'copycat' : 'hermes');
         const taskTitle = isPageOne
           ? `✒️ CTR optimalisatie: ${pagePath} voor "${opportunity.keyword}" [${opportunity.siteDomain}]`
           : `✒️ Content optimalisatie: ${pagePath} voor "${opportunity.keyword}" [${opportunity.siteDomain}]`;

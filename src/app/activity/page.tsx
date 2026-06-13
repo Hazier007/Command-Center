@@ -18,13 +18,12 @@ import { activityStorage, type ActivityItem } from "@/lib/storage"
 const actorOptions = [
   { value: 'all', label: 'Iedereen' },
   { value: 'bart', label: 'Bart 👑', emoji: '👑' },
-  { value: 'atlas', label: 'Atlas 🗺️', emoji: '🗺️' },
-  { value: 'forge', label: 'Forge 🔨', emoji: '🔨' },
-  { value: 'radar', label: 'Radar 📡', emoji: '📡' },
-  { value: 'ink', label: 'Ink ✍️', emoji: '✍️' },
-  { value: 'ledger', label: 'Ledger 📊', emoji: '📊' },
-  { value: 'spark', label: 'Spark ⚡', emoji: '⚡' },
-  { value: 'cowork', label: 'Cowork 🤝', emoji: '🤝' },
+  { value: 'hermes', label: 'Hermes 🧠', emoji: '🧠' },
+  { value: 'lisa', label: 'Lisa 📋', emoji: '📋' },
+  { value: 'wout', label: 'Wout 🔎', emoji: '🔎' },
+  { value: 'jean-cloud', label: 'Jean-Cloud ☁️', emoji: '☁️' },
+  { value: 'copycat', label: 'Copycat ✍️', emoji: '✍️' },
+  { value: 'beeldmaker', label: 'BeeldMaker 🎨', emoji: '🎨' },
   { value: 'system', label: 'Systeem', emoji: '⚙️' },
 ]
 
@@ -51,13 +50,12 @@ const activityIcons = {
 
 const actorEmojis = {
   bart: '👑',
-  atlas: '🗺️',
-  forge: '🔨',
-  radar: '📡',
-  ink: '✍️',
-  ledger: '📊',
-  spark: '⚡',
-  cowork: '🤝',
+  hermes: '🧠',
+  lisa: '📋',
+  wout: '🔎',
+  'jean-cloud': '☁️',
+  copycat: '✍️',
+  beeldmaker: '🎨',
   system: '⚙️',
 }
 

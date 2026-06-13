@@ -532,7 +532,7 @@ export default function CryptoPage() {
             }) : (
               <div className="col-span-2 rounded-xl border border-white/[0.06] bg-zinc-800/20 p-8 text-center">
                 <p className="text-[12px] text-zinc-400 mb-2">Geen coins geconfigureerd</p>
-                <p className="text-[11px] text-zinc-600">Na het toevoegen van je API key, configureer je coins via de API of vanuit Cowork.</p>
+                <p className="text-[11px] text-zinc-600">Na het toevoegen van je API key, configureer je coins via de API of vanuit Workspace.</p>
               </div>
             )}
           </div>

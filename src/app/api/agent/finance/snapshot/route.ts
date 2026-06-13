@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
         liveSites: liveSites || 0,
         domainCount,
         notes,
-        createdBy: source || 'ledger',
+        createdBy: source || 'jean-cloud',
       },
       create: {
         period,
@@ -41,14 +41,14 @@ export async function POST(request: NextRequest) {
         liveSites: liveSites || 0,
         domainCount,
         notes,
-        createdBy: source || 'ledger',
+        createdBy: source || 'jean-cloud',
       },
     })
 
     // Log the action
     await prisma.agentLog.create({
       data: {
-        source: source || 'ledger',
+        source: source || 'jean-cloud',
         action: 'finance_snapshot',
         payload: JSON.stringify({ period, totalMRR, totalCosts, netProfit }),
       },

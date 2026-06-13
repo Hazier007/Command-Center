@@ -50,17 +50,15 @@ interface NoteData {
 }
 
 const assigneeEmojis: Record<string, string> = {
-  bart: '👤', atlas: '🗺️', forge: '🔨', radar: '📡',
-  ink: '✒️', ledger: '📊', spark: '⚡', cowork: '🖥️',
+  bart: '👤', hermes: '🧠', lisa: '📋', wout: '🔎',
+  copycat: '✒️', 'jean-cloud': '☁️', beeldmaker: '🎨',
 }
 
 const assigneeOptions = [
-  { value: 'bart', label: 'Bart' }, { value: 'claude', label: 'Claude' },
-  { value: 'radar', label: 'Radar' }, { value: 'cowork', label: 'Cowork' },
-  // Legacy
-  { value: 'atlas', label: 'Atlas (legacy)' }, { value: 'forge', label: 'Forge (legacy)' },
-  { value: 'ink', label: 'Ink (legacy)' }, { value: 'ledger', label: 'Ledger (legacy)' },
-  { value: 'spark', label: 'Spark (legacy)' },
+  { value: 'bart', label: 'Bart' }, { value: 'hermes', label: 'Hermes' },
+  { value: 'lisa', label: 'Lisa' }, { value: 'wout', label: 'Wout' },
+  { value: 'copycat', label: 'Copycat' }, { value: 'jean-cloud', label: 'Jean-Cloud' },
+  { value: 'beeldmaker', label: 'BeeldMaker' },
 ]
 
 export default function SiteDetailPage() {

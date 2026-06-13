@@ -50,9 +50,9 @@ interface ClientProjectRef {
 }
 
 interface ClientAgg {
-  // v2: id kan "real" cuid zijn OF "legacy:<key>" voor niet-gemigreerde records
+  // v2: id kan "real" cuid zijn OF "oud:<key>" voor niet-gemigreerde records
   id?: string
-  isLegacy?: boolean
+  isOud?: boolean
   name: string
   email: string | null
   phone?: string | null
@@ -186,10 +186,10 @@ export default function KlantenPage() {
   // ─── Koppel bestaande site aan de geselecteerde klant ───
   const linkSiteToClient = useCallback(async () => {
     if (!selected || !linkSiteId || linking) return
-    // Echt Client-record vereist (legacy heeft geen cuid)
-    if (!selected.id || selected.id.startsWith("legacy:") || selected.isLegacy) {
+    // Echt Client-record vereist (oud heeft geen cuid)
+    if (!selected.id || selected.id.startsWith("oud:") || selected.isOud) {
       alert(
-        "Backfill deze legacy klant eerst voor je sites kan koppelen."
+        "Backfill deze oude klant eerst voor je sites kan koppelen."
       )
       return
     }
@@ -229,18 +229,18 @@ export default function KlantenPage() {
     fetchAll()
   }, [fetchAll])
 
-  // ─── Backfill: legacy clientName-sites omzetten naar echte Client records ──
+  // ─── Backfill: oud clientName-sites omzetten naar echte Client records ──
   const runBackfill = useCallback(async () => {
     if (backfillRunning) return
-    const legacyCount = clients.filter((c) => c.isLegacy).length
-    if (legacyCount === 0) {
-      setBackfillResult("Alles is al gemigreerd — geen legacy records.")
+    const oudCount = clients.filter((c) => c.isOud).length
+    if (oudCount === 0) {
+      setBackfillResult("Alles is al gemigreerd — geen oude records.")
       setTimeout(() => setBackfillResult(null), 4000)
       return
     }
     if (
       !confirm(
-        `${legacyCount} legacy klant-aggregaat${legacyCount === 1 ? "" : "en"} omzetten naar echte Client records?`
+        `${oudCount} oude klant-aggregaat${oudCount === 1 ? "" : "en"} omzetten naar echte Client records?`
       )
     )
       return
@@ -307,7 +307,7 @@ export default function KlantenPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {clients.some((c) => c.isLegacy) && (
+          {clients.some((c) => c.isOud) && (
             <Button
               onClick={runBackfill}
               disabled={backfillRunning}
@@ -315,7 +315,7 @@ export default function KlantenPage() {
               className="border-white/[0.08] bg-transparent text-zinc-400 hover:bg-white/[0.04] hover:text-white"
               title="Zet bestaande klant-sites om naar echte Client-records (v2 migratie)"
             >
-              {backfillRunning ? "Backfillen…" : "Backfill legacy klanten"}
+              {backfillRunning ? "Backfillen…" : "Klanten opschonen"}
             </Button>
           )}
           <Button
@@ -603,8 +603,8 @@ export default function KlantenPage() {
                   )
                   const isReal =
                     !!selected.id &&
-                    !selected.id.startsWith("legacy:") &&
-                    !selected.isLegacy
+                    !selected.id.startsWith("oud:") &&
+                    !selected.isOud
                   if (!isReal) {
                     return (
                       <p className="text-[10px] text-zinc-600 italic mb-3">
@@ -919,7 +919,7 @@ function EditClientModal({ open, onOpenChange, client, onSaved }: EditClientModa
   const [submitting, setSubmitting] = useState(false)
 
   const isRealClient =
-    !!client?.id && !client.id.startsWith("legacy:") && !client.isLegacy
+    !!client?.id && !client.id.startsWith("oud:") && !client.isOud
   const siteCount = client?.sites.length ?? 0
 
   useEffect(() => {
@@ -985,10 +985,10 @@ function EditClientModal({ open, onOpenChange, client, onSaved }: EditClientModa
         return
       }
 
-      // Pad 2: legacy fallback — bulk update sites (oude v1 gedrag)
+      // Pad 2: oud fallback — bulk update sites (oude v1 gedrag)
       if (siteCount === 0) {
         alert(
-          "Legacy klant zonder sites kan niet worden opgeslagen. Backfill eerst via de knop bovenaan."
+          "Oud klant zonder sites kan niet worden opgeslagen. Backfill eerst via de knop bovenaan."
         )
         return
       }

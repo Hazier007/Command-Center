@@ -29,7 +29,7 @@ import { projectsStorage, costsStorage, type Project, type Cost } from "@/lib/st
 
 // Default costs to seed on first load
 const DEFAULT_COSTS = [
-  { name: "Anthropic API (Claude)", amount: 150, category: "AI", recurring: true },
+  { name: "AI tooling", amount: 150, category: "AI", recurring: true },
   { name: "OpenAI API", amount: 20, category: "AI", recurring: true },
   { name: "Vercel Pro", amount: 20, category: "Hosting", recurring: true },
   { name: "Neon Database", amount: 0, category: "Database", recurring: true },

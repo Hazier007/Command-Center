@@ -18,42 +18,35 @@ import {
 } from "@/components/ui/dialog"
 import { tasksStorage, sitesStorage, type Task, type Site } from "@/lib/storage"
 
-// Team BC: actieve assignees bovenaan, legacy agents onderaan
+// Actief Command Center-team — alleen nieuwe rollen in de zichtbare cockpit
 const assigneeOptions = [
   { value: 'bart', label: 'Bart 👑' },
-  { value: 'claude', label: 'Claude 🤖' },
-  { value: 'radar', label: 'Radar 📡' },
-  // Legacy (voor heroewijzing oude taken)
-  { value: 'atlas', label: 'Atlas 🗺️ (legacy)' },
-  { value: 'forge', label: 'Forge 🔨 (legacy)' },
-  { value: 'ink', label: 'Ink ✍️ (legacy)' },
-  { value: 'ledger', label: 'Ledger 📊 (legacy)' },
-  { value: 'spark', label: 'Spark ⚡ (legacy)' },
-  { value: 'cowork', label: 'Cowork 🤝' },
+  { value: 'hermes', label: 'Hermes 🧠' },
+  { value: 'lisa', label: 'Lisa 📋' },
+  { value: 'wout', label: 'Wout 🔎' },
+  { value: 'jean-cloud', label: 'Jean-Cloud ☁️' },
+  { value: 'copycat', label: 'Copycat ✍️' },
+  { value: 'beeldmaker', label: 'BeeldMaker 🎨' },
 ]
 
 const assigneeEmojis: Record<string, string> = {
   bart: '👑',
-  claude: '🤖',
-  radar: '📡',
-  atlas: '🗺️',
-  forge: '🔨',
-  ink: '✍️',
-  ledger: '📊',
-  spark: '⚡',
-  cowork: '🤝',
+  hermes: '🧠',
+  lisa: '📋',
+  wout: '🔎',
+  'jean-cloud': '☁️',
+  copycat: '✍️',
+  beeldmaker: '🎨',
 }
 
 const assigneeNames: Record<string, string> = {
   bart: 'Bart',
-  claude: 'Claude',
-  radar: 'Radar',
-  atlas: 'Atlas',
-  forge: 'Forge',
-  ink: 'Ink',
-  ledger: 'Ledger',
-  spark: 'Spark',
-  cowork: 'Cowork',
+  hermes: 'Hermes',
+  lisa: 'Lisa',
+  wout: 'Wout',
+  'jean-cloud': 'Jean-Cloud',
+  copycat: 'Copycat',
+  beeldmaker: 'BeeldMaker',
 }
 
 const selectClass = "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
@@ -415,27 +408,26 @@ export default function TasksPage() {
     setTasks(allTasks)
   }
 
-  // Team BC flow: RADAR levert data → Claude doet de rest → Bart keurt goed
+  // Command Center flow: Wout/research → Copycat/content → Hermes/implementatie → Bart/approval
   const getFollowUpSuggestion = (task: Task): { suggestedTitle: string; suggestedAssignee: string } => {
     const titleLower = task.title.toLowerCase()
-    if (task.assignee === 'radar') {
-      return { suggestedTitle: `Content schrijven: ${task.title}`, suggestedAssignee: 'claude' }
+    if (task.assignee === 'wout') {
+      return { suggestedTitle: `Copy/actie uit research: ${task.title}`, suggestedAssignee: 'copycat' }
     }
-    if (task.assignee === 'claude') {
+    if (task.assignee === 'copycat') {
+      return { suggestedTitle: `Implementeren/publiceren: ${task.title}`, suggestedAssignee: 'hermes' }
+    }
+    if (task.assignee === 'hermes') {
       return { suggestedTitle: `Review & goedkeuring: ${task.title}`, suggestedAssignee: 'bart' }
     }
     if (task.assignee === 'bart') {
-      return { suggestedTitle: `Implementeren: ${task.title}`, suggestedAssignee: 'claude' }
-    }
-    // Legacy agents → route naar claude
-    if (['ink', 'forge', 'atlas', 'ledger', 'spark'].includes(task.assignee || '')) {
-      return { suggestedTitle: `Overnemen: ${task.title}`, suggestedAssignee: 'claude' }
+      return { suggestedTitle: `Uitvoeren: ${task.title}`, suggestedAssignee: 'hermes' }
     }
     if (titleLower.includes('keyword') || titleLower.includes('research')) {
-      return { suggestedTitle: `Content schrijven: ${task.title}`, suggestedAssignee: 'claude' }
+      return { suggestedTitle: `Actie uit research: ${task.title}`, suggestedAssignee: 'copycat' }
     }
     if (titleLower.includes('content') || titleLower.includes('blog') || titleLower.includes('tekst')) {
-      return { suggestedTitle: `Implementeren: ${task.title}`, suggestedAssignee: 'claude' }
+      return { suggestedTitle: `Publiceren/implementeren: ${task.title}`, suggestedAssignee: 'hermes' }
     }
     return { suggestedTitle: '', suggestedAssignee: '' }
   }

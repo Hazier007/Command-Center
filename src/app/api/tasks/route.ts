@@ -55,6 +55,7 @@ export async function POST(request: Request) {
         priority: data.priority,
         assignee: data.assignee,
         dueDate: data.dueDate ? new Date(data.dueDate) : null,
+        source: data.source,
         parentTaskId: data.parentTaskId,
         category: data.category,
         linkedDomainId: data.linkedDomainId,

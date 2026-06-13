@@ -4,26 +4,26 @@ import { createContext, useContext, useState } from "react"
 import { NerveTopNav } from "./nerve-topnav"
 import { ThemeProvider } from "./theme-context"
 
-// ─── Business Context ──────────────────────────────────────────
-export type BusinessId = "locallead" | "calqo" | "hazier" | "events" | "all"
+export type BusinessId = "all" | "locallead" | "hazier" | "calqo" | "events"
 
 export interface Business {
   id: BusinessId
   name: string
   type: string
   letter: string
-  color: string // tailwind bg class
-  textColor: string // tailwind text class
+  color: string
+  textColor: string
   status: string
   emoji: string
+  focus: string
 }
 
 export const BUSINESSES: Business[] = [
-  { id: "locallead", name: "LocalLead", type: "Rank & Rent leadmachines", letter: "LL", color: "bg-[#F5911E]/15", textColor: "text-[#F5911E]", status: "Sprint", emoji: "🟠" },
-  { id: "calqo", name: "Calqo", type: "Calculator/utility assets", letter: "CQ", color: "bg-sky-500/15", textColor: "text-sky-400", status: "Later", emoji: "🔷" },
-  { id: "hazier", name: "Hazier", type: "Webdesign & SEO", letter: "HZ", color: "bg-violet-500/15", textColor: "text-violet-400", status: "Later", emoji: "🟣" },
-  { id: "events", name: "Infinite Events", type: "VZW/events", letter: "IE", color: "bg-emerald-500/15", textColor: "text-emerald-400", status: "Later", emoji: "🟢" },
-  { id: "all", name: "Clean sheet", type: "Geen oude demo-data", letter: "✓", color: "bg-zinc-700/30", textColor: "text-zinc-200", status: "Nieuw", emoji: "✅" },
+  { id: "all", name: "Alle businessen", type: "Portfolio overview", letter: "CC", color: "bg-white/10", textColor: "text-white", status: "Overzicht", emoji: "🎛️", focus: "Eén cockpit voor alles" },
+  { id: "locallead", name: "LocalLead", type: "Rank & Rent / leadgen", letter: "LL", color: "bg-[#F5911E]/15", textColor: "text-[#F5911E]", status: "Prioriteit", emoji: "🟠", focus: "€10k MRR via verhuurde leadsites" },
+  { id: "hazier", name: "Hazier", type: "Webdesign & SEO", letter: "HZ", color: "bg-violet-500/15", textColor: "text-violet-300", status: "Actief", emoji: "🟣", focus: "Cashflow, klanten en uitvoering" },
+  { id: "calqo", name: "Calqo", type: "Calculator/media assets", letter: "CQ", color: "bg-sky-500/15", textColor: "text-sky-300", status: "Opbouwen", emoji: "🔷", focus: "Tools, SEO en AdSense assets" },
+  { id: "events", name: "Infinite Events", type: "Events / VZW", letter: "IE", color: "bg-emerald-500/15", textColor: "text-emerald-300", status: "Parked", emoji: "🟢", focus: "Alleen opvolgen wat aandacht vraagt" },
 ]
 
 interface BusinessContextType {
@@ -40,7 +40,6 @@ export function useBusinessContext() {
   return useContext(BusinessContext)
 }
 
-// ─── Shell ─────────────────────────────────────────────────────
 export function NerveShell({ children }: { children: React.ReactNode }) {
   const [activeBusiness, setActiveBiz] = useState<Business>(BUSINESSES[0])
 
@@ -52,9 +51,9 @@ export function NerveShell({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
       <BusinessContext.Provider value={{ activeBusiness, setActiveBusiness }}>
-        <div className="flex h-screen flex-col overflow-hidden bg-zinc-950">
+        <div className="flex h-screen flex-col overflow-hidden bg-[#07070A] text-white">
           <NerveTopNav />
-          <main className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 scrollbar-thin">
+          <main className="flex-1 min-h-0 overflow-y-auto bg-[radial-gradient(circle_at_top_left,_rgba(245,145,30,0.10),_transparent_34rem),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.10),_transparent_32rem)] p-4 md:p-6 scrollbar-thin">
             {children}
           </main>
         </div>

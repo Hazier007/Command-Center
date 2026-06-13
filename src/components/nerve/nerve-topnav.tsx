@@ -4,223 +4,168 @@ import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
-  Zap,
-  DollarSign,
+  BarChart3,
+  BriefcaseBusiness,
   ClipboardList,
-  Globe,
-  Bot,
-  Settings,
-  Search,
-  Users,
-  ChevronDown,
-  Moon,
-  Sun,
+  Compass,
+  Database,
+  Globe2,
+  LayoutDashboard,
   Menu,
+  Moon,
+  Search,
+  Settings,
+  Sun,
+  Users,
   X,
+  ChevronDown,
 } from "lucide-react"
 import { useBusinessContext, BUSINESSES } from "./nerve-shell"
 import { useTheme } from "./theme-context"
 import { cn } from "@/lib/utils"
 
-// ─── Nav config ────────────────────────────────────────────────
 const primaryNav = [
-  { href: "/", icon: Zap, label: "Start" },
-  { href: "/locallead", icon: DollarSign, label: "LocalLead" },
+  { href: "/", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/portfolio", icon: BriefcaseBusiness, label: "Portfolio" },
   { href: "/tasks", icon: ClipboardList, label: "Taken" },
-  { href: "/portfolio", icon: Globe, label: "Sites" },
   { href: "/research", icon: Search, label: "Research" },
-  { href: "/agents", icon: Bot, label: "Team" },
+  { href: "/agents", icon: Users, label: "Team" },
 ]
 
 const moreNav = [
+  { href: "/locallead", icon: Compass, label: "LocalLead sprint" },
+  { href: "/sites", icon: Globe2, label: "Sites" },
   { href: "/klanten", icon: Users, label: "Partners/klanten" },
-  { href: "/geld", icon: DollarSign, label: "Financieel" },
+  { href: "/geld", icon: BarChart3, label: "Financieel" },
+  { href: "/docs", icon: Database, label: "Source of truth" },
 ]
 
-// ─── TopNav ────────────────────────────────────────────────────
 export function NerveTopNav() {
   const pathname = usePathname()
   const { activeBusiness, setActiveBusiness } = useBusinessContext()
   const { theme, toggleTheme } = useTheme()
-
   const [bizOpen, setBizOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-
   const bizRef = useRef<HTMLDivElement>(null)
   const moreRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (bizRef.current && !bizRef.current.contains(e.target as Node)) {
-        setBizOpen(false)
-      }
-      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
-        setMoreOpen(false)
-      }
+      if (bizRef.current && !bizRef.current.contains(e.target as Node)) setBizOpen(false)
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false)
     }
     document.addEventListener("mousedown", handleClick)
     return () => document.removeEventListener("mousedown", handleClick)
   }, [])
 
-  const isActive = (href: string) =>
-    href === "/" ? pathname === "/" : pathname.startsWith(href)
+  const isActive = (href: string) => href === "/" ? pathname === "/" : pathname.startsWith(href)
+
+  const navLinkClass = (active: boolean) => cn(
+    "group flex items-center gap-2 rounded-xl px-3 py-2 text-[13px] font-semibold transition-all",
+    active
+      ? "bg-white text-black shadow-[0_0_30px_rgba(255,255,255,0.08)]"
+      : "text-zinc-400 hover:bg-white/[0.06] hover:text-white"
+  )
 
   return (
-    <header className="shrink-0 border-b border-white/[0.06] bg-zinc-900/80 backdrop-blur-md relative z-40">
-      <div className="flex h-16 items-center gap-4 px-4 md:px-6">
-        {/* Logo + Title */}
-        <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#F5911E]/15 ring-1 ring-[#F5911E]/20">
-            <Zap className="h-5 w-5 text-[#F5911E]" />
+    <header className="shrink-0 border-b border-white/[0.08] bg-[#08080B]/92 backdrop-blur-xl relative z-40">
+      <div className="flex h-18 items-center gap-4 px-4 py-3 md:px-6">
+        <Link href="/" className="group flex items-center gap-3 shrink-0">
+          <div className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-black shadow-[0_0_35px_rgba(245,145,30,0.22)]">
+            <LayoutDashboard className="h-5 w-5" />
+            <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-[#F5911E] ring-2 ring-[#08080B]" />
           </div>
           <div className="hidden md:block">
-            <div className="text-[15px] font-bold text-white leading-none">
-              LocalLead
-            </div>
-            <div className="text-[10px] text-zinc-500 uppercase tracking-wider">
+            <div className="text-[15px] font-black uppercase tracking-[0.18em] text-white leading-none">
               Command Center
+            </div>
+            <div className="mt-1 text-[10px] uppercase tracking-[0.26em] text-zinc-500">
+              Bart OS · Business cockpit
             </div>
           </div>
         </Link>
 
-        {/* Divider */}
         <div className="hidden md:block h-8 w-px bg-white/[0.08]" />
 
-        {/* Primary nav — desktop */}
-        <nav className="hidden md:flex items-center gap-1">
-          {primaryNav.map((item) => {
-            const active = isActive(item.href)
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "group flex items-center gap-2 rounded-lg px-3 py-2 text-[14px] font-medium transition-all",
-                  active
-                    ? "bg-[#F5911E]/10 text-[#F5911E]"
-                    : "text-zinc-400 hover:bg-white/[0.04] hover:text-white"
-                )}
-              >
-                <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
-              </Link>
-            )
-          })}
+        <nav className="hidden lg:flex items-center gap-1">
+          {primaryNav.map((item) => (
+            <Link key={item.href} href={item.href} className={navLinkClass(isActive(item.href))}>
+              <item.icon className="h-4 w-4" />
+              <span>{item.label}</span>
+            </Link>
+          ))}
 
-          {/* More dropdown */}
           <div className="relative" ref={moreRef}>
             <button
               onClick={() => setMoreOpen(!moreOpen)}
               className={cn(
-                "flex items-center gap-1.5 rounded-lg px-3 py-2 text-[14px] font-medium transition-all",
+                "flex items-center gap-1.5 rounded-xl px-3 py-2 text-[13px] font-semibold transition-all",
                 moreNav.some((n) => isActive(n.href))
-                  ? "bg-[#F5911E]/10 text-[#F5911E]"
-                  : "text-zinc-400 hover:bg-white/[0.04] hover:text-white"
+                  ? "bg-white text-black"
+                  : "text-zinc-400 hover:bg-white/[0.06] hover:text-white"
               )}
             >
               Meer
-              <ChevronDown
-                className={cn(
-                  "h-3.5 w-3.5 transition-transform",
-                  moreOpen && "rotate-180"
-                )}
-              />
+              <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", moreOpen && "rotate-180")} />
             </button>
             {moreOpen && (
-              <div className="absolute left-0 top-[calc(100%+6px)] z-50 w-56 rounded-xl border border-white/[0.08] bg-zinc-900 shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
-                {moreNav.map((item) => {
-                  const active = isActive(item.href)
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMoreOpen(false)}
-                      className={cn(
-                        "flex items-center gap-2.5 px-3 py-2.5 text-[13px] font-medium transition-colors",
-                        active
-                          ? "bg-[#F5911E]/10 text-[#F5911E]"
-                          : "text-zinc-400 hover:bg-white/[0.04] hover:text-white"
-                      )}
-                    >
-                      <item.icon className="h-4 w-4" />
-                      {item.label}
-                    </Link>
-                  )
-                })}
+              <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-64 overflow-hidden rounded-2xl border border-white/[0.10] bg-[#101014] shadow-2xl">
+                {moreNav.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMoreOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 px-4 py-3 text-[13px] font-semibold transition-colors",
+                      isActive(item.href) ? "bg-white text-black" : "text-zinc-400 hover:bg-white/[0.06] hover:text-white"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.label}
+                  </Link>
+                ))}
               </div>
             )}
           </div>
         </nav>
 
-        {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Business Switcher */}
         <div className="relative" ref={bizRef}>
           <button
             onClick={() => setBizOpen(!bizOpen)}
-            className="flex items-center gap-2.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 transition-colors hover:border-[#F5911E]/30"
+            className="flex items-center gap-2.5 rounded-2xl border border-white/[0.10] bg-white/[0.04] px-3 py-2 transition-colors hover:border-[#F5911E]/40 hover:bg-white/[0.06]"
           >
-            <div
-              className={cn(
-                "flex h-7 w-7 items-center justify-center rounded-md text-xs font-extrabold",
-                activeBusiness.color,
-                activeBusiness.textColor
-              )}
-            >
+            <div className={cn("flex h-8 w-8 items-center justify-center rounded-xl text-[11px] font-black", activeBusiness.color, activeBusiness.textColor)}>
               {activeBusiness.letter}
             </div>
             <div className="hidden sm:block text-left min-w-0">
-              <div className="text-[13px] font-semibold text-white leading-tight truncate max-w-[120px]">
-                {activeBusiness.name}
-              </div>
-              <div className="text-[10px] text-zinc-500 leading-tight">
-                {activeBusiness.status}
-              </div>
+              <div className="max-w-[150px] truncate text-[13px] font-bold text-white leading-tight">{activeBusiness.name}</div>
+              <div className="max-w-[170px] truncate text-[10px] text-zinc-500 leading-tight">{activeBusiness.status}</div>
             </div>
-            <ChevronDown
-              className={cn(
-                "h-3.5 w-3.5 text-zinc-500 transition-transform",
-                bizOpen && "rotate-180"
-              )}
-            />
+            <ChevronDown className={cn("h-3.5 w-3.5 text-zinc-500 transition-transform", bizOpen && "rotate-180")} />
           </button>
 
           {bizOpen && (
-            <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-72 rounded-xl border border-white/[0.08] bg-zinc-900 shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+            <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-80 overflow-hidden rounded-2xl border border-white/[0.10] bg-[#101014] shadow-2xl">
               {BUSINESSES.map((biz) => (
                 <button
                   key={biz.id}
-                  onClick={() => {
-                    setActiveBusiness(biz.id)
-                    setBizOpen(false)
-                  }}
+                  onClick={() => { setActiveBusiness(biz.id); setBizOpen(false) }}
                   className={cn(
-                    "flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition-colors",
-                    activeBusiness.id === biz.id
-                      ? "bg-[#F5911E]/10"
-                      : "hover:bg-white/[0.04]"
+                    "flex w-full items-center gap-3 px-4 py-3 text-left transition-colors",
+                    activeBusiness.id === biz.id ? "bg-white/[0.08]" : "hover:bg-white/[0.05]"
                   )}
                 >
-                  <div
-                    className={cn(
-                      "flex h-8 w-8 items-center justify-center rounded-md text-sm font-extrabold shrink-0",
-                      biz.color,
-                      biz.textColor
-                    )}
-                  >
+                  <div className={cn("flex h-9 w-9 items-center justify-center rounded-xl text-xs font-black", biz.color, biz.textColor)}>
                     {biz.letter}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[14px] font-semibold text-white truncate">
-                      {biz.name}
-                    </div>
-                    <div className="text-[11px] text-zinc-500 truncate">
-                      {biz.type}
-                    </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-[14px] font-bold text-white">{biz.name}</div>
+                    <div className="truncate text-[11px] text-zinc-500">{biz.focus}</div>
                   </div>
-                  <span className="text-[12px] text-zinc-400 tabular-nums shrink-0">
+                  <span className="rounded-full border border-white/10 px-2 py-1 text-[10px] font-bold text-zinc-400">
                     {biz.status}
                   </span>
                 </button>
@@ -229,66 +174,36 @@ export function NerveTopNav() {
           )}
         </div>
 
-        {/* Theme toggle */}
         <button
           onClick={toggleTheme}
           title={theme === "dark" ? "Switch to light" : "Switch to dark"}
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-zinc-400 transition-colors hover:border-[#F5911E]/30 hover:text-white"
+          className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/[0.10] bg-white/[0.04] text-zinc-400 transition-colors hover:border-[#F5911E]/40 hover:text-white"
         >
-          {theme === "dark" ? (
-            <Sun className="h-4 w-4" />
-          ) : (
-            <Moon className="h-4 w-4" />
-          )}
+          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </button>
 
-        {/* Settings — desktop */}
-        <button
-          className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-zinc-400 transition-colors hover:border-[#F5911E]/30 hover:text-white"
-          title="Settings"
-        >
+        <button className="hidden md:flex h-10 w-10 items-center justify-center rounded-2xl border border-white/[0.10] bg-white/[0.04] text-zinc-400 transition-colors hover:border-[#F5911E]/40 hover:text-white" title="Settings">
           <Settings className="h-4 w-4" />
         </button>
 
-        {/* Avatar */}
-        <div className="hidden md:flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#F5911E]/40 bg-[#F5911E]/10 text-[12px] font-bold text-[#F5911E] cursor-pointer">
-          BD
-        </div>
-
-        {/* Mobile menu toggle */}
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="md:hidden flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-zinc-300"
-        >
+        <button onClick={() => setMobileOpen(!mobileOpen)} className="lg:hidden flex h-10 w-10 items-center justify-center rounded-2xl border border-white/[0.10] bg-white/[0.04] text-zinc-300">
           {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
         </button>
       </div>
 
-      {/* Mobile nav drawer */}
       {mobileOpen && (
-        <nav className="md:hidden border-t border-white/[0.06] bg-zinc-900/95 px-4 py-3 space-y-1">
-          {[...primaryNav, ...moreNav].map((item) => {
-            const active = isActive(item.href)
-            const isAccent = "accent" in item && item.accent
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-medium transition-colors",
-                  active
-                    ? isAccent
-                      ? "bg-cyan-500/10 text-cyan-400"
-                      : "bg-[#F5911E]/10 text-[#F5911E]"
-                    : "text-zinc-300 hover:bg-white/[0.04]"
-                )}
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            )
-          })}
+        <nav className="lg:hidden border-t border-white/[0.08] bg-[#08080B]/98 px-4 py-3 space-y-1">
+          {[...primaryNav, ...moreNav].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setMobileOpen(false)}
+              className={navLinkClass(isActive(item.href))}
+            >
+              <item.icon className="h-4 w-4" />
+              {item.label}
+            </Link>
+          ))}
         </nav>
       )}
     </header>

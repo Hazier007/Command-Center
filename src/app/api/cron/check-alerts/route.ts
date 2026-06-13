@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   }
 
   // ─── GitHub PAT expiration watchdog ──────────────────────────
-  // De sandbox-token waarmee Claude naar GitHub pushed verloopt
+  // De sandbox-token waarmee Hermes naar GitHub pushed verloopt
   // op GITHUB_PAT_EXPIRES_AT (env). Als dat binnen 7 dagen is,
   // maken we een high-priority Alert zodat Bart tijdig een nieuwe
   // token genereert. Idempotent: één open alert tegelijk.
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
         await prisma.alert.create({
           data: {
             title: `GitHub PAT verloopt binnen ${daysUntil} dag${daysUntil === 1 ? '' : 'en'}`,
-            body: `De Claude Cowork PAT (scope: Hazier007 / All repos) verloopt op ${expiresAt.toISOString().slice(0, 10)}. Genereer een nieuwe fine-grained PAT en vervang de lijn in /mnt/.claude/git/credentials. Zonder token kan Claude niet meer pushen naar GitHub.`,
+            body: `De Hermes Workspace PAT (scope: Hazier007 / All repos) verloopt op ${expiresAt.toISOString().slice(0, 10)}. Genereer een nieuwe fine-grained PAT en vervang de lijn in /mnt/.hermes/git/credentials. Zonder token kan Hermes niet meer pushen naar GitHub.`,
             priority: 'high',
           },
         })

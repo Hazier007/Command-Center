@@ -317,7 +317,7 @@ export default function DomainsPage() {
           category: "domain_acquisition",
           priority: "medium",
           status: "raw",
-          assignedTo: "claude",
+          assignedTo: "hermes",
         }),
       })
       const newIdea = await ideaRes.json()
@@ -873,7 +873,7 @@ export default function DomainsPage() {
                   <option value="">Niet toegewezen</option>
                   <option value="bart">Bart</option>
                   <option value="claude">Claude</option>
-                  <option value="radar">Radar</option>
+                  <option value="wout">Wout</option>
                 </select>
               </div>
             </div>

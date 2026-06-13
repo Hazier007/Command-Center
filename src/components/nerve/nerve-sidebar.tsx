@@ -15,7 +15,7 @@ const navItems = [
   { href: "/crypto", icon: TrendingUp, label: "Crypto", accent: false },
 ]
 
-const coworkItem = { href: "/cowork", icon: Brain, label: "Cowork", accent: true }
+const workspaceItem = { href: "/workspace", icon: Brain, label: "Workspace", accent: true }
 
 export function NerveSidebar() {
   const pathname = usePathname()
@@ -61,22 +61,22 @@ export function NerveSidebar() {
       {/* Divider */}
       <div className="my-2 h-px w-8 bg-white/[0.06]" />
 
-      {/* Cowork */}
+      {/* Workspace */}
       <Link
-        href={coworkItem.href}
+        href={workspaceItem.href}
         className={cn(
           "group relative flex h-11 w-11 flex-col items-center justify-center rounded-lg transition-all duration-150",
-          isActive(coworkItem.href)
+          isActive(workspaceItem.href)
             ? "bg-cyan-500/10 text-cyan-400"
             : "text-cyan-700 hover:bg-cyan-500/[0.06] hover:text-cyan-500"
         )}
       >
-        {isActive(coworkItem.href) && (
+        {isActive(workspaceItem.href) && (
           <div className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r bg-cyan-400" />
         )}
-        <coworkItem.icon className="h-[18px] w-[18px]" />
+        <workspaceItem.icon className="h-[18px] w-[18px]" />
         <span className="mt-0.5 text-[8px] font-medium tracking-wide">
-          {coworkItem.label}
+          {workspaceItem.label}
         </span>
       </Link>
 

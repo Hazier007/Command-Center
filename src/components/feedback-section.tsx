@@ -149,12 +149,12 @@ export function FeedbackSection({ linkedField, linkedId, showAllTypes = false }:
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="bart">Bart</SelectItem>
-                  <SelectItem value="atlas">ATLAS</SelectItem>
-                  <SelectItem value="forge">FORGE</SelectItem>
-                  <SelectItem value="radar">RADAR</SelectItem>
+                  <SelectItem value="hermes">HERMES</SelectItem>
+                  <SelectItem value="lisa">LISA</SelectItem>
+                  <SelectItem value="wout">WOUT</SelectItem>
                   <SelectItem value="ink">INK</SelectItem>
-                  <SelectItem value="ledger">LEDGER</SelectItem>
-                  <SelectItem value="spark">SPARK</SelectItem>
+                  <SelectItem value="copycat">COPYCAT</SelectItem>
+                  <SelectItem value="beeldmaker">BEELDMAKER</SelectItem>
                 </SelectContent>
               </Select>
               <label className="flex items-center gap-2 text-sm cursor-pointer">

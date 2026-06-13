@@ -29,6 +29,9 @@ export async function PATCH(
         ...(data.needsApproval !== undefined && { needsApproval: data.needsApproval }),
         ...(data.source !== undefined && { source: data.source }),
         ...(data.parentTaskId !== undefined && { parentTaskId: data.parentTaskId }),
+        ...(data.category !== undefined && { category: data.category }),
+        ...(data.linkedDomainId !== undefined && { linkedDomainId: data.linkedDomainId }),
+        ...(data.completedAt !== undefined && { completedAt: data.completedAt ? new Date(data.completedAt) : null }),
       },
       include: {
         project: true,

@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
         status: data.status || 'active',
         goals: data.goals ? JSON.stringify(data.goals) : undefined,
         summary: data.summary,
-        createdBy: data.createdBy || 'atlas',
+        createdBy: data.createdBy || 'hermes',
       },
     })
 

@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     const report = await prisma.seoReport.create({
       data: {
         subtype: body.subtype,
-        agent: body.agent || 'radar',
+        agent: body.agent || 'wout',
         title: body.title,
         summary: body.summary || undefined,
         status: body.status || 'final',

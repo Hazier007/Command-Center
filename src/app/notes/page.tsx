@@ -80,12 +80,12 @@ const NOTE_TYPES = [
 
 const AGENTS = [
   { value: "bart", label: "Bart", emoji: "\uD83D\uDC68\u200D\uD83D\uDCBB", color: "#F5911E" },
-  { value: "atlas", label: "Atlas", emoji: "\uD83D\uDDFA\uFE0F", color: "#3B82F6" },
-  { value: "forge", label: "Forge", emoji: "\uD83D\uDD28", color: "#EF4444" },
-  { value: "radar", label: "Radar", emoji: "\uD83D\uDCE1", color: "#10B981" },
-  { value: "ink", label: "Ink", emoji: "\u2712\uFE0F", color: "#8B5CF6" },
-  { value: "ledger", label: "Ledger", emoji: "\uD83D\uDCCA", color: "#F59E0B" },
-  { value: "spark", label: "Spark", emoji: "\u26A1", color: "#EC4899" },
+  { value: "hermes", label: "Hermes", emoji: "🧠", color: "#F5911E" },
+  { value: "lisa", label: "Lisa", emoji: "📋", color: "#38BDF8" },
+  { value: "wout", label: "Wout", emoji: "🔎", color: "#10B981" },
+  { value: "copycat", label: "Copycat", emoji: "✍️", color: "#8B5CF6" },
+  { value: "jean-cloud", label: "Jean-Cloud", emoji: "☁️", color: "#A78BFA" },
+  { value: "beeldmaker", label: "BeeldMaker", emoji: "🎨", color: "#F59E0B" },
 ] as const
 
 const SENTIMENTS = [
