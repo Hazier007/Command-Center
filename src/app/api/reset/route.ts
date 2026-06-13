@@ -1,71 +1,82 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-// POST /api/reset?scope=tasks,content — bulk delete for clean slate
-// Requires confirmation header to prevent accidental use
+type ResetResult = Record<string, number>
+
+const CONFIRMATION = 'locallead-clean-sheet'
+
+async function deleteMany(label: string, action: () => Promise<{ count: number }>, results: ResetResult) {
+  const deleted = await action()
+  results[label] = deleted.count
+}
+
+// POST /api/reset?scope=all — bulk delete operation for a clean operational slate.
+// Keeps auth users/sessions/accounts intact; removes business/operational data.
+// Requires confirmation header to prevent accidental use.
 export async function POST(request: NextRequest) {
   const confirm = request.headers.get('x-confirm-reset')
-  if (confirm !== 'team-bc-clean-slate') {
+  if (confirm !== CONFIRMATION) {
     return NextResponse.json(
-      { error: 'Missing confirmation header: x-confirm-reset: team-bc-clean-slate' },
+      { error: `Missing confirmation header: x-confirm-reset: ${CONFIRMATION}` },
       { status: 400 }
     )
   }
 
   const { searchParams } = new URL(request.url)
-  const scope = searchParams.get('scope')?.split(',') || []
-
-  const results: Record<string, number> = {}
+  const scope = searchParams.get('scope')?.split(',').map((s) => s.trim()).filter(Boolean) || []
+  const resetAll = scope.includes('all')
+  const wants = (name: string) => resetAll || scope.includes(name)
+  const results: ResetResult = {}
 
   try {
-    if (scope.includes('tasks') || scope.includes('all')) {
-      const deleted = await prisma.task.deleteMany({})
-      results.tasks = deleted.count
-    }
+    await prisma.$transaction(async (tx) => {
+      // Child/detail records first.
+      if (wants('bot')) {
+        await deleteMany('botTrades', () => tx.botTrade.deleteMany({}), results)
+        await deleteMany('botSnapshots', () => tx.botSnapshot.deleteMany({}), results)
+        await deleteMany('botPositions', () => tx.botPosition.deleteMany({}), results)
+        await deleteMany('botConfigs', () => tx.botConfig.deleteMany({}), results)
+      }
 
-    if (scope.includes('content') || scope.includes('all')) {
-      const deleted = await prisma.content.deleteMany({})
-      results.content = deleted.count
-    }
+      if (wants('agent')) {
+        await deleteMany('agentMessages', () => tx.agentMessage.deleteMany({}), results)
+        await deleteMany('agentLogs', () => tx.agentLog.deleteMany({}), results)
+        await deleteMany('agentReports', () => tx.agentReport.deleteMany({}), results)
+      }
 
-    if (scope.includes('research') || scope.includes('all')) {
-      const deleted = await prisma.research.deleteMany({})
-      results.research = deleted.count
-    }
+      if (wants('tasks')) await deleteMany('tasks', () => tx.task.deleteMany({}), results)
+      if (wants('content')) await deleteMany('content', () => tx.content.deleteMany({}), results)
+      if (wants('research')) {
+        await deleteMany('seoReports', () => tx.seoReport.deleteMany({}), results)
+        await deleteMany('research', () => tx.research.deleteMany({}), results)
+      }
+      if (wants('notes')) await deleteMany('notes', () => tx.note.deleteMany({}), results)
+      if (wants('alerts')) await deleteMany('alerts', () => tx.alert.deleteMany({}), results)
+      if (wants('activity')) await deleteMany('activity', () => tx.activity.deleteMany({}), results)
+      if (wants('decisions')) await deleteMany('decisions', () => tx.decision.deleteMany({}), results)
+      if (wants('sprints')) await deleteMany('sprints', () => tx.sprint.deleteMany({}), results)
+      if (wants('leads')) await deleteMany('leads', () => tx.lead.deleteMany({}), results)
+      if (wants('finance')) {
+        await deleteMany('financeSnapshots', () => tx.financeSnapshot.deleteMany({}), results)
+        await deleteMany('revenueEntries', () => tx.revenueEntry.deleteMany({}), results)
+        await deleteMany('costs', () => tx.cost.deleteMany({}), results)
+        await deleteMany('kpis', () => tx.kPI.deleteMany({}), results)
+      }
+      if (wants('products')) await deleteMany('products', () => tx.product.deleteMany({}), results)
+      if (wants('ideas')) await deleteMany('ideas', () => tx.idea.deleteMany({}), results)
+      if (wants('keywords')) await deleteMany('keywordHistory', () => tx.keywordHistory.deleteMany({}), results)
+      if (wants('domains')) await deleteMany('domainOpportunities', () => tx.domainOpportunity.deleteMany({}), results)
 
-    if (scope.includes('notes') || scope.includes('all')) {
-      const deleted = await prisma.note.deleteMany({})
-      results.notes = deleted.count
-    }
-
-    if (scope.includes('agent-reports') || scope.includes('all')) {
-      const deleted = await prisma.agentReport.deleteMany({})
-      results.agentReports = deleted.count
-    }
-
-    if (scope.includes('agent-logs') || scope.includes('all')) {
-      const deleted = await prisma.agentLog.deleteMany({})
-      results.agentLogs = deleted.count
-    }
-
-    if (scope.includes('agent-messages') || scope.includes('all')) {
-      const deleted = await prisma.agentMessage.deleteMany({})
-      results.agentMessages = deleted.count
-    }
-
-    if (scope.includes('alerts') || scope.includes('all')) {
-      const deleted = await prisma.alert.deleteMany({})
-      results.alerts = deleted.count
-    }
-
-    if (scope.includes('activity') || scope.includes('all')) {
-      const deleted = await prisma.activity.deleteMany({})
-      results.activity = deleted.count
-    }
+      // Parent records last.
+      if (wants('sites')) await deleteMany('sites', () => tx.site.deleteMany({}), results)
+      if (wants('clients')) await deleteMany('clients', () => tx.client.deleteMany({}), results)
+      if (wants('projects')) await deleteMany('projects', () => tx.project.deleteMany({}), results)
+    })
 
     return NextResponse.json({
       success: true,
-      message: 'Clean slate complete',
+      message: resetAll ? 'LocalLead clean sheet complete' : 'Selected reset complete',
+      kept: ['users', 'accounts', 'sessions', 'verification_tokens'],
       deleted: results,
     })
   } catch (error) {

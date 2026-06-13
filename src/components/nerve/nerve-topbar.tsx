@@ -89,7 +89,7 @@ export function NerveTopbar() {
                   </div>
                 </div>
                 <span className="text-[11px] text-zinc-500 tabular-nums shrink-0">
-                  {biz.mrr}
+                  {biz.status}
                 </span>
               </button>
             ))}

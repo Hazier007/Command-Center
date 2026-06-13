@@ -9,9 +9,8 @@ import {
   ClipboardList,
   Globe,
   Bot,
-  Brain,
   Settings,
-  TrendingUp,
+  Search,
   Users,
   ChevronDown,
   Moon,
@@ -25,17 +24,17 @@ import { cn } from "@/lib/utils"
 
 // ─── Nav config ────────────────────────────────────────────────
 const primaryNav = [
-  { href: "/", icon: Zap, label: "Cockpit" },
-  { href: "/geld", icon: DollarSign, label: "Geld" },
-  { href: "/werk", icon: ClipboardList, label: "Werk" },
-  { href: "/portfolio", icon: Globe, label: "Portfolio" },
-  { href: "/klanten", icon: Users, label: "Klanten" },
+  { href: "/", icon: Zap, label: "Start" },
+  { href: "/locallead", icon: DollarSign, label: "LocalLead" },
+  { href: "/tasks", icon: ClipboardList, label: "Taken" },
+  { href: "/portfolio", icon: Globe, label: "Sites" },
+  { href: "/research", icon: Search, label: "Research" },
   { href: "/agents", icon: Bot, label: "Team" },
 ]
 
 const moreNav = [
-  { href: "/crypto", icon: TrendingUp, label: "Crypto" },
-  { href: "/cowork", icon: Brain, label: "Cowork", accent: true },
+  { href: "/klanten", icon: Users, label: "Partners/klanten" },
+  { href: "/geld", icon: DollarSign, label: "Financieel" },
 ]
 
 // ─── TopNav ────────────────────────────────────────────────────
@@ -77,10 +76,10 @@ export function NerveTopNav() {
           </div>
           <div className="hidden md:block">
             <div className="text-[15px] font-bold text-white leading-none">
-              NERVE
+              LocalLead
             </div>
             <div className="text-[10px] text-zinc-500 uppercase tracking-wider">
-              Command
+              Command Center
             </div>
           </div>
         </Link>
@@ -140,11 +139,7 @@ export function NerveTopNav() {
                       className={cn(
                         "flex items-center gap-2.5 px-3 py-2.5 text-[13px] font-medium transition-colors",
                         active
-                          ? item.accent
-                            ? "bg-cyan-500/10 text-cyan-400"
-                            : "bg-[#F5911E]/10 text-[#F5911E]"
-                          : item.accent
-                          ? "text-cyan-500 hover:bg-cyan-500/[0.06] hover:text-cyan-400"
+                          ? "bg-[#F5911E]/10 text-[#F5911E]"
                           : "text-zinc-400 hover:bg-white/[0.04] hover:text-white"
                       )}
                     >
@@ -181,7 +176,7 @@ export function NerveTopNav() {
                 {activeBusiness.name}
               </div>
               <div className="text-[10px] text-zinc-500 leading-tight">
-                {activeBusiness.mrr} MRR
+                {activeBusiness.status}
               </div>
             </div>
             <ChevronDown
@@ -226,7 +221,7 @@ export function NerveTopNav() {
                     </div>
                   </div>
                   <span className="text-[12px] text-zinc-400 tabular-nums shrink-0">
-                    {biz.mrr}
+                    {biz.status}
                   </span>
                 </button>
               ))}

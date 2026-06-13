@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "NERVE — Command Intelligence",
-  description: "Multi-business command center for Hazier, CollectPro & Infinite Events.",
+  title: "LocalLead Command Center",
+  description: "Clean-sheet command center for Bart's LocalLead Rank & Rent portfolio.",
 }
 
 export default function RootLayout({
