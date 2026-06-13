@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "LocalLead Command Center",
-  description: "Clean-sheet command center for Bart's LocalLead Rank & Rent portfolio.",
+  title: "Command Center · Bart OS",
+  description: "Business cockpit for Bart's portfolio: LocalLead, Hazier, Calqo and Infinite Events.",
 }
 
 export default function RootLayout({
