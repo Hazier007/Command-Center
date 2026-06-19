@@ -2,17 +2,14 @@ import Link from "next/link"
 import {
   ArrowRight,
   BadgeEuro,
-  BarChart3,
   BriefcaseBusiness,
   CheckCircle2,
   ClipboardList,
   Database,
-  Euro,
   FileText,
   Gauge,
   Globe2,
   Inbox,
-  Mail,
   PhoneCall,
   Rocket,
   ShieldCheck,
@@ -23,10 +20,12 @@ import {
   Zap,
 } from "lucide-react"
 
+import { PortfolioAssetMatrix } from "@/components/portfolio-asset-matrix"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
+import { getPriorityAssets } from "@/lib/portfolio-assets"
 
 const businesses = [
   {
@@ -169,6 +168,8 @@ function healthTone(score: number) {
 }
 
 export default function CommandCenterHome() {
+  const priorityAssets = getPriorityAssets(7)
+
   return (
     <main className="space-y-6 text-white">
       <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(245,145,30,0.28),_transparent_31rem),radial-gradient(circle_at_80%_20%,_rgba(56,189,248,0.12),_transparent_22rem),linear-gradient(135deg,_rgba(24,24,27,0.98),_rgba(7,7,10,1))] shadow-2xl">
@@ -268,6 +269,13 @@ export default function CommandCenterHome() {
           </Card>
         ))}
       </section>
+
+      <PortfolioAssetMatrix
+        assets={priorityAssets}
+        title="Priority asset radar"
+        description="De assets die nu het snelst geld, bewijs of risico opleveren — niet meer verborgen in losse research-bestanden."
+        compact
+      />
 
       <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
         <Card className="border-[#F5911E]/25 bg-[#F5911E]/[0.06] text-white shadow-none">

@@ -1,0 +1,288 @@
+export type PortfolioBusiness = "locallead" | "hazier" | "calqo" | "collectpro" | "infinite-events"
+export type PortfolioPriority = "P1" | "P2" | "P3" | "Backlog" | "Core" | "Watch" | "Blocked"
+export type PortfolioStatus = "live" | "planned" | "blocked" | "watch" | "needs-check"
+export type SignalStatus = "proven" | "unproven" | "missing" | "not-needed" | "unknown"
+
+export type PortfolioAsset = {
+  business: PortfolioBusiness
+  domain: string
+  label?: string
+  assetType: string
+  status: PortfolioStatus
+  priority: PortfolioPriority
+  monetization: string
+  mrrCurrent: number
+  mrrPotential: string
+  leadflowStatus: SignalStatus
+  indexationStatus: SignalStatus | "healthy" | "limited" | "zero"
+  partnerStatus: SignalStatus | "none" | "shortlist" | "talking" | "signed"
+  nextSafeAction: string
+  evidence: string[]
+  lastVerifiedAt: string
+}
+
+export const portfolioAssets: PortfolioAsset[] = [
+  {
+    business: "locallead",
+    domain: "poxy.be",
+    assetType: "Rank & Rent / epoxy leadgen",
+    status: "live",
+    priority: "P1",
+    monetization: "vaste huur of lead fee",
+    mrrCurrent: 0,
+    mrrPotential: "€300-€800/mnd",
+    leadflowStatus: "unproven",
+    indexationStatus: "limited",
+    partnerStatus: "none",
+    nextSafeAction: "Fase-1 money pages + noindex overige locaties, testlead bewijzen, partnerprofiel epoxy/gietvloer definiëren.",
+    evidence: ["research/poxy/indexatiestrategie-1080-locatiepaginas-LOC84.md", "docs/operations/portfolio-update-proposal-2026-06-13.md"],
+    lastVerifiedAt: "2026-06-13",
+  },
+  {
+    business: "locallead",
+    domain: "funderingsproblemen.be",
+    assetType: "Rank & Rent / high-ticket leadgen",
+    status: "live",
+    priority: "P1",
+    monetization: "premium huur of qualified lead fee",
+    mrrCurrent: 0,
+    mrrPotential: "€500-€1.500/mnd",
+    leadflowStatus: "unproven",
+    indexationStatus: "unknown",
+    partnerStatus: "none",
+    nextSafeAction: "Leadflow end-to-end testen en top-10 funderingsspecialisten intern voorbereiden.",
+    evidence: ["research/seo-audit-extra-domeinen-LOC1.md", "docs/operations/portfolio-update-proposal-2026-06-13.md"],
+    lastVerifiedAt: "2026-06-13",
+  },
+  {
+    business: "locallead",
+    domain: "daklekkages.be",
+    assetType: "Rank & Rent / spoed leadgen",
+    status: "live",
+    priority: "P1",
+    monetization: "huur per regio of call/lead fee",
+    mrrCurrent: 0,
+    mrrPotential: "€400-€1.200/mnd",
+    leadflowStatus: "unproven",
+    indexationStatus: "limited",
+    partnerStatus: "none",
+    nextSafeAction: "Robots/sitemap/GSC coverage check, formulier/callpad testen en daarna pas partnergesprekken.",
+    evidence: ["research/2026-06-08-seo-audit-rank-rent-portfolio.md", "docs/operations/portfolio-update-proposal-2026-06-13.md"],
+    lastVerifiedAt: "2026-06-13",
+  },
+  {
+    business: "locallead",
+    domain: "gevelwerkengent.be",
+    assetType: "Rank & Rent lokaal",
+    status: "live",
+    priority: "P2",
+    monetization: "vaste huur Gent/regio",
+    mrrCurrent: 0,
+    mrrPotential: "€250-€700/mnd",
+    leadflowStatus: "unproven",
+    indexationStatus: "zero",
+    partnerStatus: "none",
+    nextSafeAction: "Copy compliance fix, leadbackend test en GSC URL-inspectie/sitemap.",
+    evidence: ["research/seo-audit-gevelwerkengent-LOC8-2026-06-13.md", "docs/operations/portfolio-update-proposal-2026-06-13.md"],
+    lastVerifiedAt: "2026-06-13",
+  },
+  {
+    business: "locallead",
+    domain: "boomontwortelen cluster",
+    label: "4 stadsdomeinen",
+    assetType: "Rank & Rent lokaal cluster",
+    status: "live",
+    priority: "P2",
+    monetization: "huur per stad",
+    mrrCurrent: 0,
+    mrrPotential: "€600-€2.000/mnd cluster",
+    leadflowStatus: "missing",
+    indexationStatus: "unknown",
+    partnerStatus: "none",
+    nextSafeAction: "Eén shared leadform/backend voor Gent, Leuven, Antwerpen en Brugge; dan indexatie per stad.",
+    evidence: ["ops/assets/sites.md", "docs/operations/portfolio-update-proposal-2026-06-13.md"],
+    lastVerifiedAt: "2026-06-13",
+  },
+  {
+    business: "locallead",
+    domain: "renovationstenerife.com",
+    assetType: "Rank & Rent / renovatie buitenland",
+    status: "live",
+    priority: "P3",
+    monetization: "huur/leadgen renovatiepartners",
+    mrrCurrent: 0,
+    mrrPotential: "te valideren",
+    leadflowStatus: "unknown",
+    indexationStatus: "unknown",
+    partnerStatus: "none",
+    nextSafeAction: "Aparte audit: taal, regio, formulier en partnerprofiel.",
+    evidence: ["research/2026-06-08-content-briefs-alsace-tenerife.md"],
+    lastVerifiedAt: "2026-06-13",
+  },
+  {
+    business: "locallead",
+    domain: "alsacerenovation.fr",
+    assetType: "Rank & Rent / renovatie FR",
+    status: "blocked",
+    priority: "Blocked",
+    monetization: "huur/leadgen",
+    mrrCurrent: 0,
+    mrrPotential: "niet tellen tot live fix",
+    leadflowStatus: "missing",
+    indexationStatus: "unknown",
+    partnerStatus: "none",
+    nextSafeAction: "Eerst DNS/site/404 fix; niet als actief R&R asset bovenaan tonen.",
+    evidence: ["docs/operations/portfolio-update-proposal-2026-06-13.md"],
+    lastVerifiedAt: "2026-06-13",
+  },
+  {
+    business: "hazier",
+    domain: "hazier.be",
+    assetType: "bedrijfssite",
+    status: "live",
+    priority: "Core",
+    monetization: "agency / cashflowbasis",
+    mrrCurrent: 0,
+    mrrPotential: "klantwerk + retainers",
+    leadflowStatus: "unknown",
+    indexationStatus: "unknown",
+    partnerStatus: "not-needed",
+    nextSafeAction: "Hazier-pipeline apart structureren: leads, offertes, actief, support en retainer.",
+    evidence: ["ops/assets/sites.md", "docs/operations/portfolio-update-proposal-2026-06-13.md"],
+    lastVerifiedAt: "2026-06-13",
+  },
+  {
+    business: "hazier",
+    domain: "hazier.eu",
+    assetType: "brand extension",
+    status: "needs-check",
+    priority: "P2",
+    monetization: "agency / brand",
+    mrrCurrent: 0,
+    mrrPotential: "brand asset",
+    leadflowStatus: "not-needed",
+    indexationStatus: "unknown",
+    partnerStatus: "not-needed",
+    nextSafeAction: "Redirect/SSL/poortconfig controleren; curl eindigde verdacht op :8443.",
+    evidence: ["docs/operations/portfolio-update-proposal-2026-06-13.md"],
+    lastVerifiedAt: "2026-06-13",
+  },
+  {
+    business: "calqo",
+    domain: "btw-calculator.be",
+    assetType: "tool/calculator",
+    status: "live",
+    priority: "P1",
+    monetization: "AdSense/tool",
+    mrrCurrent: 0,
+    mrrPotential: "traffic-afhankelijk",
+    leadflowStatus: "not-needed",
+    indexationStatus: "unknown",
+    partnerStatus: "not-needed",
+    nextSafeAction: "Opnemen in Calqo inventory met GA4/GSC en monetisatiekeuze.",
+    evidence: ["src/lib/seedData.ts", "docs/operations/portfolio-update-proposal-2026-06-13.md"],
+    lastVerifiedAt: "2026-06-13",
+  },
+  {
+    business: "calqo",
+    domain: "datumberekenen.be",
+    assetType: "tool/calculator",
+    status: "live",
+    priority: "P1",
+    monetization: "AdSense/tool",
+    mrrCurrent: 0,
+    mrrPotential: "traffic-afhankelijk",
+    leadflowStatus: "not-needed",
+    indexationStatus: "unknown",
+    partnerStatus: "not-needed",
+    nextSafeAction: "Metrics actualiseren en trust/contact/disclaimer checken.",
+    evidence: ["src/lib/seedData.ts", "docs/operations/portfolio-update-proposal-2026-06-13.md"],
+    lastVerifiedAt: "2026-06-13",
+  },
+  {
+    business: "calqo",
+    domain: "kmvergoeding.be",
+    assetType: "tool/calculator",
+    status: "live",
+    priority: "P1",
+    monetization: "AdSense/tool",
+    mrrCurrent: 0,
+    mrrPotential: "traffic-afhankelijk",
+    leadflowStatus: "not-needed",
+    indexationStatus: "unknown",
+    partnerStatus: "not-needed",
+    nextSafeAction: "Opnemen in Calqo dataset en finance/werk-verkeer contentpad bepalen.",
+    evidence: ["src/lib/seedData.ts", "docs/operations/portfolio-update-proposal-2026-06-13.md"],
+    lastVerifiedAt: "2026-06-13",
+  },
+  {
+    business: "calqo",
+    domain: "huurrendementcalculator.be",
+    assetType: "tool/calculator / vastgoedbrug",
+    status: "live",
+    priority: "P1",
+    monetization: "AdSense/finance/affiliate",
+    mrrCurrent: 0,
+    mrrPotential: "traffic + affiliate",
+    leadflowStatus: "not-needed",
+    indexationStatus: "unknown",
+    partnerStatus: "not-needed",
+    nextSafeAction: "Koppelen als vastgoedbrug naar renovatie/fundering/gevelwerken waar logisch.",
+    evidence: ["src/lib/seedData.ts", "docs/operations/portfolio-update-proposal-2026-06-13.md"],
+    lastVerifiedAt: "2026-06-13",
+  },
+  {
+    business: "collectpro",
+    domain: "collectpro.be",
+    assetType: "B2B business",
+    status: "live",
+    priority: "Watch",
+    monetization: "B2B incasso",
+    mrrCurrent: 0,
+    mrrPotential: "apart businessmodel",
+    leadflowStatus: "unknown",
+    indexationStatus: "unknown",
+    partnerStatus: "not-needed",
+    nextSafeAction: "Apart houden van LocalLead R&R MRR; alleen watch/core status tonen.",
+    evidence: ["ops/assets/sites.md", "docs/operations/portfolio-update-proposal-2026-06-13.md"],
+    lastVerifiedAt: "2026-06-13",
+  },
+  {
+    business: "infinite-events",
+    domain: "infinite-events.be",
+    assetType: "event/org asset",
+    status: "live",
+    priority: "Watch",
+    monetization: "event/organisatie",
+    mrrCurrent: 0,
+    mrrPotential: "niet-MRR",
+    leadflowStatus: "not-needed",
+    indexationStatus: "unknown",
+    partnerStatus: "not-needed",
+    nextSafeAction: "Alleen kritieke deadlines en budgetpunten koppelen; low-noise houden.",
+    evidence: ["ops/assets/sites.md", "docs/operations/portfolio-update-proposal-2026-06-13.md"],
+    lastVerifiedAt: "2026-06-13",
+  },
+]
+
+export function getPortfolioAssetsForBusiness(business: PortfolioBusiness) {
+  return portfolioAssets.filter((asset) => asset.business === business)
+}
+
+export function getPriorityAssets(limit = 6) {
+  const rank: Record<PortfolioPriority, number> = { P1: 0, P2: 1, Core: 2, P3: 3, Watch: 4, Blocked: 5, Backlog: 6 }
+  return [...portfolioAssets]
+    .sort((a, b) => rank[a.priority] - rank[b.priority] || a.domain.localeCompare(b.domain))
+    .slice(0, limit)
+}
+
+export function summarizeAssets(assets: PortfolioAsset[]) {
+  return {
+    total: assets.length,
+    live: assets.filter((asset) => asset.status === "live").length,
+    p1: assets.filter((asset) => asset.priority === "P1").length,
+    blocked: assets.filter((asset) => asset.status === "blocked" || asset.priority === "Blocked").length,
+    unprovenLeadflow: assets.filter((asset) => asset.leadflowStatus === "unproven" || asset.leadflowStatus === "missing").length,
+    noPartner: assets.filter((asset) => asset.partnerStatus === "none").length,
+  }
+}

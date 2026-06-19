@@ -2,6 +2,9 @@ import Link from "next/link"
 import { ArrowLeft, ArrowRight, CheckCircle2, CircleAlert, Database, Gauge, MapPin, ShieldCheck, Target, Users } from "lucide-react"
 
 import type { BusinessDashboard } from "@/lib/business-dashboards"
+import type { PortfolioBusiness } from "@/lib/portfolio-assets"
+import { getPortfolioAssetsForBusiness } from "@/lib/portfolio-assets"
+import { AssetExceptionStrip, PortfolioAssetMatrix } from "@/components/portfolio-asset-matrix"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,6 +17,8 @@ function healthTone(score: number) {
 }
 
 export function BusinessDashboardPage({ dashboard }: { dashboard: BusinessDashboard }) {
+  const portfolioAssets = getPortfolioAssetsForBusiness(dashboard.slug as PortfolioBusiness)
+
   return (
     <main className="space-y-6 text-white">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -100,6 +105,17 @@ export function BusinessDashboardPage({ dashboard }: { dashboard: BusinessDashbo
           </Card>
         ))}
       </section>
+
+      {portfolioAssets.length > 0 ? (
+        <section className="space-y-4">
+          <AssetExceptionStrip assets={portfolioAssets} />
+          <PortfolioAssetMatrix
+            assets={portfolioAssets}
+            title={`${dashboard.name} asset matrix`}
+            description="Prioriteit, leadflow, indexatie, partnerstatus en volgende veilige actie uit de operationele portfolio-data."
+          />
+        </section>
+      ) : null}
 
       <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
         <Card className="border-white/10 bg-zinc-900/75 text-white shadow-none">
