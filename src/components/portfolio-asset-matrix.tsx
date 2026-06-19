@@ -2,6 +2,7 @@ import { AlertTriangle, ArrowRight, CheckCircle2, CircleDollarSign, Database, Ra
 import Link from "next/link"
 
 import type { PortfolioAsset } from "@/lib/portfolio-assets"
+import { documentViewHref } from "@/lib/document-links"
 import { summarizeAssets } from "@/lib/portfolio-assets"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -106,8 +107,10 @@ export function PortfolioAssetMatrix({
             {!compact ? (
               <div className="mt-3 flex flex-wrap gap-2 border-t border-white/10 pt-3">
                 {asset.evidence.map((path) => (
-                  <Badge key={path} variant="outline" className="border-white/10 bg-black/20 font-mono text-[11px] text-zinc-400">
-                    {path}
+                  <Badge key={path} variant="outline" className="border-white/10 bg-black/20 p-0 font-mono text-[11px] text-zinc-400">
+                    <Link href={documentViewHref(path)} className="block max-w-full break-words px-2.5 py-1 text-[#F5911E] underline decoration-[#F5911E]/30 underline-offset-4 hover:text-[#ffb257]">
+                      {path}
+                    </Link>
                   </Badge>
                 ))}
               </div>

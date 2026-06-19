@@ -2,6 +2,7 @@ import Link from "next/link"
 import { ArrowRight, CheckCircle2, ClipboardCheck, FileSearch, MailCheck, PhoneCall, SearchCheck, ShieldAlert, Target, Users } from "lucide-react"
 
 import type { PortfolioAsset } from "@/lib/portfolio-assets"
+import { documentViewHref } from "@/lib/document-links"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -178,7 +179,15 @@ export function LocalLeadExecutionBoard({ assets }: { assets: PortfolioAsset[] }
                 {asset.portfolio ? (
                   <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-xs leading-5 text-zinc-400">
                     <div className="mb-2 font-bold text-zinc-200"><FileSearch className="mr-1 inline h-4 w-4" /> Evidence</div>
-                    {asset.portfolio.evidence.map((path) => <div key={path} className="break-words font-mono">{path}</div>)}
+                    {asset.portfolio.evidence.map((path) => (
+                      <Link
+                        key={path}
+                        href={documentViewHref(path)}
+                        className="block break-words font-mono text-[#F5911E] underline decoration-[#F5911E]/30 underline-offset-4 hover:text-[#ffb257]"
+                      >
+                        {path}
+                      </Link>
+                    ))}
                   </div>
                 ) : null}
               </CardContent>

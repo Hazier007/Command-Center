@@ -2,6 +2,7 @@ import Link from "next/link"
 import { AlertCircle, ArrowRight, CheckSquare, ClipboardList, FileText, FolderOpen, UserCheck } from "lucide-react"
 
 import type { ReviewInboxItem } from "@/lib/review-inbox"
+import { documentViewHref } from "@/lib/document-links"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -69,15 +70,22 @@ export function BartReviewInbox({ items, title = "Bart review inbox", descriptio
               <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
                   <div className="mb-1 flex items-center gap-2 text-xs uppercase tracking-wide text-zinc-500"><FileText className="h-3.5 w-3.5" /> Repo path</div>
-                  <div className="break-words font-mono text-xs text-zinc-300">{item.filePath}</div>
+                  <Link href={documentViewHref(item.filePath)} className="block break-words font-mono text-xs text-[#F5911E] underline decoration-[#F5911E]/30 underline-offset-4 hover:text-[#ffb257]">
+                    {item.filePath}
+                  </Link>
                 </div>
                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
                   <div className="mb-1 flex items-center gap-2 text-xs uppercase tracking-wide text-zinc-500"><FolderOpen className="h-3.5 w-3.5" /> Lokale path</div>
                   <div className="break-words font-mono text-xs text-zinc-300">{item.localPath}</div>
                 </div>
-                <Button asChild className="bg-[#F5911E] text-white hover:bg-[#d97809]">
-                  <Link href={item.routeHint}>Context openen <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                </Button>
+                <div className="flex flex-col gap-2">
+                  <Button asChild className="bg-[#F5911E] text-white hover:bg-[#d97809]">
+                    <Link href={documentViewHref(item.filePath)}>Document lezen <FileText className="ml-2 h-4 w-4" /></Link>
+                  </Button>
+                  <Button asChild variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/10">
+                    <Link href={item.routeHint}>Context openen <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                  </Button>
+                </div>
               </div>
 
               <div className="mt-3 flex flex-wrap gap-2">
