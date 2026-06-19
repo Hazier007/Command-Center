@@ -145,7 +145,14 @@ const commandLoops = [
     icon: ClipboardList,
   },
   {
-    title: "3. Research memory",
+    title: "3. Bart review inbox",
+    text: "Partnerpitches, outreach-copy en beslissingen die expliciet op Bart wachten.",
+    href: "/review",
+    cta: "Review openen",
+    icon: FileText,
+  },
+  {
+    title: "4. Research memory",
     text: "Audits, agentoutput en beslissingen landen centraal en blijven herbruikbaar.",
     href: "/research",
     cta: "Research openen",

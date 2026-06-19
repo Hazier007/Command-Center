@@ -4,6 +4,8 @@ import { ArrowLeft, ArrowRight, CheckCircle2, CircleAlert, Database, Gauge, MapP
 import type { BusinessDashboard } from "@/lib/business-dashboards"
 import type { PortfolioBusiness } from "@/lib/portfolio-assets"
 import { getPortfolioAssetsForBusiness } from "@/lib/portfolio-assets"
+import { getReviewInboxForBusiness } from "@/lib/review-inbox"
+import { BartReviewInbox } from "@/components/bart-review-inbox"
 import { LocalLeadExecutionBoard } from "@/components/locallead-execution-board"
 import { LocalLeadPartnerPipeline } from "@/components/locallead-partner-pipeline"
 import { AssetExceptionStrip, PortfolioAssetMatrix } from "@/components/portfolio-asset-matrix"
@@ -20,6 +22,7 @@ function healthTone(score: number) {
 
 export function BusinessDashboardPage({ dashboard }: { dashboard: BusinessDashboard }) {
   const portfolioAssets = getPortfolioAssetsForBusiness(dashboard.slug as PortfolioBusiness)
+  const reviewItems = getReviewInboxForBusiness(dashboard.slug as PortfolioBusiness)
 
   return (
     <main className="space-y-6 text-white">
@@ -111,6 +114,8 @@ export function BusinessDashboardPage({ dashboard }: { dashboard: BusinessDashbo
       {dashboard.slug === "locallead" ? <LocalLeadExecutionBoard assets={portfolioAssets} /> : null}
 
       {dashboard.slug === "locallead" ? <LocalLeadPartnerPipeline /> : null}
+
+      {reviewItems.length > 0 ? <BartReviewInbox items={reviewItems} /> : null}
 
       {portfolioAssets.length > 0 ? (
         <section className="space-y-4">
