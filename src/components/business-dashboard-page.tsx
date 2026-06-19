@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2, CircleAlert, Database, Gauge, MapP
 import type { BusinessDashboard } from "@/lib/business-dashboards"
 import type { PortfolioBusiness } from "@/lib/portfolio-assets"
 import { getPortfolioAssetsForBusiness } from "@/lib/portfolio-assets"
+import { LocalLeadExecutionBoard } from "@/components/locallead-execution-board"
 import { AssetExceptionStrip, PortfolioAssetMatrix } from "@/components/portfolio-asset-matrix"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -105,6 +106,8 @@ export function BusinessDashboardPage({ dashboard }: { dashboard: BusinessDashbo
           </Card>
         ))}
       </section>
+
+      {dashboard.slug === "locallead" ? <LocalLeadExecutionBoard assets={portfolioAssets} /> : null}
 
       {portfolioAssets.length > 0 ? (
         <section className="space-y-4">
