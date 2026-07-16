@@ -81,7 +81,7 @@ function RegistryEditor({ items, selectedDomain, onSelectDomain, onChange, onSav
               <Database className="h-5 w-5 text-[#F5911E]" /> Domein registry editor
             </CardTitle>
             <CardDescription className="mt-2 text-zinc-400">
-              Vul repo, hosting, GSC, DNS, leadflow en blockers hier in. Opslaan schrijft naar <span className="font-mono text-zinc-200">data/locallead-ops-registry.json</span>.
+              Vul repo, hosting, GSC, DNS, leadflow en blockers hier in. Lokaal schrijft opslaan naar <span className="font-mono text-zinc-200">data/locallead-ops-registry.json</span>; op Vercel moet <span className="font-mono text-zinc-200">COMMAND_CENTER_GITHUB_TOKEN</span> ingesteld zijn zodat wijzigingen naar GitHub worden gecommit.
             </CardDescription>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -211,7 +211,8 @@ export function LocalLeadOpsGuardrails() {
       if (!response.ok) throw new Error(result.error ?? "Opslaan mislukt")
 
       setItems(result.items)
-      setSaveState("Opgeslagen. Agents lezen nu deze registry-data i.p.v. losse aannames.")
+      const persistenceLabel = result.persistence === "github" ? "GitHub commit" : "lokale JSON"
+      setSaveState(`Opgeslagen via ${persistenceLabel}. Agents lezen nu deze registry-data i.p.v. losse aannames.`)
     } catch (error) {
       setSaveState(error instanceof Error ? error.message : "Opslaan mislukt")
     } finally {
