@@ -67,6 +67,7 @@ export const businessDashboards: Record<string, BusinessDashboard> = {
     nextAction: "Kies één niche-site, bewijs leadcapture, maak een shortlist van 20 aannemers en start gecontroleerde partnergesprekken.",
     mission: "LocalLead moet de cashflow-machine worden: betrouwbare sites, bewijsbare aanvragen, exclusieve partners en vaste huur per regio/niche.",
     quickLinks: [
+      { label: "Website gegevens invullen", href: "/locallead/registry" },
       { label: "Portfolio", href: "/portfolio" },
       { label: "Taken", href: "/tasks" },
       { label: "Research", href: "/research" },

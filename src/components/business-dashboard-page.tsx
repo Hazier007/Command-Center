@@ -7,6 +7,7 @@ import { getPortfolioAssetsForBusiness } from "@/lib/portfolio-assets"
 import { getReviewInboxForBusiness } from "@/lib/review-inbox"
 import { BartReviewInbox } from "@/components/bart-review-inbox"
 import { LocalLeadExecutionBoard } from "@/components/locallead-execution-board"
+import { LocalLeadOpsGuardrails } from "@/components/locallead-ops-guardrails"
 import { LocalLeadPartnerPipeline } from "@/components/locallead-partner-pipeline"
 import { AssetExceptionStrip, PortfolioAssetMatrix } from "@/components/portfolio-asset-matrix"
 import { Badge } from "@/components/ui/badge"
@@ -112,6 +113,8 @@ export function BusinessDashboardPage({ dashboard }: { dashboard: BusinessDashbo
       </section>
 
       {dashboard.slug === "locallead" ? <LocalLeadExecutionBoard assets={portfolioAssets} /> : null}
+
+      {dashboard.slug === "locallead" ? <LocalLeadOpsGuardrails /> : null}
 
       {dashboard.slug === "locallead" ? <LocalLeadPartnerPipeline /> : null}
 

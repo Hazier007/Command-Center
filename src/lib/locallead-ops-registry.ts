@@ -1,0 +1,166 @@
+export type AccessState = "ok" | "missing" | "unknown" | "not-needed"
+export type RegistryStatus = "complete" | "needs-data" | "external-blocker" | "watch"
+export type QueueLane = "revenue-now" | "unblock" | "build" | "watch"
+
+export type LocalLeadOpsRegistryItem = {
+  domain: string
+  priority: "P1" | "P2" | "P3" | "Blocked"
+  revenueSignal: string
+  repo: string
+  productionBranch: string
+  hosting: string
+  project: string
+  productionDomains: string[]
+  gscProperty: string
+  leadflow: string
+  partnerStatus: string
+  access: {
+    github: AccessState
+    hosting: AccessState
+    gsc: AccessState
+    dns: AccessState
+  }
+  status: RegistryStatus
+  queueLane: QueueLane
+  blocker?: string
+  nextSafeAction: string
+}
+
+export const localLeadOpsRegistry: LocalLeadOpsRegistryItem[] = [
+  {
+    domain: "daklekkages.be",
+    priority: "P1",
+    revenueSignal: "Minstens 2 echte leads ontvangen; urgente partnerkans.",
+    repo: "https://github.com/Hazier007/daklekkages · C:/Users/Bart/Projects/daklekkages",
+    productionBranch: "master",
+    hosting: "Vul hosting/project in",
+    project: "Vul production project in",
+    productionDomains: ["daklekkages.be", "www.daklekkages.be"],
+    gscProperty: "Vul GSC property in",
+    leadflow: "Mailflow incident 2026-07-12: Resend zegt sent, maar hardcoded ontvanger was info@daklekkages.be; fix voorbereid naar LEAD_TO_EMAIL fallback info@hazier.be.",
+    partnerStatus: "Partner shortlist + aanbod voorbereiden",
+    access: { github: "ok", hosting: "missing", gsc: "unknown", dns: "unknown" },
+    status: "needs-data",
+    queueLane: "revenue-now",
+    blocker: "Twilio/KBO voor calls; repo/hosting/GSC mapping nog expliciet maken.",
+    nextSafeAction: "Leadproof + partneraanbod maken; geen agent-loop op calltracking zolang KBO blokkeert.",
+  },
+  {
+    domain: "poxy.be",
+    priority: "P1",
+    revenueSignal: "Nieuwe echte lead 2026-07-12 voor gietvloer in regio Middelkerke; Vlaanderen eerst; vaste huur voorkeur.",
+    repo: "https://github.com/Hazier007/poxy · C:/Users/Bart/Projects/poxy",
+    productionBranch: "master",
+    hosting: "Vul hosting/project in",
+    project: "Vul production project in",
+    productionDomains: ["poxy.be", "www.poxy.be"],
+    gscProperty: "GSC verbonden sinds 09/03; coverage opvolgen",
+    leadflow: "Resend naar info@hazier.be werkt; nieuwe Poxy lead ontvangen via /gietvloer/middelkerke. Twilio wacht op KBO.",
+    partnerStatus: "Gietvloer/epoxy partnerprofiel + shortlist West-Vlaanderen/Vlaanderen maken; lead anoniem gebruiken als proof.",
+    access: { github: "ok", hosting: "unknown", gsc: "ok", dns: "unknown" },
+    status: "needs-data",
+    queueLane: "revenue-now",
+    blocker: "Niet opnieuw 'GSC koppelen' aanmaken; alleen coverage/sitemap/URL-inspectie opvolgen. Geen persoonsgegevens van leads delen in partnerproof.",
+    nextSafeAction: "Lead opvolgen + anoniem proof-pack maken; 10-20 gietvloer/epoxy partners rond West-Vlaanderen/Vlaanderen prioriteren.",
+  },
+  {
+    domain: "gevelwerkengent.be",
+    priority: "P1",
+    revenueSignal: "Mail + bevestiging bewezen; partnerkans/sales asset.",
+    repo: "https://github.com/Hazier007/gevelwertkengent · Paperclip managed checkout",
+    productionBranch: "main",
+    hosting: "Vercel? bevestigen",
+    project: "Vul production project in",
+    productionDomains: ["gevelwerkengent.be", "www.gevelwerkengent.be"],
+    gscProperty: "Vul GSC property in",
+    leadflow: "Mailflow bewezen; telefoonnummer/local SEO nog kans.",
+    partnerStatus: "Gevelwerken Gent/regio shortlist",
+    access: { github: "ok", hosting: "unknown", gsc: "unknown", dns: "unknown" },
+    status: "external-blocker",
+    queueLane: "revenue-now",
+    blocker: "GitHub/Vercel checks waren success; 307→301 lijkt domain/hostinglaag, niet blijven codepatchen zonder projectmapping.",
+    nextSafeAction: "Bart vult Vercel/domain mapping aan; daarna één gerichte redirectcheck, geen herhaalde PRs.",
+  },
+  {
+    domain: "funderingsproblemen.be",
+    priority: "P1",
+    revenueSignal: "High-ticket leadgen; partnerwaarde hoog.",
+    repo: "Vul repo in",
+    productionBranch: "main",
+    hosting: "Vul hosting/project in",
+    project: "Vul production project in",
+    productionDomains: ["funderingsproblemen.be", "www.funderingsproblemen.be"],
+    gscProperty: "Vul GSC property in",
+    leadflow: "Premium leadflow/testaanvraag bewijzen.",
+    partnerStatus: "Top-10 funderingsspecialisten voorbereiden",
+    access: { github: "unknown", hosting: "missing", gsc: "unknown", dns: "unknown" },
+    status: "needs-data",
+    queueLane: "unblock",
+    blocker: "Production source/deployment mapping onzeker; lokale fixes niet opnieuw laten herkauwen.",
+    nextSafeAction: "Eerst repo→deploy mapping vastleggen, dan pas live SEO/redirect fixes opnieuw activeren.",
+  },
+  {
+    domain: "boomontwortel.be / boomontwortel-sites",
+    priority: "P2",
+    revenueSignal: "Owned domein gecorrigeerd: boomontwortel.be; niet boomontwortelen.be als apex aannemen.",
+    repo: "Vul repo in",
+    productionBranch: "main",
+    hosting: "Vul hosting/project in",
+    project: "Vul production project in",
+    productionDomains: ["boomontwortel.be"],
+    gscProperty: "Vul GSC property in",
+    leadflow: "Shared leadform nodig per stad/cluster.",
+    partnerStatus: "Boomverzorging/stronkfrezen partnerfit bepalen",
+    access: { github: "unknown", hosting: "missing", gsc: "unknown", dns: "unknown" },
+    status: "external-blocker",
+    queueLane: "unblock",
+    blocker: "Live robots blokkeert vermoedelijk nog /_next/; redeploy/auth nodig voor echte fix.",
+    nextSafeAction: "Geen nieuwe robots-heartbeats tot hosting/deploy auth of projectmapping is ingevuld.",
+  },
+  {
+    domain: "alsacerenovation.fr",
+    priority: "Blocked",
+    revenueSignal: "Niet meetellen als actieve R&R asset tot site live/SSL/sitemap gezond is.",
+    repo: "Vul repo in",
+    productionBranch: "main",
+    hosting: "Vul hosting/project in",
+    project: "Vul production project in",
+    productionDomains: ["alsacerenovation.fr", "www.alsacerenovation.fr"],
+    gscProperty: "Vul GSC property in",
+    leadflow: "Nog niet relevant tot live fix.",
+    partnerStatus: "Watch/backlog",
+    access: { github: "unknown", hosting: "missing", gsc: "not-needed", dns: "missing" },
+    status: "external-blocker",
+    queueLane: "watch",
+    blocker: "App live/SSL/sitemap/publicatie geblokkeerd buiten contentwerk.",
+    nextSafeAction: "Eerst hosting/publicatie/DNS invullen; agents niet laten optimaliseren zolang homepage niet live is.",
+  },
+]
+
+export const paperclipGuardrails = [
+  {
+    title: "Blocked betekent wachten, niet herkauwen",
+    detail: "Issues met ontbrekende hosting/GSC/DNS/repo mapping krijgen een owner-action + cooldown. Geen nieuwe PR, heartbeat of productivity-review tenzij de unblock-data veranderde.",
+  },
+  {
+    title: "Revenue-first queue",
+    detail: "Eerst sites met echte leads of partnerkans: Daklekkages, GevelwerkenGent, Poxy. Pure technische perfectie komt pas na leadflow/proof/partnerpad.",
+  },
+  {
+    title: "Repo→deploy registry verplicht",
+    detail: "Elke agent moet production repo, branch, hostingproject, domeinen en GSC-property checken vóór build/deploy/verificatieclaims.",
+  },
+  {
+    title: "Eén duidelijke eigenaar per blocker",
+    detail: "Lisa = SEO/leadflow, Wout = partners/research, Jean-Cloud = code/deploy, Hermes = triage/escalatie naar Bart.",
+  },
+]
+
+export function getRegistrySummary(items = localLeadOpsRegistry) {
+  return {
+    total: items.length,
+    revenueNow: items.filter((item) => item.queueLane === "revenue-now").length,
+    needsData: items.filter((item) => item.status === "needs-data").length,
+    externalBlockers: items.filter((item) => item.status === "external-blocker").length,
+  }
+}
