@@ -31,8 +31,8 @@
     "revenueSignal": "Nieuwe echte lead 2026-07-12 voor gietvloer in regio Middelkerke; Vlaanderen eerst; vaste huur voorkeur.",
     "repo": "https://github.com/Hazier007/poxy · C:/Users/Bart/Projects/poxy",
     "productionBranch": "master",
-    "hosting": "Vul hosting/project in",
-    "project": "Vul production project in",
+    "hosting": "Vercel",
+    "project": "",
     "productionDomains": [
       "poxy.be",
       "www.poxy.be"
