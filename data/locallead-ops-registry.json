@@ -57,13 +57,13 @@
     "revenueSignal": "Mail + bevestiging bewezen; partnerkans/sales asset.",
     "repo": "https://github.com/Hazier007/gevelwertkengent · Paperclip managed checkout",
     "productionBranch": "main",
-    "hosting": "Vercel? bevestigen",
-    "project": "Vul production project in",
+    "hosting": "Vercel",
+    "project": "https://vercel.com/deblockbart-gmailcoms-projects/gevelwertkengent-api-server",
     "productionDomains": [
       "gevelwerkengent.be",
       "www.gevelwerkengent.be"
     ],
-    "gscProperty": "Vul GSC property in",
+    "gscProperty": "542856095",
     "leadflow": "Mailflow bewezen; telefoonnummer/local SEO nog kans.",
     "partnerStatus": "Gevelwerken Gent/regio shortlist",
     "access": {
