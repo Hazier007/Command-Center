@@ -5,7 +5,7 @@
     "revenueSignal": "Minstens 2 echte leads ontvangen; urgente partnerkans.",
     "repo": "https://github.com/Hazier007/daklekkages · C:/Users/Bart/Projects/daklekkages",
     "productionBranch": "master",
-    "hosting": "Vul hosting/project in",
+    "hosting": "Vercel",
     "project": "Vul production project in",
     "productionDomains": [
       "daklekkages.be",
