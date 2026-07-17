@@ -83,13 +83,13 @@
     "revenueSignal": "High-ticket leadgen; partnerwaarde hoog.",
     "repo": "Vul repo in",
     "productionBranch": "main",
-    "hosting": "Vul hosting/project in",
-    "project": "Vul production project in",
+    "hosting": "Vercel",
+    "project": "https://vercel.com/deblockbart-gmailcoms-projects/funderingsproblemen.be/AWa3auNN8f5ahL69QzAeXQvfuxV3",
     "productionDomains": [
       "funderingsproblemen.be",
       "www.funderingsproblemen.be"
     ],
-    "gscProperty": "Vul GSC property in",
+    "gscProperty": "542958113",
     "leadflow": "Premium leadflow/testaanvraag bewijzen.",
     "partnerStatus": "Top-10 funderingsspecialisten voorbereiden",
     "access": {
