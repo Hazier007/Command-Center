@@ -6,12 +6,12 @@
     "repo": "https://github.com/Hazier007/daklekkages · C:/Users/Bart/Projects/daklekkages",
     "productionBranch": "master",
     "hosting": "Vercel",
-    "project": "Vul production project in",
+    "project": "https://vercel.com/deblockbart-gmailcoms-projects/daklekkages",
     "productionDomains": [
       "daklekkages.be",
       "www.daklekkages.be"
     ],
-    "gscProperty": "Vul GSC property in",
+    "gscProperty": "526246682",
     "leadflow": "Mailflow incident 2026-07-12: Resend zegt sent, maar hardcoded ontvanger was info@daklekkages.be; fix voorbereid naar LEAD_TO_EMAIL fallback info@hazier.be.",
     "partnerStatus": "Partner shortlist + aanbod voorbereiden",
     "access": {
