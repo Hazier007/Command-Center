@@ -16,14 +16,14 @@
     "partnerStatus": "Partner shortlist + aanbod voorbereiden",
     "access": {
       "github": "ok",
-      "hosting": "missing",
-      "gsc": "unknown",
-      "dns": "unknown"
+      "hosting": "ok",
+      "gsc": "ok",
+      "dns": "ok"
     },
-    "status": "needs-data",
+    "status": "partner-ready",
     "queueLane": "revenue-now",
-    "blocker": "Twilio/KBO voor calls; repo/hosting/GSC mapping nog expliciet maken.",
-    "nextSafeAction": "Leadproof + partneraanbod maken; geen agent-loop op calltracking zolang KBO blokkeert."
+    "blocker": "Geen technische owner-blocker. Twilio/calltracking bewust geskipt tot KBO klaar is.",
+    "nextSafeAction": "Leadproof + partneraanbod maken; partner-outreach voorbereiden. Geen agent-loop op Twilio zolang Bart dit skipt."
   },
   {
     "domain": "poxy.be",
@@ -42,14 +42,14 @@
     "partnerStatus": "Gietvloer/epoxy partnerprofiel + shortlist West-Vlaanderen/Vlaanderen maken; lead anoniem gebruiken als proof.",
     "access": {
       "github": "ok",
-      "hosting": "unknown",
+      "hosting": "ok",
       "gsc": "ok",
-      "dns": "unknown"
+      "dns": "ok"
     },
-    "status": "needs-data",
+    "status": "partner-ready",
     "queueLane": "revenue-now",
-    "blocker": "Niet opnieuw 'GSC koppelen' aanmaken; alleen coverage/sitemap/URL-inspectie opvolgen. Geen persoonsgegevens van leads delen in partnerproof.",
-    "nextSafeAction": "Lead opvolgen + anoniem proof-pack maken; 10-20 gietvloer/epoxy partners rond West-Vlaanderen/Vlaanderen prioriteren."
+    "blocker": "Geen GSC-koppelblocker: GSC is verbonden sinds 09/03. Alleen coverage/sitemap/URL-inspectie opvolgen.",
+    "nextSafeAction": "Partnerlijst maken + Gmail-concepten personaliseren; anoniem lead/proof-pack gebruiken zonder persoonsgegevens."
   },
   {
     "domain": "gevelwerkengent.be",
@@ -68,14 +68,14 @@
     "partnerStatus": "Gevelwerken Gent/regio shortlist",
     "access": {
       "github": "ok",
-      "hosting": "unknown",
-      "gsc": "unknown",
-      "dns": "unknown"
+      "hosting": "ok",
+      "gsc": "ok",
+      "dns": "ok"
     },
-    "status": "external-blocker",
+    "status": "partner-ready",
     "queueLane": "revenue-now",
-    "blocker": "GitHub/Vercel checks waren success; 307→301 lijkt domain/hostinglaag, niet blijven codepatchen zonder projectmapping.",
-    "nextSafeAction": "Bart vult Vercel/domain mapping aan; daarna één gerichte redirectcheck, geen herhaalde PRs."
+    "blocker": "Geen Vercel/domain redirect-blocker meer: live www→apex geeft 308 Permanent Redirect.",
+    "nextSafeAction": "Partnerproof en outreach voorbereiden; geen herhaalde redirect/codepatch-taken."
   },
   {
     "domain": "funderingsproblemen.be",
@@ -93,15 +93,15 @@
     "leadflow": "Premium leadflow/testaanvraag bewijzen.",
     "partnerStatus": "Top-10 funderingsspecialisten voorbereiden",
     "access": {
-      "github": "unknown",
-      "hosting": "missing",
-      "gsc": "unknown",
-      "dns": "unknown"
+      "github": "ok",
+      "hosting": "partial",
+      "gsc": "ok",
+      "dns": "ok"
     },
-    "status": "needs-data",
+    "status": "external-blocker",
     "queueLane": "unblock",
-    "blocker": "Production source/deployment mapping onzeker; lokale fixes niet opnieuw laten herkauwen.",
-    "nextSafeAction": "Eerst repo→deploy mapping vastleggen, dan pas live SEO/redirect fixes opnieuw activeren."
+    "blocker": "Bart owner-action: Vercel project koppelen aan GitHub repo en ontbrekende lead-routing env vars invullen. Daarna pas deploy/SEO-fixes opnieuw activeren.",
+    "nextSafeAction": "Wachten op Bart: GitHub repo koppelen in Vercel + LEAD_TO_EMAIL en LEAD_FROM_EMAIL instellen. Agents mogen dit niet herkauwen tot unblock bevestigd is."
   },
   {
     "domain": "boomontwortel.be / boomontwortel-sites",
